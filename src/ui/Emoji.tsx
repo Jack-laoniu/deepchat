@@ -14,7 +14,7 @@ function codes(e: string): string[] {
   return [...new Set([cps.join('_'), cps.filter((c) => c !== 'fe0f').join('_')])];
 }
 
-const svgUrl = (e: string) => `${BASE}/${codes(e)[0]}/emoji.svg`;
+export const svgUrl = (e: string) => `${BASE}/${codes(e)[0]}/emoji.svg`;
 
 const lottieCache = new Map<string, Promise<object | null>>();
 function loadLottie(e: string): Promise<object | null> {

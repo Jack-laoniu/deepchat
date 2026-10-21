@@ -83,6 +83,10 @@ export interface Played {
   untouched: string[];
   /** 用户用自己的话说的内容（最有价值的输入） */
   quotes: { q: string; text: string }[];
+  /** 已经答过的回合 id（按顺序） */
+  visited: string[];
+  /** 连环取舍里用户接受见底的那条槽 */
+  sacrificed?: Meter;
 }
 
 export const matches = (c: Cond | undefined, flags: Set<string>) =>
@@ -132,6 +136,8 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
   const risks: string[] = [];
   const score = { easy: 50, good: 50, safe: 50 };
   const quotes: Played['quotes'] = [];
+  const visited: string[] = [];
+  let sacrificed: Meter | undefined;
   let budget: number | null = null;
   let current: Round | null = null;
   let done = 0;
@@ -187,6 +193,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
     }
     done++;
     estimate++;
+    visited.push(r.id);
     if ('value' in a && r.type === 'slider') {
       if (r.kind === 'budget') budget = a.value;
       facts.push(r.fact.replace('{v}', String(a.value)));
@@ -207,6 +214,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
         if (side) applyOption(c[side]);
       }
       if (a.chain.accepted) {
+        sacrificed = a.chain.accepted;
         const name = METER_NAME[lesson.lang === 'zh' ? 'zh' : 'en'][a.chain.accepted];
         facts.push(lesson.lang === 'zh' ? `连环取舍里用户一路牺牲「${name}」直到见底，并表示可以接受` : `In the trade-off run the user kept sacrificing ${name} until it ran out, and accepted that`);
         risks.push(lesson.lang === 'zh' ? `「${name}」被压到了底` : `${name} was pushed to zero`);
@@ -255,6 +263,8 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
     score: { easy: clamp(score.easy), good: clamp(score.good), safe: clamp(score.safe) },
     untouched: lesson.guess.items.filter((i) => !touched.has(i.id)).map((i) => i.id),
     quotes,
+    visited,
+    sacrificed,
   };
 }
 
