@@ -4,7 +4,7 @@ import { isMuted, setMuted } from './fx/fx';
 import { GameProvider, useGame } from './game';
 import { hostLesson } from './host';
 import { optionsOf } from './lesson/engine';
-import { parseLesson } from './lesson/schema';
+import { asksOf, parseLesson } from './lesson/schema';
 import { Home } from './screens/Home';
 import { Intro } from './screens/Intro';
 import { Play } from './screens/Play';
@@ -28,7 +28,9 @@ function Screens() {
     if (!g.lesson) return;
     const l = g.lesson;
     preload([
-      '🦊', '🔥', '✨', '💥', l.emoji,
+      '🦊', '🔥', '✨', '💥', '🙂', '🧑', '🎙️', l.emoji,
+      ...l.cast.map((c) => c.emoji),
+      ...l.rounds.flatMap((r) => [...asksOf(r).flatMap((a) => a.options.map((o) => o.emoji)), ...(r.type === 'map' ? r.spots.map((s) => s.emoji) : [])]),
       ...l.guess.items.map((i) => i.emoji),
       ...l.rounds.flatMap((r) => [r.emoji, ...optionsOf(r).flatMap((o) => [o.emoji, ...o.add.map((i) => i.emoji)])]),
     ]);

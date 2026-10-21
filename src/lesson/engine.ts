@@ -1,14 +1,19 @@
-import type { Cond, Gamble, Item, Lesson, Option, Round } from './schema';
+import type { Beat, Cond, FixRound, Free, Gamble, Item, Lesson, Option, Round } from './schema';
 
 /**
  * 闯关规则：全部由 play(lesson, answers) 从答案列表重新推导，
  * 悔棋 = 去掉最后一个答案。
  */
 
+/** 对话里每个提问的回答：选了某个选项，或者用户自己说的话 */
+export type Replies = Record<string, { option: string } | { text: string }>;
+
 export type Answer =
   | { round: string; option: string }
   | { round: string; value: number }
-  | { round: string; gamble: true };
+  | { round: string; gamble: true }
+  | { round: string; talk: Replies }
+  | { round: string; map: Record<string, Replies> };
 
 export interface Crash {
   round: string;
@@ -34,6 +39,8 @@ export interface Played {
   score: { easy: number; good: number; safe: number };
   /** 盲猜里没被任何选择碰过的物品 */
   untouched: string[];
+  /** 用户用自己的话说的内容（最有价值的输入） */
+  quotes: { q: string; text: string }[];
 }
 
 export const matches = (c: Cond | undefined, flags: Set<string>) =>
@@ -48,6 +55,31 @@ export function optionsOf(r: Round): Option[] {
   return [];
 }
 
+/** 自由回答命中了哪些关键词规则（不区分大小写） */
+export function matchFree(free: Free, text: string) {
+  const t = text.toLowerCase();
+  return free.match.filter((m) => m.words.some((w) => t.includes(w.toLowerCase())));
+}
+
+/**
+ * 按顺序走一遍对话，返回可见的台词（受 if 条件控制）以及回答带来的标记。
+ * UI 边播放边调用它，引擎结算时也用它，保证两边一致。
+ */
+export function walkBeats(beats: Beat[], replies: Replies, baseFlags: Set<string>) {
+  const flags = new Set(baseFlags);
+  const visible: Beat[] = [];
+  for (const b of beats) {
+    if (!matches(b.if, flags)) continue;
+    visible.push(b);
+    if (b.type !== 'ask') continue;
+    const r = replies[b.id];
+    if (!r) break; // 停在还没回答的提问上
+    if ('option' in r) b.options.find((o) => o.id === r.option)?.set.forEach((f) => flags.add(f));
+    else if (b.free) matchFree(b.free, r.text).forEach((m) => m.set.forEach((f) => flags.add(f)));
+  }
+  return { visible, flags };
+}
+
 export function play(lesson: Lesson, answers: Answer[]): Played {
   const byRound = new Map(answers.map((a) => [a.round, a]));
   const flags = new Set<string>();
@@ -57,6 +89,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
   const facts: string[] = [];
   const risks: string[] = [];
   const score = { easy: 50, good: 50, safe: 50 };
+  const quotes: Played['quotes'] = [];
   let budget: number | null = null;
   let current: Round | null = null;
   let done = 0;
@@ -77,6 +110,25 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
     score.easy += o.score.easy ?? 0;
     score.good += o.score.good ?? 0;
     score.safe += o.score.safe ?? 0;
+  };
+
+  const applyBeats = (beats: Beat[], replies: Replies) => {
+    for (const b of walkBeats(beats, replies, flags).visible) {
+      if (b.type !== 'ask' || !replies[b.id]) continue;
+      const r = replies[b.id];
+      if ('option' in r) {
+        const o = b.options.find((x) => x.id === r.option);
+        if (o) applyOption(o);
+      } else if (b.free) {
+        const text = r.text.trim();
+        facts.push(b.free.fact.replace('{v}', text));
+        quotes.push({ q: b.q, text });
+        for (const m of matchFree(b.free, text)) {
+          m.set.forEach((f) => flags.add(f));
+          if (m.fact) facts.push(m.fact);
+        }
+      }
+    }
   };
 
   for (const r of lesson.rounds) {
@@ -103,6 +155,10 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
     } else if ('option' in a) {
       const o = optionsOf(r).find((x) => x.id === a.option);
       if (o) applyOption(o);
+    } else if ('talk' in a && r.type === 'talk') {
+      applyBeats(r.beats, a.talk);
+    } else if ('map' in a && r.type === 'map') {
+      for (const spot of r.spots) if (a.map[spot.id]) applyBeats(spot.beats, a.map[spot.id]);
     }
   }
 
@@ -121,6 +177,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
     risks,
     score: { easy: clamp(score.easy), good: clamp(score.good), safe: clamp(score.safe) },
     untouched: lesson.guess.items.filter((i) => !touched.has(i.id)).map((i) => i.id),
+    quotes,
   };
 }
 
@@ -130,7 +187,7 @@ export function gambleCrashes(g: Gamble, flags: Set<string>): boolean {
 }
 
 /** 选完之后，下一关是不是刚被这次选择「炸」出来的坑 */
-export function revealsProblem(lesson: Lesson, before: Answer[], after: Answer[]): Round | null {
+export function revealsProblem(lesson: Lesson, before: Answer[], after: Answer[]): FixRound | null {
   const next = play(lesson, after).current;
   if (!next || next.type !== 'fix') return null;
   // 在旧的标记下这一关不会出现 → 是这次选择触发的

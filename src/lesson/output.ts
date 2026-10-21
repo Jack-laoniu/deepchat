@@ -12,6 +12,12 @@ export function superPrompt(lesson: Lesson, p: Played, crashes: Crash[]): string
   L.push(`# ${lesson.title}${lesson.domain ? `（${lesson.domain}）` : ''}`, '');
   L.push('## 用户原话', `> ${lesson.need}`, '');
 
+  if (p.quotes.length) {
+    L.push('## 用户自己说的话（原话，最能代表真实意图）');
+    p.quotes.forEach((q) => L.push(`- 问「${q.q}」→ 「${q.text}」`));
+    L.push('');
+  }
+
   L.push('## 用户亲自确认的情况');
   p.facts.forEach((f) => L.push(`- ${f}`));
   L.push('');

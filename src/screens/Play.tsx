@@ -5,6 +5,8 @@ import { Pick } from '../rounds/Pick';
 import { Boss, Fix } from '../rounds/Repair';
 import { Slider } from '../rounds/Slider';
 import { Swipe } from '../rounds/Swipe';
+import { Talk } from '../rounds/Talk';
+import { MapQuest } from '../rounds/Map';
 import { FeedbackSheet } from '../ui/FeedbackSheet';
 import { TopBar } from '../ui/kit';
 
@@ -20,6 +22,10 @@ function RoundView({ round }: { round: Round }) {
       return <Fix round={round} />;
     case 'boss':
       return <Boss round={round} />;
+    case 'talk':
+      return <Talk round={round} />;
+    case 'map':
+      return <MapQuest round={round} />;
   }
 }
 

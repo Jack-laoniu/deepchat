@@ -122,6 +122,23 @@ export function Win() {
         </motion.div>
       )}
 
+      {p.quotes.length > 0 && (
+        <div className="mt-4 space-y-2">
+          <div className="text-sm font-black text-slate-400">💬 你亲口说的，AI 会照这个来</div>
+          {p.quotes.map((q, i) => (
+            <motion.div
+              key={i}
+              initial={{ x: 40, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 1 + i * 0.15 }}
+              className="flex justify-end"
+            >
+              <span className="max-w-[85%] rounded-2xl bg-green-500 px-3 py-1.5 text-[15px] font-bold text-white">{q.text}</span>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
       {l.secret && (
         <div className="mt-4 flex items-center gap-2 rounded-2xl bg-sky-50 p-3">
           <Emoji e="💡" size={36} loop />

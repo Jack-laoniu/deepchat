@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import { sfx } from './fx/fx';
-import { gambleCrashes, optionsOf, play, revealsProblem, type Answer, type Crash, type Played } from './lesson/engine';
-import type { Lesson, Round } from './lesson/schema';
+import { gambleCrashes, optionsOf, play, revealsProblem, type Answer, type Crash, type Played, type Replies } from './lesson/engine';
+import type { FixRound, Lesson, Round } from './lesson/schema';
 
 export type Phase = 'home' | 'intro' | 'play' | 'win';
 
@@ -28,6 +28,8 @@ interface Game {
   begin(): void;
   choose(round: Round, optionId: string): void;
   setValue(round: Round, value: number): void;
+  /** 剧情关 / 地图关整体提交 */
+  talk(round: Round, replies: Replies | Record<string, Replies>): void;
   gamble(round: Round): void;
   next(): void;
   undo(): void;
@@ -50,7 +52,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const played = useMemo(() => (lesson ? play(lesson, answers) : null), [lesson, answers]);
 
-  const commit = (a: Answer, fb: (before: Played, after: Played, problem: Round | null) => Feedback) => {
+  const commit = (a: Answer, fb: (before: Played, after: Played, problem: FixRound | null) => Feedback) => {
     if (!lesson) return;
     const after = [...answers, a];
     const pb = play(lesson, answers);
@@ -109,6 +111,22 @@ export function GameProvider({ children }: { children: ReactNode }) {
         delta: a.total - b.total,
         round,
       }));
+    },
+    talk(round, replies) {
+      const a: Answer = round.type === 'map' ? { round: round.id, map: replies as Record<string, Replies> } : { round: round.id, talk: replies as Replies };
+      const f = commit(a, (b, after, problem) => {
+        const learned = after.facts.length - b.facts.length;
+        const said = after.quotes.length - b.quotes.length;
+        return {
+          tone: problem ? 'warn' : 'good',
+          title: problem ? '糟了，有坑！' : '记下了！',
+          tip: problem ? problem.q : said ? `记住了你说的 ${said} 句话` : learned ? `打听到 ${learned} 条情况` : undefined,
+          delta: after.total - b.total,
+          emoji: problem ? problem.emoji : said ? '💬' : '📝',
+          round,
+        };
+      });
+      if (f?.tone === 'good') sfx.good();
     },
     gamble(round) {
       if (!lesson || !played || (round.type !== 'fix' && round.type !== 'boss')) return;

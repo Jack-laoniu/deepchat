@@ -4,6 +4,11 @@
   "title": "带爸妈游云南",
   "emoji": "🏔️",
   "domain": "家庭旅行规划",
+  "cast": [
+    { "id": "mom", "name": "妈妈", "emoji": "👩‍🦳", "pitch": 1.3, "rate": 0.95 },
+    { "id": "dad", "name": "爸爸", "emoji": "👨‍🦳", "pitch": 0.75, "rate": 0.9 },
+    { "id": "sis", "name": "姐姐", "emoji": "👩", "pitch": 1.2, "rate": 1.15 }
+  ],
   "guess": {
     "line": "我猜：三个人，跟团跑大理丽江",
     "items": [
@@ -16,17 +21,40 @@
   },
   "rounds": [
     {
+      "type": "talk", "id": "memory", "style": "story", "title": "上次跟团的噩梦", "emoji": "🚌",
+      "beats": [
+        { "who": "narrator", "say": "晚饭后，爸妈在聊上次的旅行团。" },
+        { "who": "mom", "say": "上回那个团，早上五点就叫起床！" },
+        { "who": "dad", "say": "一天跑四个景点，我腿都走肿了。" },
+        { "who": "mom", "say": "还拉我们去玉石店，不买不让走。" },
+        {
+          "id": "legs", "who": "mom", "q": "你觉得爸妈能走一整天吗？",
+          "options": [
+            { "id": "walk_ok", "emoji": "🏃", "label": "能，身体挺好", "fact": "父母体力好，能走一整天", "reply": [{ "who": "dad", "say": "我还年轻着呢！" }] },
+            { "id": "walk_no", "emoji": "🪑", "label": "走不远，得常歇", "fact": "父母走不远，需要常休息", "set": ["weak"], "reply": [{ "who": "mom", "say": "是啊，膝盖不行了。" }] }
+          ],
+          "free": {
+            "placeholder": "比如：妈妈膝盖不好",
+            "chips": ["膝盖不好", "有高血压", "容易晕车"],
+            "fact": "父母身体情况：{v}",
+            "match": [
+              { "words": ["膝盖", "腿", "走不", "腰"], "set": ["weak"], "fact": "父母行走能力有限" },
+              { "words": ["血压", "心脏", "心脑"], "set": ["heart"], "fact": "有心血管问题，高原需谨慎", "reply": [{ "who": "dad", "say": "药我天天带着呢。" }] },
+              { "words": ["晕车", "晕"], "fact": "容易晕车，山路车程要短", "reply": [{ "who": "mom", "say": "盘山路我可受不了。" }] }
+            ],
+            "reply": [{ "who": "mom", "say": "你记着就好。" }]
+          }
+        },
+        { "who": "dad", "say": "反正这回，别再跟团暴走了。" }
+      ]
+    },
+    {
       "type": "pick", "id": "age", "q": "爸妈多大了？", "emoji": "👴",
       "options": [
         { "id": "a60", "emoji": "🙂", "label": "60 以下", "fact": "父母 60 岁以下" },
         { "id": "a70", "emoji": "👴", "label": "60~70", "fact": "父母 60~70 岁", "set": ["senior"] },
         { "id": "a75", "emoji": "🧓", "label": "70 以上", "fact": "父母 70 岁以上", "set": ["senior", "elder"] }
       ]
-    },
-    {
-      "type": "swipe", "id": "legs", "q": "能走一整天吗？", "emoji": "🦵",
-      "yes": { "id": "walk_ok", "emoji": "🏃", "label": "能", "fact": "父母体力好，能走一整天" },
-      "no": { "id": "walk_no", "emoji": "🪑", "label": "走不动", "fact": "父母走不远，需要常休息", "set": ["weak"] }
     },
     {
       "type": "fix", "id": "fix_tour", "q": "第二天就累垮了！", "emoji": "🚌", "problem": "跟团暴走太累",
@@ -38,21 +66,63 @@
       "gamble": { "label": "坚持跟团", "fact": "仍然跟团", "crash_if": ["elder"], "crash": "老人走不动，后面全取消", "loss": 1800, "ok": "辛苦点，能撑住" }
     },
     {
-      "type": "pick", "id": "where", "q": "最想去哪？", "emoji": "🗺️",
-      "options": [
-        { "id": "dali", "emoji": "🏯", "label": "大理丽江", "fact": "目的地大理、丽江" },
-        { "id": "shangri", "emoji": "🏔️", "label": "香格里拉", "fact": "目的地包含香格里拉（海拔 3000 米以上）", "price": 800, "set": ["high"] },
-        { "id": "xsbn", "emoji": "🐘", "label": "西双版纳", "fact": "目的地西双版纳" }
+      "type": "map", "id": "family", "title": "回家问一圈", "emoji": "🏠",
+      "spots": [
+        {
+          "id": "dad", "emoji": "🛋️", "label": "客厅", "who": "dad", "x": 25, "y": 28,
+          "beats": [
+            { "who": "dad", "say": "我这辈子，就想看一回雪山。" },
+            {
+              "id": "where", "who": "dad", "q": "这次最想去哪？",
+              "options": [
+                { "id": "dali", "emoji": "🏯", "label": "大理丽江", "fact": "目的地大理、丽江" },
+                { "id": "shangri", "emoji": "🏔️", "label": "香格里拉看雪山", "fact": "目的地包含香格里拉（海拔 3000 米以上）", "price": 800, "set": ["high"], "reply": [{ "who": "dad", "say": "好！就去那儿！" }] },
+                { "id": "xsbn", "emoji": "🐘", "label": "西双版纳", "fact": "目的地西双版纳" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mom", "emoji": "🍳", "label": "厨房", "who": "mom", "x": 75, "y": 30,
+          "beats": [
+            { "who": "mom", "say": "出去玩，吃饭我可挑。" },
+            {
+              "id": "food", "who": "mom", "q": "爸妈吃饭有啥讲究？",
+              "options": [
+                { "id": "f_any", "emoji": "😋", "label": "啥都能吃", "fact": "饮食无特殊要求" },
+                { "id": "f_light", "emoji": "🥗", "label": "要清淡少辣", "fact": "饮食需清淡少辣", "reply": [{ "who": "mom", "say": "云南菜辣，得提前说。" }] }
+              ],
+              "free": { "placeholder": "比如：不吃菌子、糖尿病", "fact": "饮食要求：{v}", "match": [{ "words": ["糖", "血糖"], "fact": "有糖尿病，需控制饮食" }, { "words": ["菌"], "fact": "不吃菌子，需提醒餐厅" }] }
+            },
+            {
+              "id": "mom_wish", "who": "mom", "q": "这趟玩完，你希望爸妈说啥？",
+              "free": { "placeholder": "说说你的心愿…", "chips": ["一点都不累", "照片拍得真好", "明年还想去"], "fact": "用户对这趟旅行的心愿：{v}", "reply": [{ "who": "mom", "say": "傻孩子……" }] }
+            }
+          ]
+        },
+        {
+          "id": "sis", "emoji": "📱", "label": "视频电话", "who": "sis", "x": 50, "y": 72,
+          "beats": [
+            { "who": "sis", "say": "我听说了！钱怎么分？" },
+            {
+              "id": "split", "who": "sis", "q": "这趟钱谁出？",
+              "options": [
+                { "id": "me_pay", "emoji": "🙋", "label": "我一个人出", "fact": "费用由用户一人承担" },
+                { "id": "half", "emoji": "🤝", "label": "我俩平摊", "fact": "费用由用户和姐姐平摊", "reply": [{ "who": "sis", "say": "成，那我也一起去！" }, { "who": "sis", "say": "多一个人，机票得多订一张哦。" }], "add": [{ "id": "flight", "emoji": "✈️", "name": "往返机票", "price": 6000, "spec": "4 人往返经济舱" }] }
+              ]
+            }
+          ]
+        }
       ]
     },
     {
       "type": "fix", "id": "fix_alt", "q": "高原反应！", "emoji": "🏔️", "problem": "头疼喘不上气",
-      "if": { "all": ["high", "senior"] },
+      "if": { "all": ["high"], "any": ["senior", "heart"] },
       "options": [
         { "id": "acclim", "emoji": "🫁", "label": "先低后高", "fact": "先在丽江适应 2 天再上高原，备便携氧气", "add": [{ "id": "oxygen", "emoji": "🫁", "name": "便携氧气", "price": 300 }], "tip": "慢慢上去，身体适应", "score": { "safe": 30 } },
         { "id": "skip", "emoji": "🏯", "label": "不去高原", "fact": "取消香格里拉，改在大理丽江", "price": -800, "tip": "安全第一", "score": { "safe": 25, "good": -10 } }
       ],
-      "gamble": { "label": "直接上", "fact": "直接上高原", "crash_if": ["elder"], "crash": "老人高反严重，连夜下山", "loss": 3000, "ok": "注意休息，问题不大" }
+      "gamble": { "label": "直接上", "fact": "直接上高原", "crash_if": ["elder", "heart"], "crash": "老人高反严重，连夜下山", "loss": 3000, "ok": "注意休息，问题不大" }
     },
     {
       "type": "pick", "id": "stay", "q": "住哪种？", "emoji": "🛏️",
@@ -77,7 +147,7 @@
         { "id": "buffer", "emoji": "🔄", "label": "留一天机动", "fact": "行程留一天机动", "price": 600, "tip": "乱了也来得及", "score": { "safe": 25 } },
         { "id": "insure", "emoji": "🛡️", "label": "买保险", "fact": "购买含行程延误的旅游保险", "add": [{ "id": "insure", "emoji": "🛡️", "name": "旅游保险", "price": 150 }], "tip": "延误能赔钱", "score": { "safe": 20 } }
       ],
-      "gamble": { "label": "排满", "fact": "行程排满，不留余地", "crash_if": "always", "crash": "后面全乱了，返程机票作废", "loss": 2000, "ok": "" }
+      "gamble": { "label": "排满", "fact": "行程排满，不留余地", "crash_if": "always", "crash": "后面全乱了，返程机票作废", "loss": 2000 }
     }
   ],
   "secret": "带老人出行：直飞+包车，比省机票钱重要"
