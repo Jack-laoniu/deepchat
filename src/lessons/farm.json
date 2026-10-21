@@ -687,6 +687,194 @@
       }
     },
     {
+      "type": "sort",
+      "id": "extras",
+      "q": "哪些真要？",
+      "emoji": "🗂️",
+      "bins": [
+        {
+          "id": "must",
+          "label": "必须",
+          "emoji": "✅",
+          "keep": true
+        },
+        {
+          "id": "nice",
+          "label": "最好有",
+          "emoji": "🤔",
+          "keep": false
+        },
+        {
+          "id": "skip",
+          "label": "不要",
+          "emoji": "❌",
+          "keep": false
+        }
+      ],
+      "cards": [
+        {
+          "id": "timer",
+          "emoji": "⏲️",
+          "label": "定时器",
+          "fact": "自动定时控制器（约 300 元）",
+          "item": {
+            "id": "timer",
+            "emoji": "⏲️",
+            "name": "定时控制器",
+            "price": 300
+          }
+        },
+        {
+          "id": "app",
+          "emoji": "📱",
+          "label": "手机遥控",
+          "fact": "手机远程控制模块（约 800 元），需要地里有网络",
+          "item": {
+            "id": "app",
+            "emoji": "📱",
+            "name": "远程控制模块",
+            "price": 800,
+            "spec": "需 4G 或 WiFi 覆盖"
+          }
+        },
+        {
+          "id": "filter",
+          "emoji": "🧽",
+          "label": "过滤器",
+          "fact": "进水过滤器（约 400 元），防止喷头堵塞",
+          "item": {
+            "id": "filter",
+            "emoji": "🧽",
+            "name": "过滤器",
+            "price": 400
+          }
+        },
+        {
+          "id": "sensor",
+          "emoji": "🌡️",
+          "label": "湿度探头",
+          "fact": "土壤湿度传感器（约 600 元），干了才浇",
+          "item": {
+            "id": "sensor",
+            "emoji": "🌡️",
+            "name": "湿度传感器",
+            "price": 600
+          }
+        }
+      ]
+    },
+    {
+      "type": "chain",
+      "id": "season",
+      "title": "一季下来",
+      "emoji": "🌾",
+      "cards": [
+        {
+          "id": "c_dry",
+          "who": "wang",
+          "say": "连着半个月没下雨，井水快不够了，天天浇？",
+          "emoji": "☀️",
+          "left": {
+            "id": "c_dry_less",
+            "emoji": "💧",
+            "label": "隔天浇",
+            "fact": "干旱时愿意少浇省水",
+            "score": {
+              "good": -15,
+              "easy": 5
+            }
+          },
+          "right": {
+            "id": "c_dry_more",
+            "emoji": "🚿",
+            "label": "天天浇",
+            "fact": "干旱时坚持天天浇，可能要加大水泵",
+            "price": 1500,
+            "score": {
+              "good": 10
+            }
+          }
+        },
+        {
+          "id": "c_clog",
+          "who": "qian",
+          "say": "喷头堵了一排，换新的还是自己通？",
+          "emoji": "🔧",
+          "left": {
+            "id": "c_clog_fix",
+            "emoji": "🪛",
+            "label": "自己通",
+            "fact": "喷头堵了愿意自己动手疏通",
+            "score": {
+              "easy": -20
+            }
+          },
+          "right": {
+            "id": "c_clog_new",
+            "emoji": "🛒",
+            "label": "换新的",
+            "fact": "喷头堵了直接换新",
+            "price": 800,
+            "score": {
+              "easy": 10
+            }
+          }
+        },
+        {
+          "id": "c_night",
+          "who": "mei",
+          "say": "半夜管子爆了，水淹了半块地！",
+          "emoji": "🌙",
+          "left": {
+            "id": "c_night_wait",
+            "emoji": "😴",
+            "label": "明早再说",
+            "fact": "夜里出问题倾向第二天再处理",
+            "score": {
+              "safe": -25,
+              "good": -10
+            }
+          },
+          "right": {
+            "id": "c_night_valve",
+            "emoji": "🚰",
+            "label": "装自动阀",
+            "fact": "愿意加装自动关断阀防爆管",
+            "price": 700,
+            "score": {
+              "safe": 15
+            }
+          }
+        },
+        {
+          "id": "c_cost",
+          "who": "mei",
+          "say": "电费比去年多了两百，要不要关掉一半？",
+          "emoji": "⚡",
+          "left": {
+            "id": "c_cost_cut",
+            "emoji": "✂️",
+            "label": "关一半",
+            "fact": "愿意牺牲效果来省电费",
+            "score": {
+              "good": -20
+            },
+            "price": -200
+          },
+          "right": {
+            "id": "c_cost_keep",
+            "emoji": "💡",
+            "label": "照常开",
+            "fact": "电费多点也照常运行",
+            "price": 200,
+            "score": {
+              "good": 5
+            }
+          }
+        }
+      ]
+    },
+    {
       "type": "map",
       "id": "town",
       "title": "去镇上打听打听",

@@ -1,4 +1,4 @@
-import type { Beat, Cond, FixRound, Free, Gamble, Item, Lesson, Option, Round, Line } from './schema';
+import type { Beat, ChainRound, Cond, FixRound, Free, Gamble, Item, Lesson, Option, Round, Line } from './schema';
 
 /**
  * 闯关规则：全部由 play(lesson, answers) 从答案列表重新推导，
@@ -14,7 +14,44 @@ export type Answer =
   | { round: string; value: number }
   | { round: string; gamble: true }
   | { round: string; talk: Replies }
-  | { round: string; map: Record<string, Replies> };
+  | { round: string; map: Record<string, Replies> }
+  /** 连环取舍：每张卡选了左还是右；accepted = 某条槽见底后用户选择「就这样」接受了（重来则不会提交） */
+  | { round: string; chain: { picks: Record<string, 'left' | 'right'>; accepted?: Meter } }
+  /** 整理归类：卡片 id → 筐 id */
+  | { round: string; sort: Record<string, string> };
+
+/** 连环取舍的四条槽 */
+export const METERS = ['money', 'easy', 'good', 'safe'] as const;
+export type Meter = (typeof METERS)[number];
+const METER_NAME: Record<'zh' | 'en', Record<Meter, string>> = {
+  zh: { money: '钱', easy: '省心', good: '效果', safe: '安全' },
+  en: { money: 'money', easy: 'ease', good: 'results', safe: 'safety' },
+};
+
+/**
+ * 连环取舍里四条槽现在的值（0~100）。三条沿用方案评分，钱按「这一步让总价涨了总价的百分之几」往下掉。
+ * 返回第一条见底的槽。
+ */
+export function chainMeters(start: { easy: number; good: number; safe: number }, cart: Item[], cards: ChainRound['cards'], picks: Record<string, 'left' | 'right'>) {
+  const m: Record<Meter, number> = { money: 60, ...start };
+  let items = [...cart];
+  let broke: Meter | null = null;
+  for (const c of cards) {
+    const side = picks[c.id];
+    if (!side) break;
+    const o = c[side];
+    const total = Math.max(1, items.reduce((s, i) => s + i.price, 0));
+    m.money -= (optionDelta(items, o) / total) * 100;
+    m.easy += o.score.easy ?? 0;
+    m.good += o.score.good ?? 0;
+    m.safe += o.score.safe ?? 0;
+    items = items.filter((i) => !o.remove.includes(i.id) && !o.add.some((a) => a.id === i.id)).concat(o.add);
+    for (const k of METERS) m[k] = Math.max(0, Math.min(100, m[k]));
+    broke ??= METERS.find((k) => m[k] <= 0) ?? null;
+    if (broke) break;
+  }
+  return { meters: m, broke };
+}
 
 export interface Crash {
   round: string;
@@ -160,6 +197,28 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
       applyBeats(r.beats, a.talk);
     } else if ('map' in a && r.type === 'map') {
       for (const spot of r.spots) if (a.map[spot.id]) applyBeats(spot.beats, a.map[spot.id]);
+    } else if ('chain' in a && r.type === 'chain') {
+      for (const c of r.cards) {
+        const side = a.chain.picks[c.id];
+        if (side) applyOption(c[side]);
+      }
+      if (a.chain.accepted) {
+        const name = METER_NAME[lesson.lang === 'zh' ? 'zh' : 'en'][a.chain.accepted];
+        facts.push(lesson.lang === 'zh' ? `连环取舍里用户一路牺牲「${name}」直到见底，并表示可以接受` : `In the trade-off run the user kept sacrificing ${name} until it ran out, and accepted that`);
+        risks.push(lesson.lang === 'zh' ? `「${name}」被压到了底` : `${name} was pushed to zero`);
+      }
+    } else if ('sort' in a && r.type === 'sort') {
+      for (const c of r.cards) {
+        const bin = r.bins.find((b) => b.id === a.sort[c.id]);
+        if (!bin) continue;
+        flags.add(`${c.id}_${bin.id}`);
+        facts.push(`${c.fact} → ${bin.label}`);
+        if (c.item) {
+          if (bin.keep) cart.set(c.item.id, c.item);
+          else cart.delete(c.item.id);
+          touched.add(c.item.id);
+        }
+      }
     }
   }
 

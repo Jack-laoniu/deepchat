@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from 're
 import { sfx } from './fx/fx';
 import { hush } from './fx/voice';
 import { detectLang, money, pickCheer, setLocale, t } from './i18n';
-import { gambleCrashes, optionsOf, play, revealsProblem, type Answer, type Crash, type Played, type Replies } from './lesson/engine';
+import { gambleCrashes, optionsOf, play, revealsProblem, type Answer, type Crash, type Meter, type Played, type Replies } from './lesson/engine';
 import type { FixRound, Lesson, Round } from './lesson/schema';
 
 export type Phase = 'home' | 'intro' | 'play' | 'win';
@@ -33,6 +33,10 @@ interface Game {
   /** 剧情关 / 地图关整体提交 */
   talk(round: Round, replies: Replies | Record<string, Replies>): void;
   gamble(round: Round): void;
+  /** 连环取舍整轮提交；accepted = 某条槽见底后用户选择接受 */
+  chain(round: Round, picks: Record<string, 'left' | 'right'>, accepted?: Meter): void;
+  /** 整理归类整轮提交：卡片 → 筐 */
+  sort(round: Round, bins: Record<string, string>): void;
   next(): void;
   undo(): void;
   home(): void;
@@ -129,6 +133,28 @@ export function GameProvider({ children }: { children: ReactNode }) {
           round,
         };
       });
+      if (f?.tone === 'good') sfx.good();
+    },
+    chain(round, picks, accepted) {
+      const f = commit({ round: round.id, chain: { picks, accepted } }, (b, a, problem) => ({
+        tone: problem ? 'warn' : accepted ? 'risk' : 'good',
+        title: problem ? t('oops') : accepted ? t('chainAccepted') : pickCheer(),
+        tip: problem ? problem.q : undefined,
+        delta: a.total - b.total,
+        emoji: problem ? problem.emoji : accepted ? '⚖️' : '🏆',
+        round,
+      }));
+      if (f?.tone === 'good') sfx.good();
+    },
+    sort(round, bins) {
+      const f = commit({ round: round.id, sort: bins }, (b, a, problem) => ({
+        tone: problem ? 'warn' : 'good',
+        title: problem ? t('oops') : t('gotIt'),
+        tip: problem ? problem.q : undefined,
+        delta: a.total - b.total,
+        emoji: problem ? problem.emoji : '🗂️',
+        round,
+      }));
       if (f?.tone === 'good') sfx.good();
     },
     gamble(round) {

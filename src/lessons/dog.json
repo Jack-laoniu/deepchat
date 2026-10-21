@@ -7,170 +7,972 @@
   "lang": "en",
   "currency": "USD",
   "cast": [
-    { "id": "qian", "as": "Pet shop owner" },
-    { "id": "nana", "as": "Grandma" },
-    { "id": "zack", "as": "Roommate" },
-    { "id": "gong", "as": "Vet" }
+    {
+      "id": "qian",
+      "as": "Pet shop owner"
+    },
+    {
+      "id": "nana",
+      "as": "Grandma"
+    },
+    {
+      "id": "zack",
+      "as": "Roommate"
+    },
+    {
+      "id": "gong",
+      "as": "Vet"
+    }
   ],
   "guess": {
     "line": "My guess: a husky puppy from a pet shop",
     "items": [
-      { "id": "dog", "emoji": "🐕", "name": "Husky puppy", "price": 1200, "spec": "Pet shop puppy, 10 weeks" },
-      { "id": "food", "emoji": "🦴", "name": "Food, 1 year", "price": 600 },
-      { "id": "crate", "emoji": "🏠", "name": "Crate & bed", "price": 150 },
-      { "id": "vet", "emoji": "💉", "name": "Vaccines", "price": 400, "spec": "Core vaccines + first checkups" },
-      { "id": "toys", "emoji": "🎾", "name": "Toys & leash", "price": 80 }
+      {
+        "id": "dog",
+        "emoji": "🐕",
+        "name": "Husky puppy",
+        "price": 1200,
+        "spec": "Pet shop puppy, 10 weeks"
+      },
+      {
+        "id": "food",
+        "emoji": "🦴",
+        "name": "Food, 1 year",
+        "price": 600
+      },
+      {
+        "id": "crate",
+        "emoji": "🏠",
+        "name": "Crate & bed",
+        "price": 150
+      },
+      {
+        "id": "vet",
+        "emoji": "💉",
+        "name": "Vaccines",
+        "price": 400,
+        "spec": "Core vaccines + first checkups"
+      },
+      {
+        "id": "toys",
+        "emoji": "🎾",
+        "name": "Toys & leash",
+        "price": 80
+      }
     ]
   },
   "rounds": [
     {
-      "type": "talk", "id": "why", "style": "chat", "title": "Hi, I'm Lele", "emoji": "👋", "with": "lele",
+      "type": "talk",
+      "id": "why",
+      "style": "chat",
+      "title": "Hi, I'm Lele",
+      "emoji": "👋",
+      "with": "lele",
       "beats": [
-        { "who": "lele", "say": "Hey! I'm Lele. Let's find the right dog for you!", "mood": "happy" },
         {
-          "id": "why", "who": "lele", "q": "So… why do you want a dog?",
+          "who": "lele",
+          "say": "Hey! I'm Lele. Let's find the right dog for you!",
+          "mood": "happy"
+        },
+        {
+          "id": "why",
+          "who": "lele",
+          "q": "So… why do you want a dog?",
           "options": [
-            { "id": "alone", "emoji": "🫂", "label": "I live alone", "fact": "Motivation: lives alone and wants companionship", "set": ["lonely"], "reply": [{ "who": "lele", "say": "Aww. A buddy who's happy to see you!", "mood": "happy" }] },
-            { "id": "kids", "emoji": "🧒", "label": "My kids keep asking", "fact": "Motivation: the kids want a dog", "set": ["kids"], "reply": [{ "who": "lele", "say": "Then the dog must be great with kids.", "mood": "thinking" }] },
-            { "id": "run", "emoji": "🏃", "label": "I want a running buddy", "fact": "Motivation: wants an active dog to run or hike with", "set": ["active"], "reply": [{ "who": "lele", "say": "An energetic breed it is!", "mood": "happy" }] }
+            {
+              "id": "alone",
+              "emoji": "🫂",
+              "label": "I live alone",
+              "fact": "Motivation: lives alone and wants companionship",
+              "set": [
+                "lonely"
+              ],
+              "reply": [
+                {
+                  "who": "lele",
+                  "say": "Aww. A buddy who's happy to see you!",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "kids",
+              "emoji": "🧒",
+              "label": "My kids keep asking",
+              "fact": "Motivation: the kids want a dog",
+              "set": [
+                "kids"
+              ],
+              "reply": [
+                {
+                  "who": "lele",
+                  "say": "Then the dog must be great with kids.",
+                  "mood": "thinking"
+                }
+              ]
+            },
+            {
+              "id": "run",
+              "emoji": "🏃",
+              "label": "I want a running buddy",
+              "fact": "Motivation: wants an active dog to run or hike with",
+              "set": [
+                "active"
+              ],
+              "reply": [
+                {
+                  "who": "lele",
+                  "say": "An energetic breed it is!",
+                  "mood": "happy"
+                }
+              ]
+            }
           ],
           "free": {
             "placeholder": "The real reason…",
-            "chips": ["Company", "For my kids", "Running buddy", "Feel safer"],
+            "chips": [
+              "Company",
+              "For my kids",
+              "Running buddy",
+              "Feel safer"
+            ],
             "fact": "User's own reason: {v}",
             "match": [
-              { "words": ["alone", "lonely", "company", "single"], "set": ["lonely"], "reply": [{ "who": "lele", "say": "Got it — a loyal companion.", "mood": "happy" }] },
-              { "words": ["kid", "child", "son", "daughter", "family"], "set": ["kids"], "reply": [{ "who": "lele", "say": "Kid-friendly is a must, noted!" }] },
-              { "words": ["run", "hike", "jog", "active", "outdoor"], "set": ["active"], "reply": [{ "who": "lele", "say": "A sporty dog, noted!" }] },
-              { "words": ["safe", "guard", "protect"], "fact": "Wants a dog that makes them feel safer", "reply": [{ "who": "lele", "say": "A watchful dog, noted." }] }
+              {
+                "words": [
+                  "alone",
+                  "lonely",
+                  "company",
+                  "single"
+                ],
+                "set": [
+                  "lonely"
+                ],
+                "reply": [
+                  {
+                    "who": "lele",
+                    "say": "Got it — a loyal companion.",
+                    "mood": "happy"
+                  }
+                ]
+              },
+              {
+                "words": [
+                  "kid",
+                  "child",
+                  "son",
+                  "daughter",
+                  "family"
+                ],
+                "set": [
+                  "kids"
+                ],
+                "reply": [
+                  {
+                    "who": "lele",
+                    "say": "Kid-friendly is a must, noted!"
+                  }
+                ]
+              },
+              {
+                "words": [
+                  "run",
+                  "hike",
+                  "jog",
+                  "active",
+                  "outdoor"
+                ],
+                "set": [
+                  "active"
+                ],
+                "reply": [
+                  {
+                    "who": "lele",
+                    "say": "A sporty dog, noted!"
+                  }
+                ]
+              },
+              {
+                "words": [
+                  "safe",
+                  "guard",
+                  "protect"
+                ],
+                "fact": "Wants a dog that makes them feel safer",
+                "reply": [
+                  {
+                    "who": "lele",
+                    "say": "A watchful dog, noted."
+                  }
+                ]
+              }
             ],
-            "reply": [{ "who": "lele", "say": "That matters a lot. Noted!" }]
+            "reply": [
+              {
+                "who": "lele",
+                "say": "That matters a lot. Noted!"
+              }
+            ]
           }
         },
-        { "who": "lele", "say": "I made a first guess. Let's see what's off." }
-      ]
-    },
-    {
-      "type": "pick", "id": "home", "q": "Where do you live?", "emoji": "🏠",
-      "options": [
-        { "id": "apt", "emoji": "🏢", "label": "Apartment", "fact": "Lives in a small apartment", "set": ["apartment"] },
-        { "id": "yard", "emoji": "🏡", "label": "House + yard", "fact": "Lives in a house with a yard", "set": ["yard"], "score": { "easy": 10 } }
-      ]
-    },
-    {
-      "type": "talk", "id": "park", "style": "story", "title": "At the dog park", "emoji": "🌳",
-      "beats": [
-        { "who": "narrator", "say": "Saturday morning at the dog park." },
-        { "who": "qian", "say": "A husky! Perfect for anyone, trust me.", "mood": "smug" },
-        { "who": "nana", "say": "Perfect? My husky ate my sofa!", "mood": "angry" },
-        { "who": "nana", "say": "They need two hours of exercise. Every. Day.", "mood": "worried" },
         {
-          "id": "hours", "who": "nana", "q": "How long are you out each day?",
+          "who": "lele",
+          "say": "I made a first guess. Let's see what's off."
+        }
+      ]
+    },
+    {
+      "type": "pick",
+      "id": "home",
+      "q": "Where do you live?",
+      "emoji": "🏠",
+      "options": [
+        {
+          "id": "apt",
+          "emoji": "🏢",
+          "label": "Apartment",
+          "fact": "Lives in a small apartment",
+          "set": [
+            "apartment"
+          ]
+        },
+        {
+          "id": "yard",
+          "emoji": "🏡",
+          "label": "House + yard",
+          "fact": "Lives in a house with a yard",
+          "set": [
+            "yard"
+          ],
+          "score": {
+            "easy": 10
+          }
+        }
+      ]
+    },
+    {
+      "type": "talk",
+      "id": "park",
+      "style": "story",
+      "title": "At the dog park",
+      "emoji": "🌳",
+      "beats": [
+        {
+          "who": "narrator",
+          "say": "Saturday morning at the dog park."
+        },
+        {
+          "who": "qian",
+          "say": "A husky! Perfect for anyone, trust me.",
+          "mood": "smug"
+        },
+        {
+          "who": "nana",
+          "say": "Perfect? My husky ate my sofa!",
+          "mood": "angry"
+        },
+        {
+          "who": "nana",
+          "say": "They need two hours of exercise. Every. Day.",
+          "mood": "worried"
+        },
+        {
+          "id": "hours",
+          "who": "nana",
+          "q": "How long are you out each day?",
           "options": [
-            { "id": "h_short", "emoji": "🏡", "label": "Under 4 hours", "fact": "Away from home under 4 hours a day", "reply": [{ "who": "nana", "say": "Good, the dog won't be lonely.", "mood": "happy" }] },
-            { "id": "h_work", "emoji": "💼", "label": "About 8 hours", "fact": "Away about 8 hours a day for work", "set": ["away"] },
-            { "id": "h_long", "emoji": "🌙", "label": "10+ hours", "fact": "Away 10+ hours a day", "set": ["away", "long_away"], "reply": [{ "who": "nana", "say": "Oh dear, that's a long day…", "mood": "sad" }] }
+            {
+              "id": "h_short",
+              "emoji": "🏡",
+              "label": "Under 4 hours",
+              "fact": "Away from home under 4 hours a day",
+              "reply": [
+                {
+                  "who": "nana",
+                  "say": "Good, the dog won't be lonely.",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "h_work",
+              "emoji": "💼",
+              "label": "About 8 hours",
+              "fact": "Away about 8 hours a day for work",
+              "set": [
+                "away"
+              ]
+            },
+            {
+              "id": "h_long",
+              "emoji": "🌙",
+              "label": "10+ hours",
+              "fact": "Away 10+ hours a day",
+              "set": [
+                "away",
+                "long_away"
+              ],
+              "reply": [
+                {
+                  "who": "nana",
+                  "say": "Oh dear, that's a long day…",
+                  "mood": "sad"
+                }
+              ]
+            }
           ],
           "free": {
             "placeholder": "e.g. office 3 days",
             "fact": "Time away from home: {v}",
             "match": [
-              { "words": ["office", "work", "8", "9", "commute"], "set": ["away"] },
-              { "words": ["10", "11", "12", "travel", "night shift"], "set": ["away", "long_away"] },
-              { "words": ["home", "remote", "wfh"], "fact": "Works from home at least part of the week", "reply": [{ "who": "nana", "say": "Working from home? Lucky dog!", "mood": "happy" }] }
+              {
+                "words": [
+                  "office",
+                  "work",
+                  "8",
+                  "9",
+                  "commute"
+                ],
+                "set": [
+                  "away"
+                ]
+              },
+              {
+                "words": [
+                  "10",
+                  "11",
+                  "12",
+                  "travel",
+                  "night shift"
+                ],
+                "set": [
+                  "away",
+                  "long_away"
+                ]
+              },
+              {
+                "words": [
+                  "home",
+                  "remote",
+                  "wfh"
+                ],
+                "fact": "Works from home at least part of the week",
+                "reply": [
+                  {
+                    "who": "nana",
+                    "say": "Working from home? Lucky dog!",
+                    "mood": "happy"
+                  }
+                ]
+              }
             ]
           }
         },
-        { "who": "zack", "say": "Alone all day? It'll howl and the neighbors will hate us.", "mood": "worried", "if": { "any": ["away"] } },
-        { "who": "qian", "say": "Then just buy a second dog! Two for one!", "mood": "smug", "if": { "any": ["away"] } },
-        { "who": "nana", "say": "Don't listen to him, dear.", "mood": "angry", "if": { "any": ["away"] } }
+        {
+          "who": "zack",
+          "say": "Alone all day? It'll howl and the neighbors will hate us.",
+          "mood": "worried",
+          "if": {
+            "any": [
+              "away"
+            ]
+          }
+        },
+        {
+          "who": "qian",
+          "say": "Then just buy a second dog! Two for one!",
+          "mood": "smug",
+          "if": {
+            "any": [
+              "away"
+            ]
+          }
+        },
+        {
+          "who": "nana",
+          "say": "Don't listen to him, dear.",
+          "mood": "angry",
+          "if": {
+            "any": [
+              "away"
+            ]
+          }
+        }
       ]
     },
     {
-      "type": "fix", "id": "fix_alone", "q": "Lonely all day!", "emoji": "🐕", "problem": "Alone 8+ hours a day",
-      "if": { "any": ["away"] },
+      "type": "fix",
+      "id": "fix_alone",
+      "q": "Lonely all day!",
+      "emoji": "🐕",
+      "problem": "Alone 8+ hours a day",
+      "if": {
+        "any": [
+          "away"
+        ]
+      },
       "options": [
-        { "id": "walker", "emoji": "🚶", "label": "Dog walker", "fact": "Hire a midday dog walker on workdays", "add": [{ "id": "walker", "emoji": "🚶", "name": "Dog walker", "price": 2400, "spec": "Midday walks, ~20 per month" }], "tip": "A midday walk breaks up the day", "score": { "safe": 20, "easy": 15 } },
-        { "id": "daycare", "emoji": "🏫", "label": "Daycare 2×/wk", "fact": "Doggy daycare twice a week", "add": [{ "id": "daycare", "emoji": "🏫", "name": "Doggy daycare", "price": 2000, "spec": "2 days a week" }], "tip": "Play with friends, tired dog at night", "score": { "safe": 15, "good": 10 } }
+        {
+          "id": "walker",
+          "emoji": "🚶",
+          "label": "Dog walker",
+          "fact": "Hire a midday dog walker on workdays",
+          "add": [
+            {
+              "id": "walker",
+              "emoji": "🚶",
+              "name": "Dog walker",
+              "price": 2400,
+              "spec": "Midday walks, ~20 per month"
+            }
+          ],
+          "tip": "A midday walk breaks up the day",
+          "score": {
+            "safe": 20,
+            "easy": 15
+          }
+        },
+        {
+          "id": "daycare",
+          "emoji": "🏫",
+          "label": "Daycare 2×/wk",
+          "fact": "Doggy daycare twice a week",
+          "add": [
+            {
+              "id": "daycare",
+              "emoji": "🏫",
+              "name": "Doggy daycare",
+              "price": 2000,
+              "spec": "2 days a week"
+            }
+          ],
+          "tip": "Play with friends, tired dog at night",
+          "score": {
+            "safe": 15,
+            "good": 10
+          }
+        }
       ],
-      "gamble": { "label": "Leave it home", "fact": "Leave the dog home alone with toys", "crash_if": ["long_away"], "crash": "Howling, chewed door, angry neighbors", "loss": 800, "ok": "With toys, 8 hours is borderline OK" }
+      "gamble": {
+        "label": "Leave it home",
+        "fact": "Leave the dog home alone with toys",
+        "crash_if": [
+          "long_away"
+        ],
+        "crash": "Howling, chewed door, angry neighbors",
+        "loss": 800,
+        "ok": "With toys, 8 hours is borderline OK"
+      }
     },
     {
-      "type": "pick", "id": "size", "q": "How big a dog?", "emoji": "📏",
+      "type": "pick",
+      "id": "size",
+      "q": "How big a dog?",
+      "emoji": "📏",
       "options": [
-        { "id": "s_small", "emoji": "🐩", "label": "Small", "fact": "Prefers a small dog", "price": -150 },
-        { "id": "s_med", "emoji": "🐕", "label": "Medium", "fact": "Prefers a medium-size dog" },
-        { "id": "s_big", "emoji": "🐕‍🦺", "label": "Large", "fact": "Prefers a large dog", "price": 300, "set": ["big"] }
+        {
+          "id": "s_small",
+          "emoji": "🐩",
+          "label": "Small",
+          "fact": "Prefers a small dog",
+          "price": -150
+        },
+        {
+          "id": "s_med",
+          "emoji": "🐕",
+          "label": "Medium",
+          "fact": "Prefers a medium-size dog"
+        },
+        {
+          "id": "s_big",
+          "emoji": "🐕‍🦺",
+          "label": "Large",
+          "fact": "Prefers a large dog",
+          "price": 300,
+          "set": [
+            "big"
+          ]
+        }
       ]
     },
     {
-      "type": "fix", "id": "fix_space", "q": "No room to run!", "emoji": "🏢", "problem": "Big dog, tiny space",
-      "if": { "all": ["apartment", "big"] },
+      "type": "fix",
+      "id": "fix_space",
+      "q": "No room to run!",
+      "emoji": "🏢",
+      "problem": "Big dog, tiny space",
+      "if": {
+        "all": [
+          "apartment",
+          "big"
+        ]
+      },
       "options": [
-        { "id": "medium", "emoji": "🐕", "label": "Go medium", "fact": "Choose a medium, calmer breed instead", "price": -300, "tip": "Calmer breeds love couches", "score": { "easy": 15 } },
-        { "id": "parkruns", "emoji": "🌳", "label": "Park runs", "fact": "Commit to a daily 1-hour park run", "set": ["active"], "tip": "Great if you really will!", "score": { "good": 10, "easy": -10 } }
+        {
+          "id": "medium",
+          "emoji": "🐕",
+          "label": "Go medium",
+          "fact": "Choose a medium, calmer breed instead",
+          "price": -300,
+          "tip": "Calmer breeds love couches",
+          "score": {
+            "easy": 15
+          }
+        },
+        {
+          "id": "parkruns",
+          "emoji": "🌳",
+          "label": "Park runs",
+          "fact": "Commit to a daily 1-hour park run",
+          "set": [
+            "active"
+          ],
+          "tip": "Great if you really will!",
+          "score": {
+            "good": 10,
+            "easy": -10
+          }
+        }
       ],
-      "gamble": { "label": "It'll adapt", "fact": "Keep a large dog in a small apartment without extra exercise", "crash_if": "always", "crash": "Bored giant dog, shredded furniture", "loss": 1000 }
+      "gamble": {
+        "label": "It'll adapt",
+        "fact": "Keep a large dog in a small apartment without extra exercise",
+        "crash_if": "always",
+        "crash": "Bored giant dog, shredded furniture",
+        "loss": 1000
+      }
     },
     {
-      "type": "map", "id": "town", "title": "Ask around town", "emoji": "🏘️",
+      "type": "sort",
+      "id": "extras",
+      "q": "What do you need?",
+      "emoji": "🗂️",
+      "bins": [
+        {
+          "id": "must",
+          "label": "Must",
+          "emoji": "✅",
+          "keep": true
+        },
+        {
+          "id": "nice",
+          "label": "Nice",
+          "emoji": "🤔",
+          "keep": false
+        },
+        {
+          "id": "skip",
+          "label": "Skip",
+          "emoji": "❌",
+          "keep": false
+        }
+      ],
+      "cards": [
+        {
+          "id": "training",
+          "emoji": "🎓",
+          "label": "Training",
+          "fact": "Puppy training class, 6 sessions (~$200)",
+          "item": {
+            "id": "training",
+            "emoji": "🎓",
+            "name": "Training class",
+            "price": 200,
+            "spec": "6 group sessions"
+          }
+        },
+        {
+          "id": "walker",
+          "emoji": "🚶",
+          "label": "Dog walker",
+          "fact": "Dog walker on workdays (~$60/week, ~$600 first year part-time)",
+          "item": {
+            "id": "walker",
+            "emoji": "🚶",
+            "name": "Dog walker",
+            "price": 600,
+            "spec": "Part-time, workdays"
+          }
+        },
+        {
+          "id": "camera",
+          "emoji": "📹",
+          "label": "Pet camera",
+          "fact": "Pet camera with treat dispenser (~$60)",
+          "item": {
+            "id": "camera",
+            "emoji": "📹",
+            "name": "Pet camera",
+            "price": 60
+          }
+        },
+        {
+          "id": "insure",
+          "emoji": "🛡️",
+          "label": "Insurance",
+          "fact": "Pet accident & illness insurance (~$500/year)",
+          "item": {
+            "id": "insure",
+            "emoji": "🛡️",
+            "name": "Pet insurance",
+            "price": 500,
+            "spec": "Accident & illness, 1 year"
+          }
+        }
+      ]
+    },
+    {
+      "type": "chain",
+      "id": "week",
+      "title": "Your first week",
+      "emoji": "📅",
+      "cards": [
+        {
+          "id": "c_rain",
+          "who": "zack",
+          "say": "It's pouring and the puppy needs a walk. You're on a call.",
+          "emoji": "🌧️",
+          "left": {
+            "id": "c_rain_skip",
+            "emoji": "🛋️",
+            "label": "Skip it",
+            "fact": "Would skip a walk when busy",
+            "score": {
+              "easy": 10,
+              "good": -15
+            }
+          },
+          "right": {
+            "id": "c_rain_go",
+            "emoji": "☔",
+            "label": "Go out",
+            "fact": "Walks the dog even in bad weather",
+            "score": {
+              "easy": -20,
+              "good": 10
+            }
+          }
+        },
+        {
+          "id": "c_shoes",
+          "who": "nana",
+          "say": "He chewed your shoes. Crate him while you're out?",
+          "emoji": "👟",
+          "left": {
+            "id": "c_shoes_free",
+            "emoji": "🏠",
+            "label": "Let him roam",
+            "fact": "Prefers letting the dog roam free",
+            "score": {
+              "safe": -20,
+              "easy": 5
+            },
+            "price": 100
+          },
+          "right": {
+            "id": "c_shoes_crate",
+            "emoji": "📦",
+            "label": "Crate train",
+            "fact": "Will crate train",
+            "score": {
+              "easy": -10,
+              "safe": 10
+            }
+          }
+        },
+        {
+          "id": "c_vet",
+          "who": "gong",
+          "say": "He's limping. A check-up is $150. Wait and see?",
+          "emoji": "🩺",
+          "left": {
+            "id": "c_vet_wait",
+            "emoji": "⏳",
+            "label": "Wait",
+            "fact": "Would wait before paying for a vet visit",
+            "score": {
+              "safe": -25
+            }
+          },
+          "right": {
+            "id": "c_vet_go",
+            "emoji": "🏥",
+            "label": "See the vet",
+            "fact": "Goes to the vet early",
+            "price": 150,
+            "score": {
+              "safe": 10
+            }
+          }
+        },
+        {
+          "id": "c_trip",
+          "who": "qian",
+          "say": "Weekend trip with friends! Boarding is $80 a night.",
+          "emoji": "🏕️",
+          "left": {
+            "id": "c_trip_stay",
+            "emoji": "🏡",
+            "label": "Stay home",
+            "fact": "Would skip trips for the dog",
+            "score": {
+              "good": -10,
+              "easy": -5
+            }
+          },
+          "right": {
+            "id": "c_trip_board",
+            "emoji": "🏨",
+            "label": "Board him",
+            "fact": "Would pay for boarding when travelling",
+            "price": 160,
+            "score": {
+              "easy": 10
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "map",
+      "id": "town",
+      "title": "Ask around town",
+      "emoji": "🏘️",
       "spots": [
         {
-          "id": "shop", "emoji": "🏪", "label": "Pet shop", "who": "qian", "x": 24, "y": 26,
+          "id": "shop",
+          "emoji": "🏪",
+          "label": "Pet shop",
+          "who": "qian",
+          "x": 24,
+          "y": 26,
           "beats": [
-            { "who": "qian", "say": "Welcome! Puppies on sale today!", "mood": "happy" },
             {
-              "id": "source", "who": "qian", "q": "Puppy, or an older dog?",
+              "who": "qian",
+              "say": "Welcome! Puppies on sale today!",
+              "mood": "happy"
+            },
+            {
+              "id": "source",
+              "who": "qian",
+              "q": "Puppy, or an older dog?",
               "options": [
-                { "id": "puppy", "emoji": "🐶", "label": "A cute puppy", "fact": "Wants a puppy", "set": ["puppy"], "reply": [{ "who": "qian", "say": "Excellent choice!", "mood": "smug" }] },
-                { "id": "rescue", "emoji": "🏠", "label": "Adopt from a shelter", "fact": "Wants to adopt an adult dog from a shelter", "add": [{ "id": "dog", "emoji": "🐕", "name": "Rescue fee", "price": 150, "spec": "Shelter adoption, vaccinated & neutered" }], "remove": ["vet"], "score": { "easy": 15 }, "reply": [{ "who": "qian", "say": "Uh… shelters are, um, fine too.", "mood": "worried" }] }
+                {
+                  "id": "puppy",
+                  "emoji": "🐶",
+                  "label": "A cute puppy",
+                  "fact": "Wants a puppy",
+                  "set": [
+                    "puppy"
+                  ],
+                  "reply": [
+                    {
+                      "who": "qian",
+                      "say": "Excellent choice!",
+                      "mood": "smug"
+                    }
+                  ]
+                },
+                {
+                  "id": "rescue",
+                  "emoji": "🏠",
+                  "label": "Adopt from a shelter",
+                  "fact": "Wants to adopt an adult dog from a shelter",
+                  "add": [
+                    {
+                      "id": "dog",
+                      "emoji": "🐕",
+                      "name": "Rescue fee",
+                      "price": 150,
+                      "spec": "Shelter adoption, vaccinated & neutered"
+                    }
+                  ],
+                  "remove": [
+                    "vet"
+                  ],
+                  "score": {
+                    "easy": 15
+                  },
+                  "reply": [
+                    {
+                      "who": "qian",
+                      "say": "Uh… shelters are, um, fine too.",
+                      "mood": "worried"
+                    }
+                  ]
+                }
               ]
             },
-            { "who": "qian", "say": "Puppies need training though. Classes are extra!", "mood": "smug", "if": { "all": ["puppy"] } }
+            {
+              "who": "qian",
+              "say": "Puppies need training though. Classes are extra!",
+              "mood": "smug",
+              "if": {
+                "all": [
+                  "puppy"
+                ]
+              }
+            }
           ]
         },
         {
-          "id": "vet", "emoji": "🏥", "label": "Vet clinic", "who": "gong", "x": 76, "y": 28,
+          "id": "vet",
+          "emoji": "🏥",
+          "label": "Vet clinic",
+          "who": "gong",
+          "x": 76,
+          "y": 28,
           "beats": [
-            { "who": "gong", "say": "Two questions people forget to ask.", "mood": "thinking" },
             {
-              "id": "allergy", "who": "gong", "q": "Anyone at home allergic?",
+              "who": "gong",
+              "say": "Two questions people forget to ask.",
+              "mood": "thinking"
+            },
+            {
+              "id": "allergy",
+              "who": "gong",
+              "q": "Anyone at home allergic?",
               "options": [
-                { "id": "no_allergy", "emoji": "🙂", "label": "No allergies", "fact": "No pet allergies at home" },
-                { "id": "allergy", "emoji": "🤧", "label": "Someone sneezes", "fact": "Someone at home has pet allergies — needs a low-shedding breed", "reply": [{ "who": "gong", "say": "Then look at low-shedding breeds.", "mood": "worried" }] }
+                {
+                  "id": "no_allergy",
+                  "emoji": "🙂",
+                  "label": "No allergies",
+                  "fact": "No pet allergies at home"
+                },
+                {
+                  "id": "allergy",
+                  "emoji": "🤧",
+                  "label": "Someone sneezes",
+                  "fact": "Someone at home has pet allergies — needs a low-shedding breed",
+                  "reply": [
+                    {
+                      "who": "gong",
+                      "say": "Then look at low-shedding breeds.",
+                      "mood": "worried"
+                    }
+                  ]
+                }
               ]
             },
             {
-              "id": "bills", "who": "gong", "q": "Ready for surprise vet bills?",
+              "id": "bills",
+              "who": "gong",
+              "q": "Ready for surprise vet bills?",
               "options": [
-                { "id": "insure", "emoji": "🛡️", "label": "Get pet insurance", "fact": "Will buy pet insurance", "add": [{ "id": "insurance", "emoji": "🛡️", "name": "Pet insurance", "price": 500, "spec": "Accident & illness, 1 year" }], "set": ["insured"], "score": { "safe": 25 } },
-                { "id": "savings", "emoji": "🐷", "label": "I have savings", "fact": "Will self-insure with an emergency fund" }
+                {
+                  "id": "insure",
+                  "emoji": "🛡️",
+                  "label": "Get pet insurance",
+                  "fact": "Will buy pet insurance",
+                  "add": [
+                    {
+                      "id": "insurance",
+                      "emoji": "🛡️",
+                      "name": "Pet insurance",
+                      "price": 500,
+                      "spec": "Accident & illness, 1 year"
+                    }
+                  ],
+                  "set": [
+                    "insured"
+                  ],
+                  "score": {
+                    "safe": 25
+                  }
+                },
+                {
+                  "id": "savings",
+                  "emoji": "🐷",
+                  "label": "I have savings",
+                  "fact": "Will self-insure with an emergency fund"
+                }
               ]
             }
           ]
         },
         {
-          "id": "home", "emoji": "🛋️", "label": "Home", "who": "zack", "x": 50, "y": 72,
+          "id": "home",
+          "emoji": "🛋️",
+          "label": "Home",
+          "who": "zack",
+          "x": 50,
+          "y": 72,
           "beats": [
-            { "who": "zack", "say": "Dude, did you even check the lease?", "mood": "surprised" },
             {
-              "id": "lease", "who": "zack", "q": "Does our lease allow dogs?",
+              "who": "zack",
+              "say": "Dude, did you even check the lease?",
+              "mood": "surprised"
+            },
+            {
+              "id": "lease",
+              "who": "zack",
+              "q": "Does our lease allow dogs?",
               "options": [
-                { "id": "lease_ok", "emoji": "✅", "label": "Yes, it's allowed", "fact": "Lease allows dogs" },
-                { "id": "lease_unknown", "emoji": "🤷", "label": "Not sure…", "fact": "Unknown whether the lease allows dogs — must check with landlord before adopting", "reply": [{ "who": "zack", "say": "Check BEFORE the dog shows up.", "mood": "angry" }] }
+                {
+                  "id": "lease_ok",
+                  "emoji": "✅",
+                  "label": "Yes, it's allowed",
+                  "fact": "Lease allows dogs"
+                },
+                {
+                  "id": "lease_unknown",
+                  "emoji": "🤷",
+                  "label": "Not sure…",
+                  "fact": "Unknown whether the lease allows dogs — must check with landlord before adopting",
+                  "reply": [
+                    {
+                      "who": "zack",
+                      "say": "Check BEFORE the dog shows up.",
+                      "mood": "angry"
+                    }
+                  ]
+                }
               ]
             },
             {
-              "id": "travel", "who": "zack", "q": "Who takes the dog when you travel?",
+              "id": "travel",
+              "who": "zack",
+              "q": "Who takes the dog when you travel?",
               "free": {
                 "placeholder": "e.g. a pet hotel",
-                "chips": ["Family", "Pet hotel", "Roommate"],
+                "chips": [
+                  "Family",
+                  "Pet hotel",
+                  "Roommate"
+                ],
                 "fact": "Plan for the dog during travel: {v}",
                 "match": [
-                  { "words": ["you", "roommate", "zack"], "reply": [{ "who": "zack", "say": "Me?! …Fine. You owe me pizza.", "mood": "smug" }] },
-                  { "words": ["hotel", "boarding", "kennel"], "fact": "Will use boarding when traveling (budget for it)" }
+                  {
+                    "words": [
+                      "you",
+                      "roommate",
+                      "zack"
+                    ],
+                    "reply": [
+                      {
+                        "who": "zack",
+                        "say": "Me?! …Fine. You owe me pizza.",
+                        "mood": "smug"
+                      }
+                    ]
+                  },
+                  {
+                    "words": [
+                      "hotel",
+                      "boarding",
+                      "kennel"
+                    ],
+                    "fact": "Will use boarding when traveling (budget for it)"
+                  }
                 ],
-                "reply": [{ "who": "zack", "say": "Okay, as long as it's not me.", "mood": "happy" }]
+                "reply": [
+                  {
+                    "who": "zack",
+                    "say": "Okay, as long as it's not me.",
+                    "mood": "happy"
+                  }
+                ]
               }
             }
           ]
@@ -178,16 +980,62 @@
       ]
     },
     {
-      "type": "slider", "id": "budget", "q": "First-year budget?", "emoji": "💰", "kind": "budget",
-      "min": 500, "max": 8000, "step": 100, "unit": "", "fact": "First-year budget cap: ${v}"
+      "type": "slider",
+      "id": "budget",
+      "q": "First-year budget?",
+      "emoji": "💰",
+      "kind": "budget",
+      "min": 500,
+      "max": 8000,
+      "step": 100,
+      "unit": "",
+      "fact": "First-year budget cap: ${v}"
     },
     {
-      "type": "boss", "id": "boss", "q": "Midnight emergency!", "emoji": "🚑", "problem": "The dog ate a sock",
+      "type": "boss",
+      "id": "boss",
+      "q": "Midnight emergency!",
+      "emoji": "🚑",
+      "problem": "The dog ate a sock",
       "options": [
-        { "id": "ins", "emoji": "🛡️", "label": "Pet insurance", "fact": "Covered by pet insurance for emergencies", "add": [{ "id": "insurance", "emoji": "🛡️", "name": "Pet insurance", "price": 500, "spec": "Accident & illness, 1 year" }], "tip": "Most of the bill is covered", "score": { "safe": 30 } },
-        { "id": "fund", "emoji": "🐷", "label": "Emergency fund", "fact": "Keep a $1,000 emergency fund for the dog", "price": 1000, "tip": "Cash ready when it happens", "score": { "safe": 20 } }
+        {
+          "id": "ins",
+          "emoji": "🛡️",
+          "label": "Pet insurance",
+          "fact": "Covered by pet insurance for emergencies",
+          "add": [
+            {
+              "id": "insurance",
+              "emoji": "🛡️",
+              "name": "Pet insurance",
+              "price": 500,
+              "spec": "Accident & illness, 1 year"
+            }
+          ],
+          "tip": "Most of the bill is covered",
+          "score": {
+            "safe": 30
+          }
+        },
+        {
+          "id": "fund",
+          "emoji": "🐷",
+          "label": "Emergency fund",
+          "fact": "Keep a $1,000 emergency fund for the dog",
+          "price": 1000,
+          "tip": "Cash ready when it happens",
+          "score": {
+            "safe": 20
+          }
+        }
       ],
-      "gamble": { "label": "Hope it's fine", "fact": "No emergency plan", "crash_if": "always", "crash": "$3,000 surgery bill, no way to pay", "loss": 3000 }
+      "gamble": {
+        "label": "Hope it's fine",
+        "fact": "No emergency plan",
+        "crash_if": "always",
+        "crash": "$3,000 surgery bill, no way to pay",
+        "loss": 3000
+      }
     }
   ],
   "secret": "Shelter adults often come vaccinated and house-trained — ask a shelter first"

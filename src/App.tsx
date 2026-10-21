@@ -58,6 +58,10 @@ function Screens() {
     preload([
       '🔥', '✨', '💥', '🎙️', l.emoji,
       ...l.rounds.flatMap((r) => [...asksOf(r).flatMap((a) => a.options.map((o) => o.emoji)), ...(r.type === 'map' ? r.spots.map((s) => s.emoji) : [])]),
+      ...l.rounds.flatMap((r) =>
+        r.type === 'chain' ? r.cards.flatMap((c) => [c.emoji, c.left.emoji, c.right.emoji]) : r.type === 'sort' ? [...r.cards.map((c) => c.emoji), ...r.bins.map((b) => b.emoji)] : [],
+      ),
+      '💰', '😌', '🎯', '🛡️', '👆',
       ...l.guess.items.map((i) => i.emoji),
       ...l.rounds.flatMap((r) => [r.emoji, ...optionsOf(r).flatMap((o) => [o.emoji, ...o.add.map((i) => i.emoji)])]),
     ]);

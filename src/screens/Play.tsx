@@ -7,6 +7,8 @@ import { Slider } from '../rounds/Slider';
 import { Swipe } from '../rounds/Swipe';
 import { Talk } from '../rounds/Talk';
 import { MapQuest } from '../rounds/Map';
+import { Chain } from '../rounds/Chain';
+import { Sort } from '../rounds/Sort';
 import { FeedbackSheet } from '../ui/FeedbackSheet';
 import { TopBar } from '../ui/kit';
 import { t } from '../i18n';
@@ -27,6 +29,10 @@ function RoundView({ round }: { round: Round }) {
       return <Talk round={round} />;
     case 'map':
       return <MapQuest round={round} />;
+    case 'chain':
+      return <Chain round={round} />;
+    case 'sort':
+      return <Sort round={round} />;
   }
 }
 

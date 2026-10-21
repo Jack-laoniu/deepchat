@@ -25,6 +25,8 @@ ROUND TYPES
 - slider: drag a number; kind "budget" asks the budget cap; "{v}" in fact is the value
 - fix: a problem appeared; 1–3 fixes + 1 gamble (skip the fix and hope)
 - boss: final test, same shape as fix, required, must be last
+- sort: drag 3–8 cards into 2–3 bins (e.g. must / nice / skip). No right answers — it reveals priorities. A card with "item" joins the plan when dropped in a bin with keep:true, and leaves it otherwise. Each drop sets the flag "<card id>_<bin id>".
+- chain: 3–6 dilemma cards in a row (Reigns-style). Each card: a character ("who") says one line, the user swipes "left" or "right" (each side is an option with score / price / add / remove / set). Four meters (money, ease, results, safety) move with each choice; the first one to hit zero "crashes" and tells us what the user keeps sacrificing. Make the cards realistic everyday situations a few weeks after the purchase, each side costing something different.
 
 DIALOGUE
 - beats = lines {"who","say","mood"} and questions {"id","who","q","options":[...],"free":{...}}.
@@ -40,7 +42,7 @@ RULES
    To make something CHEAPER (downgrade, second-hand, smaller, skip it), the replacement MUST reuse the SAME id as the item it replaces (or put the old id in "remove"); a new id keeps both items and the total goes UP. A cost-cutting option must lower the total; a non-item saving is a negative "price".
 5. gamble.crash_if: flags under which it must crash ("always" or a list). When saving money is reasonable for a small scale / light load, don't use "always" and write an "ok" text.
 6. Prices are your estimates; never invent sources.
-7. 8–12 rounds: open with a chat with "${GUIDE}" asking the motivation, include at least one story, one map, one slider(budget), and end with the boss.
+7. 8–12 rounds: open with a chat with "${GUIDE}" asking the motivation, include at least one story, one map, one slider(budget), one sort (what they really need among optional extras) and one chain (living with the choice), and end with the boss.
 8. ids use lowercase letters, digits, underscores only. Output JSON only, no explanation.
 9. Never put a raw double quote (") inside a string value. To quote speech inside text use 「」 (Chinese) or ‘ ’ (English).`;
 

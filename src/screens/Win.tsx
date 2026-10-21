@@ -57,6 +57,33 @@ export function Win() {
     celebrate();
   }, []);
 
+  // 借鉴 Wordle：分享一张表情格子卡，看得出结果，但不暴露用户说了什么
+  const [shared, setShared] = useState(false);
+  const share = async () => {
+    const bar = (v: number) => {
+      const full = Math.round(v / 20);
+      const c = v >= 70 ? '🟩' : v >= 40 ? '🟨' : '🟥';
+      return c.repeat(full) + '⬜'.repeat(5 - full);
+    };
+    const site = typeof location !== 'undefined' && location.protocol.startsWith('http') && !inHost() ? `\n${location.origin}` : '';
+    const card = [
+      `🎮 ${t('appName')}｜${l.emoji} ${l.title}`,
+      `😌 ${bar(p.score.easy)} ${t('easy')}`,
+      `🎯 ${bar(p.score.good)} ${t('good')}`,
+      `🛡️ ${bar(p.score.safe)} ${t('safe')}`,
+      `🧾 ${p.cart.map((i) => i.emoji).join('')} ${yuan(p.total)}`,
+    ].join('\n') + site;
+    try {
+      if (!inHost() && navigator.share) return void (await navigator.share({ text: card }));
+    } catch {
+      /* 用户取消或不支持，退回复制 */
+    }
+    if (await copyText(card)) {
+      setShared(true);
+      setTimeout(() => setShared(false), 1800);
+    }
+  };
+
   const handoff = async () => {
     if (inHost()) await hostFollowUp(text);
     else if (await copyText(text)) {
@@ -135,6 +162,7 @@ export function Win() {
 
       <div className="mt-auto space-y-3 pt-5">
         <Btn onClick={handoff}>{inHost() ? t('handoffHost') : copied ? t('handoffCopied') : t('handoffCopy')}</Btn>
+        <Btn tone="amber" onClick={share}>{shared ? t('shareCopied') : t('shareBtn')}</Btn>
         <div className="grid grid-cols-2 gap-3">
           <Btn tone="white" onClick={() => setShowList(true)}>{t('list')}</Btn>
           <Btn tone="white" onClick={() => g.open(l)}>{t('replay')}</Btn>

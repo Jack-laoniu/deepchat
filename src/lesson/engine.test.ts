@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SAMPLES } from '../lessons';
 import dog from '../lessons/dog.json';
-import { gambleCrashes, play, revealsProblem, walkBeats, type Answer, type Replies } from './engine';
+import { chainMeters, gambleCrashes, play, revealsProblem, walkBeats, type Answer, type Replies } from './engine';
 import { superPrompt } from './output';
 import { parseLesson, textWidth, type Beat, type Lesson } from './schema';
 import { setLocale } from '../i18n';
@@ -96,8 +96,8 @@ describe('play', () => {
     const p = play(farm, [why, pick('scale', 'mid'), story('slope', 'tap'), pick('fix_slope', 'pc_drip'), pick('crop', 'berry')]);
     expect(p.cart.find((i) => i.id === 'head')?.name).toBe('补偿滴灌带');
     expect(p.cart.find((i) => i.id === 'pump')).toBeUndefined();
-    // 已经装了滴灌 → 烂果问题不会出现
-    expect(p.current?.id).toBe('town');
+    // 已经装了滴灌 → 烂果问题不会出现，直接到整理归类
+    expect(p.current?.id).toBe('extras');
   });
 
   it('gamble crash depends on the user’s real conditions', () => {
@@ -121,6 +121,8 @@ describe('play', () => {
       story('flat', 'river'),
       { round: 'fix_mud', gamble: true },
       pick('crop', 'corn'),
+      { round: 'extras', sort: { timer: 'must', app: 'skip', filter: 'must', sensor: 'nice' } },
+      { round: 'season', chain: { picks: { c_dry: 'left', c_clog: 'left', c_night: 'right', c_cost: 'left' } } },
       {
         round: 'town',
         map: {
@@ -156,6 +158,8 @@ describe('play', () => {
         else if (c.type === 'swipe') answers.push(pick(c.id, c.yes.id));
         else if (c.type === 'talk') answers.push(talk(c.id, firstReplies(c.beats)));
         else if (c.type === 'map') answers.push({ round: c.id, map: Object.fromEntries(c.spots.map((s) => [s.id, firstReplies(s.beats)])) });
+        else if (c.type === 'chain') answers.push({ round: c.id, chain: { picks: Object.fromEntries(c.cards.map((x) => [x.id, 'left' as const])) } });
+        else if (c.type === 'sort') answers.push({ round: c.id, sort: Object.fromEntries(c.cards.map((x) => [x.id, c.bins[0].id])) });
         else answers.push(pick(c.id, c.options[0].id));
       }
       expect(play(l, answers).current, l.title).toBeNull();
@@ -190,6 +194,8 @@ describe('characters & languages', () => {
       else if (c.type === 'talk') answers.push(talk(c.id, firstReplies(c.beats)));
       else if (c.type === 'map') answers.push({ round: c.id, map: Object.fromEntries(c.spots.map((s) => [s.id, firstReplies(s.beats)])) });
       else if (c.type === 'swipe') answers.push(pick(c.id, c.yes.id));
+      else if (c.type === 'chain') answers.push({ round: c.id, chain: { picks: Object.fromEntries(c.cards.map((x) => [x.id, 'left' as const])) } });
+      else if (c.type === 'sort') answers.push({ round: c.id, sort: Object.fromEntries(c.cards.map((x) => [x.id, c.bins[0].id])) });
       else answers.push(pick(c.id, c.options[0].id));
     }
     const text = superPrompt(dog, play(dog, answers), []);
@@ -220,5 +226,39 @@ describe('sloppy JSON from models', () => {
     const text = JSON.stringify(dog).replace('"Hey! I\'m Lele.', '"Hey! I\'m "Lele".').replace(/}$/, ',}');
     expect(() => JSON.parse(text)).toThrow();
     expect(parseLesson(text).ok).toBe(true);
+  });
+});
+
+describe('sort and chain rounds', () => {
+  const farmL = lessons.find((l) => l.title === '农场自动浇水')!;
+  const before: Answer[] = [
+    talk('why', { why: { text: '腰不好' } }),
+    pick('scale', 'small'),
+    story('flat', 'river'),
+    { round: 'fix_mud', gamble: true },
+    pick('crop', 'corn'),
+  ];
+
+  it('sorting puts kept items in the plan, drops the rest, and sets card_bin flags', () => {
+    const p = play(farmL, [...before, { round: 'extras', sort: { timer: 'must', app: 'skip', filter: 'must', sensor: 'nice' } }]);
+    expect(p.cart.map((i) => i.id)).toEqual(expect.arrayContaining(['timer', 'filter']));
+    expect(p.cart.some((i) => i.id === 'app' || i.id === 'sensor')).toBe(false);
+    expect(p.flags.has('app_skip')).toBe(true);
+    expect(p.facts.some((f) => f.includes('远程控制') && f.includes('不要'))).toBe(true);
+  });
+
+  it('chain meters drop with each sacrifice and report the first one to run out', () => {
+    const round = farmL.rounds.find((r) => r.type === 'chain')!;
+    if (round.type !== 'chain') throw new Error();
+    const start = { easy: 20, good: 50, safe: 50 };
+    const cart = play(farmL, before).cart;
+    expect(chainMeters(start, cart, round.cards, { c_dry: 'left' }).broke).toBeNull();
+    // 一路「自己通」「明早再说」，省心先见底
+    const r = chainMeters(start, cart, round.cards, { c_dry: 'right', c_clog: 'left', c_night: 'left' });
+    expect(r.broke).toBe('easy');
+    // 接受翻车 → 进交付物和风险
+    const p = play(farmL, [...before, { round: 'extras', sort: {} }, { round: 'season', chain: { picks: { c_dry: 'right', c_clog: 'left' }, accepted: 'easy' } }]);
+    expect(p.facts.some((f) => f.includes('省心'))).toBe(true);
+    expect(p.risks.some((f) => f.includes('省心'))).toBe(true);
   });
 });

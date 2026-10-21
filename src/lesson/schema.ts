@@ -204,7 +204,56 @@ export const MapRound = z.object({
 });
 export type MapRound = z.infer<typeof MapRound>;
 
-export const Round = z.discriminatedUnion('type', [PickRound, SwipeRound, SliderRound, FixRound, BossRound, TalkRound, MapRound]);
+/**
+ * 连环取舍（借鉴 Reigns）：一张张卡由角色抛出一个两难，左滑/右滑二选一。
+ * 屏幕上方四条槽（钱、省心、效果、安全）随选择涨落，哪条先见底就「翻车」——最先撑不住的就是用户最在意的。
+ * 左右两个选择就是普通选项：score 改三条槽，price 改钱，也可以 add/remove 物品、set 标记。
+ */
+export const ChainRound = z.object({
+  type: z.literal('chain'),
+  id,
+  title: short(14),
+  emoji,
+  cards: z
+    .array(
+      z.object({
+        id,
+        who: id,
+        say: short(40),
+        emoji,
+        left: Option,
+        right: Option,
+      }),
+    )
+    .min(3)
+    .max(8),
+  if: Cond.optional(),
+});
+export type ChainRound = z.infer<typeof ChainRound>;
+
+/**
+ * 整理归类（借鉴 A Little to the Left）：把卡片拖进几个筐（默认「必须 / 最好有 / 不要」）。没有标准答案。
+ * 卡片带 item 时：放进 keep 的筐 = 放入方案，放进不 keep 的筐 = 从方案里拿掉。
+ * 每张卡放进哪个筐会自动打上标记「卡片id_筐id」，后面的回合可以用 if 引用。
+ */
+export const SortRound = z.object({
+  type: z.literal('sort'),
+  id,
+  q: short(14),
+  emoji,
+  bins: z
+    .array(z.object({ id, label: short(6), emoji, keep: z.boolean().default(true) }))
+    .min(2)
+    .max(3),
+  cards: z
+    .array(z.object({ id, emoji, label: short(8), fact: short(120), item: Item.optional() }))
+    .min(3)
+    .max(8),
+  if: Cond.optional(),
+});
+export type SortRound = z.infer<typeof SortRound>;
+
+export const Round = z.discriminatedUnion('type', [PickRound, SwipeRound, SliderRound, FixRound, BossRound, TalkRound, MapRound, ChainRound, SortRound]);
 export type Round = z.infer<typeof Round>;
 export type PickRound = z.infer<typeof PickRound>;
 export type SwipeRound = z.infer<typeof SwipeRound>;
@@ -256,6 +305,8 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
       l.rounds.flatMap((r) => [
         ...(r.type === 'pick' || r.type === 'fix' || r.type === 'boss' ? r.options.flatMap((o) => o.set) : []),
         ...(r.type === 'swipe' ? [...r.yes.set, ...r.no.set] : []),
+        ...(r.type === 'chain' ? r.cards.flatMap((c) => [...c.left.set, ...c.right.set]) : []),
+        ...(r.type === 'sort' ? r.cards.flatMap((c) => r.bins.map((b) => `${c.id}_${b.id}`)) : []),
         ...asksOf(r).flatMap((a) => [...a.options.flatMap((o) => o.set), ...(a.free?.match.flatMap((m) => m.set) ?? [])]),
       ]),
     );
@@ -273,6 +324,11 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
       });
       if (r.type === 'talk' && r.with && !speakers.has(r.with)) err(['rounds', i, 'with'], `角色 ${r.with} 不在 cast 里`);
       if (r.type === 'map') r.spots.forEach((s, j) => !speakers.has(s.who) && err(['rounds', i, 'spots', j], `角色 ${s.who} 不在 cast 里`));
+      if (r.type === 'chain') r.cards.forEach((c, j) => !speakers.has(c.who) && err(['rounds', i, 'cards', j], `角色 ${c.who} 不在 cast 里`));
+      if (r.type === 'sort' || r.type === 'chain') {
+        const ids = r.cards.map((c) => c.id);
+        if (new Set(ids).size !== ids.length) err(['rounds', i], '同一关里卡片 id 重复');
+      }
       const askIds = asksOf(r).map((a) => a.id);
       if (new Set(askIds).size !== askIds.length) err(['rounds', i], '同一关里提问 id 重复');
       asksOf(r).forEach((a) => {
@@ -283,7 +339,10 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
     const guessByEmoji = new Map(l.guess.items.map((g) => [g.emoji, g]));
     const guessIds = new Set(l.guess.items.map((g) => g.id));
     l.rounds.forEach((r, i) => {
-      const opts = r.type === 'pick' || r.type === 'fix' || r.type === 'boss' ? r.options : r.type === 'swipe' ? [r.yes, r.no] : [];
+      const opts =
+        r.type === 'pick' || r.type === 'fix' || r.type === 'boss' ? r.options :
+        r.type === 'swipe' ? [r.yes, r.no] :
+        r.type === 'chain' ? r.cards.flatMap((c) => [c.left, c.right]) : [];
       opts.forEach((o) =>
         o.add.forEach((it) => {
           const old = guessByEmoji.get(it.emoji);
