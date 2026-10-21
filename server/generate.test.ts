@@ -166,6 +166,27 @@ describe('OpenAI-compatible provider', () => {
     expect(prompts[1]).toContain('>>>');
   });
 
+  it('auto-fixes small mistakes on the first reply instead of asking the model again', async () => {
+    const l = structuredClone(farm) as any;
+    l.rounds.find((r: any) => r.type === 'fix').problem = '一到夏天下午地里就特别特别干旱，水根本不够用';
+    let calls = 0;
+    vi.stubGlobal('fetch', async () => (calls++, sse(JSON.stringify(l))));
+    const start = openAiChat({ baseUrl: 'https://relay.example/v1', apiKey: 'k', model: 'm3' });
+    expect((await generateLesson(start, '农场浇水', 'zh')).ok).toBe(true);
+    expect(calls).toBe(1);
+  });
+
+  it('falls back to a repaired level when the model keeps failing', async () => {
+    const l = structuredClone(farm) as any;
+    delete l.rounds.find((r: any) => r.type === 'chain').cards[1].right;
+    let calls = 0;
+    vi.stubGlobal('fetch', async () => (calls++, sse(JSON.stringify(l))));
+    const start = openAiChat({ baseUrl: 'https://relay.example/v1', apiKey: 'k', model: 'm4' });
+    const r = await generateLesson(start, '农场浇水', 'zh');
+    expect(r.ok).toBe(true);
+    expect(calls).toBe(3); // 先让模型改，改不好才用删掉一张卡的版本
+  });
+
   it('surfaces upstream HTTP errors', async () => {
     vi.stubGlobal('fetch', async () => new Response('quota exceeded', { status: 429 }));
     const start = openAiChat({ baseUrl: 'https://agy.example/v1', apiKey: 'k', model: 'm' });

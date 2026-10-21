@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { Config } from './config';
 import { charById, MOODS } from '../src/chars/library';
 import { GENERATOR_RULES } from '../src/lesson/prompt';
+import { salvage, explainIssues, type Salvaged } from '../src/lesson/salvage';
 import { parseLesson, type Lesson } from '../src/lesson/schema';
 import dog from '../src/lessons/dog.json';
 import farm from '../src/lessons/farm.json';
@@ -190,17 +191,39 @@ export async function generateLesson(startChat: StartChat, need: string, lang: '
     : '';
   let prompt = `Example level (a different need):\n${JSON.stringify(example)}\n\nWrite ALL text in ${LANG_NAME[lang]}.\n\nThe user's need:\n${need}${followUp}`;
 
+  // 重修过的（删了卡片/回合）先留着，模型一直改不好时用它
+  let fallback: Salvaged | null = null;
+  const done = (l: Lesson): GenerateResult => ({ ok: true, lesson: { ...l, need: l.need || need } });
+
   for (let attempt = 0; attempt <= MAX_FIX; attempt++) {
     const reply = await chat.send(prompt);
-    if ('refused' in reply) return { ok: false, error: 'refused' };
+    if ('refused' in reply) return fallback ? done(fallback.lesson) : { ok: false, error: 'refused' };
     const json = extractJson(reply.text);
     const r = parseLesson(json);
-    if (r.ok) return { ok: true, lesson: { ...r.lesson, need: r.lesson.need || need } };
+    if (r.ok) return done(r.lesson);
     console.error(`generate attempt ${attempt + 1}: invalid level (${reply.text.length} chars):`, r.errors.slice(0, 5).join(' | '));
-    // JSON 语法错：只说「第 6538 个字符」模型看不出是哪儿，把出错位置前后的原文带上
-    const pos = Number(r.errors[0].match(/position (\d+)/)?.[1]);
-    const near = Number.isFinite(pos) ? `\nThe text around the error (>>> marks the spot):\n${json.slice(Math.max(0, pos - 120), pos)}>>>${json.slice(pos, pos + 60)}\nCommon cause: a double quote inside a string; write quotes inside text as 「」 instead.` : '';
-    prompt = `The level is invalid:\n${r.errors.slice(0, 30).map((e) => `- ${e}`).join('\n')}${near}\n\nFix exactly these problems and output the complete corrected JSON only.`;
+
+    // 小毛病自己修：只截短文字、去掉多余项之类不影响玩法的，直接用，不再麻烦模型
+    const s = r.data ? salvage(r.data) : null;
+    if (s && !s.heavy) {
+      console.error(`generate: auto-fixed ${s.fixes.length} issue(s): ${s.fixes.slice(0, 6).join('; ')}`);
+      return done(s.lesson);
+    }
+    if (s) fallback = s;
+
+    let problems: string;
+    if (r.issues) problems = explainIssues(r.data, r.issues).map((e) => `- ${e}`).join('\n');
+    else {
+      // JSON 语法错：只说「第 6538 个字符」模型看不出是哪儿，把出错位置前后的原文带上
+      const pos = Number(r.errors[0].match(/position (\d+)/)?.[1]);
+      const near = Number.isFinite(pos) ? `\nThe text around the error (>>> marks the spot):\n${json.slice(Math.max(0, pos - 120), pos)}>>>${json.slice(pos, pos + 60)}\nCommon cause: a double quote inside a string; write quotes inside text as 「」 instead.` : '';
+      problems = r.errors.map((e) => `- ${e}`).join('\n') + near;
+    }
+    prompt = `The level is invalid:\n${problems}\n\nFix exactly these problems and output the complete corrected JSON only.`;
+  }
+  if (fallback) {
+    console.error(`generate: using repaired level, ${fallback.fixes.join('; ')}`);
+    return done(fallback.lesson);
   }
   return { ok: false, error: 'invalid' };
 }

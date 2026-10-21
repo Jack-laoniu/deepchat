@@ -37,7 +37,7 @@ DIALOGUE
 - any line or question can have "if" to appear depending on earlier answers (e.g. the user said they're rarely home but picked manual control → a character calls it out).
 
 RULES
-1. Very little text on screen. Limits are in "width" (a CJK char = 1, a Latin letter ≈ 0.55): round q ≤ 14, card label ≤ 8, dialogue reply label ≤ 14, line say ≤ 40, dialogue question q ≤ 24, tip / crash / ok ≤ 28. Every option needs a fitting emoji.
+1. Very little text on screen. Limits are in "width" (a CJK char = 1, a Latin letter ≈ 0.55): round q ≤ 14, card label ≤ 8, dialogue reply label ≤ 14, line say ≤ 40, dialogue question q ≤ 24, tip / crash / ok ≤ 28, fix/boss problem ≤ 12. At most 4 free.chips, 4 options per question. Every chain card MUST have both "left" and "right". Every option needs a fitting emoji.
 2. Put the full detail in "fact" (for the downstream AI, never shown): concrete numbers and specs.
 3. Use "set" flags on options and "if": {all, any, none} to show rounds conditionally. A fix round must come right after the round that triggers it.
 4. Options "add" items to the plan (same id = replace), "remove" items, "price" adjusts non-item cost.

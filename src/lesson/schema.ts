@@ -13,7 +13,7 @@ const id = z.string().regex(/^[a-z0-9_]+$/, '只允许小写字母、数字和�
 const emoji = z.string().min(1).max(16);
 /** 显示宽度：中日韩字符算 1，其余（拉丁字母、数字、空格）算 0.55，这样各语言的字数上限差不多公平 */
 export const textWidth = (s: string) => [...s].reduce((w, c) => w + (/[\u2E80-\uFFEF]/.test(c) ? 1 : 0.55), 0);
-const tooLong = (n: number) => `太长了：不超过 ${n} 个汉字宽（英文约 ${Math.floor(n / 0.55)} 个字母）`;
+export const tooLong = (n: number) => `太长了：不超过 ${n} 个汉字宽（英文约 ${Math.floor(n / 0.55)} 个字母）`;
 /** 必填的短文本 */
 const short = (n: number) => z.string().min(1).refine((s) => textWidth(s) <= n, { message: tooLong(n) });
 /** 可以为空的短文本 */
@@ -417,7 +417,8 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
   });
 export type Lesson = z.infer<typeof Lesson>;
 
-export type ParseResult = { ok: true; lesson: Lesson } | { ok: false; errors: string[] };
+/** 失败时带上解析出来的原始数据和结构化错误，方便自动修补（salvage）和给模型指出具体哪段文字有问题 */
+export type ParseResult = { ok: true; lesson: Lesson } | { ok: false; errors: string[]; data?: unknown; issues?: z.ZodIssue[] };
 
 export function parseLesson(input: unknown): ParseResult {
   let data = input;
@@ -438,5 +439,5 @@ export function parseLesson(input: unknown): ParseResult {
   const r = Lesson.safeParse(data);
   return r.success
     ? { ok: true, lesson: r.data }
-    : { ok: false, errors: r.error.issues.map((i) => `${i.path.join('.') || '根'}：${i.message}`) };
+    : { ok: false, errors: r.error.issues.map((i) => `${i.path.join('.') || '根'}：${i.message}`), data, issues: r.error.issues };
 }
