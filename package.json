@@ -11,7 +11,8 @@
     "start": "node dist-server/index.js --http",
     "start:stdio": "node dist-server/index.js",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:deploy": "npm run build:server && cp dist-server/index.js deploy/need-quest-server.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",

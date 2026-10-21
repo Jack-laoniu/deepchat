@@ -10,6 +10,8 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 export default defineConfig(({ mode }) => {
   if (mode === 'server') {
     return {
+      // 依赖全部打进一个文件：服务器上只需要 Node，不用 npm install
+      ssr: { noExternal: true },
       build: {
         ssr: 'server/index.ts',
         outDir: 'dist-server',

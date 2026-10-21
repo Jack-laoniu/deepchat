@@ -49,6 +49,22 @@ Claude Desktop 配置示例：
 
 游戏界面里的宿主桥接见 `src/host.ts`。
 
+## 部署到自己的服务器
+
+服务器只需要能联网、有 systemd；不需要 npm，也不在服务器上编译（`deploy/need-quest-server.mjs` 是打包好的单文件，常驻内存约 120MB）。域名先解析到服务器，然后：
+
+```bash
+git clone https://github.com/Jack-laoniu/deepchat.git && cd deepchat
+sudo bash deploy/install.sh tlkgo.com
+```
+
+脚本会按需安装 Node 20 和 Caddy（自动 HTTPS），注册 systemd 服务。完成后：
+
+- 游戏网页：`https://tlkgo.com/`
+- MCP 接口：`https://tlkgo.com/mcp`（填到 ChatGPT 开发者模式 / Claude 的自定义连接器里）
+
+更新：`git pull && sudo bash deploy/install.sh tlkgo.com`。修改代码后用 `npm run build:deploy` 重新生成打包文件再提交。
+
 ## 目录
 
 - `src/lesson/` 关卡格式、规则、交付物、生成提示词（与界面无关，服务端复用）

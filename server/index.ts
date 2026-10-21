@@ -14,14 +14,17 @@ async function stdio() {
   await createNeedQuestServer(widgetHtml).connect(new StdioServerTransport());
 }
 
-function http(port: number) {
+function http(port: number, host: string) {
   const srv = createServer(async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', 'content-type, mcp-session-id, mcp-protocol-version');
     res.setHeader('Access-Control-Expose-Headers', 'mcp-session-id');
     if (req.method === 'OPTIONS') return void res.writeHead(204).end();
     const path = new URL(req.url ?? '/', 'http://x').pathname;
-    if (path === '/' && req.method === 'GET') return void res.writeHead(200, { 'content-type': 'text/plain' }).end(`need-quest MCP ${VERSION}\nPOST /mcp`);
+    // 首页直接就是可玩的游戏（独立网页模式）
+    if ((path === '/' || path === '/play') && req.method === 'GET')
+      return void res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=300' }).end(widgetHtml);
+    if (path === '/health') return void res.writeHead(200, { 'content-type': 'text/plain' }).end(`need-quest MCP ${VERSION}`);
     if (path !== '/mcp') return void res.writeHead(404).end();
     if (req.method !== 'POST') return void res.writeHead(405, { allow: 'POST' }).end();
 
@@ -49,8 +52,8 @@ function http(port: number) {
       if (!res.headersSent) res.writeHead(500).end('internal error');
     }
   });
-  srv.listen(port, () => console.error(`need-quest MCP ${VERSION} listening on http://localhost:${port}/mcp`));
+  srv.listen(port, host, () => console.error(`need-quest MCP ${VERSION} listening on http://${host}:${port}/mcp`));
 }
 
-if (process.argv.includes('--http')) http(Number(process.env.PORT) || 8787);
+if (process.argv.includes('--http')) http(Number(process.env.PORT) || 8787, process.env.HOST || '127.0.0.1');
 else void stdio();
