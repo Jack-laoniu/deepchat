@@ -24,7 +24,7 @@ else
 fi
 systemctl daemon-reload
 
-echo "需求闯关已关闭。程序在 /opt/need-quest，API key 在 /etc/need-quest.env，需要可手动删除。"
+echo "需求闯关已关闭。程序在 /opt/need-quest，配置和 key 在 /etc/need-quest/config.json 与 /etc/need-quest.env，需要可手动删除。"
 if ls /etc/caddy/Caddyfile.bak-* >/dev/null 2>&1; then
   ls /etc/caddy/Caddyfile.bak-*
   echo "↑ 安装前备份的原 Caddyfile，需要恢复：sudo cp <备份文件> /etc/caddy/Caddyfile && sudo systemctl restart caddy"

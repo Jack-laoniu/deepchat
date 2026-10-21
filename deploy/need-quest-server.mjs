@@ -3,9 +3,10 @@ import process$1 from "node:process";
 import { Http2ServerRequest, constants } from "node:http2";
 import * as stream from "node:stream";
 import { Readable } from "node:stream";
+import * as fssync from "node:fs";
+import { statSync, readFileSync } from "node:fs";
 import * as cp from "node:child_process";
 import * as crypto$1 from "node:crypto";
-import * as fssync from "node:fs";
 import * as path$1 from "node:path";
 import * as util$2 from "node:util";
 function $constructor(name, initializer2, params) {
@@ -69,7 +70,7 @@ function jsonStringifyReplacer(_, value) {
     return value.toString();
   return value;
 }
-function cached(getter) {
+function cached$1(getter) {
   return {
     get value() {
       {
@@ -130,7 +131,7 @@ const captureStackTrace = Error.captureStackTrace ? Error.captureStackTrace : (.
 function isObject(data) {
   return typeof data === "object" && data !== null && !Array.isArray(data);
 }
-const allowsEval = cached(() => {
+const allowsEval = cached$1(() => {
   if (typeof navigator !== "undefined" && navigator?.userAgent?.includes("Cloudflare")) {
     return false;
   }
@@ -244,7 +245,7 @@ function extend(schema, shape) {
   };
   return clone(schema, def2);
 }
-function merge(a, b) {
+function merge$1(a, b) {
   return clone(a, {
     ...a._zod.def,
     get shape() {
@@ -1497,7 +1498,7 @@ function handleOptionalObjectResult(result, final, key, input) {
 }
 const $ZodObject = /* @__PURE__ */ $constructor("$ZodObject", (inst, def2) => {
   $ZodType.init(inst, def2);
-  const _normalized = cached(() => {
+  const _normalized = cached$1(() => {
     const keys = Object.keys(def2.shape);
     for (const k of keys) {
       if (!(def2.shape[k] instanceof $ZodType)) {
@@ -1732,7 +1733,7 @@ const $ZodDiscriminatedUnion = /* @__PURE__ */ $constructor("$ZodDiscriminatedUn
     }
     return propValues;
   });
-  const disc = cached(() => {
+  const disc = cached$1(() => {
     const opts = def2.options;
     const map = /* @__PURE__ */ new Map();
     for (const o of opts) {
@@ -3797,7 +3798,7 @@ const ZodObject$1 = /* @__PURE__ */ $constructor("ZodObject", (inst, def2) => {
   inst.extend = (incoming) => {
     return extend(inst, incoming);
   };
-  inst.merge = (other) => merge(inst, other);
+  inst.merge = (other) => merge$1(inst, other);
   inst.pick = (mask) => pick(inst, mask);
   inst.omit = (mask) => omit(inst, mask);
   inst.partial = (...args) => partial(ZodOptional$1, inst, args[0]);
@@ -9193,9 +9194,9 @@ function filterLogger(logger, logLevel) {
   cachedLoggers.set(logger, [logLevel, levelLogger]);
   return levelLogger;
 }
-function loggerFor(client2) {
-  const logger = client2.logger;
-  const logLevel = client2.logLevel ?? "off";
+function loggerFor(client) {
+  const logger = client.logger;
+  const logLevel = client.logLevel ?? "off";
   if (!logger) {
     return noopLogger;
   }
@@ -9239,11 +9240,11 @@ const formatRequestDetails = (details) => {
 var _Stream_client;
 var Stream = /* @__PURE__ */ (() => {
   class Stream2 {
-    constructor(iterator, controller, client2) {
+    constructor(iterator, controller, client) {
       this.iterator = iterator;
       _Stream_client.set(this, void 0);
       this.controller = controller;
-      __classPrivateFieldSet(this, _Stream_client, client2);
+      __classPrivateFieldSet(this, _Stream_client, client);
     }
     /**
      * Iterate the raw Server-Sent Events from `response` — `{event, data, raw}`
@@ -9256,9 +9257,9 @@ var Stream = /* @__PURE__ */ (() => {
     static rawEvents(response, controller = new AbortController()) {
       return _iterSSEMessages(response, controller);
     }
-    static fromSSEResponse(response, controller, client2) {
+    static fromSSEResponse(response, controller, client) {
       let consumed = false;
-      const logger = client2 ? loggerFor(client2) : console;
+      const logger = client ? loggerFor(client) : console;
       async function* iterator() {
         if (consumed) {
           throw new AnthropicError("Cannot iterate over a consumed stream, use `.tee()` to split the stream.");
@@ -9300,13 +9301,13 @@ var Stream = /* @__PURE__ */ (() => {
           releaseRequestSignal(controller);
         }
       }
-      return new Stream2(iterator, controller, client2);
+      return new Stream2(iterator, controller, client);
     }
     /**
      * Generates a Stream from a newline-separated ReadableStream
      * where each item is a JSON value.
      */
-    static fromReadableStream(readableStream, controller, client2) {
+    static fromReadableStream(readableStream, controller, client) {
       let consumed = false;
       async function* iterLines() {
         const lineDecoder = new LineDecoder();
@@ -9344,7 +9345,7 @@ var Stream = /* @__PURE__ */ (() => {
           releaseRequestSignal(controller);
         }
       }
-      return new Stream2(iterator, controller, client2);
+      return new Stream2(iterator, controller, client);
     }
     [(_Stream_client = /* @__PURE__ */ new WeakMap(), Symbol.asyncIterator)]() {
       return this.iterator();
@@ -9607,43 +9608,43 @@ function getTracer(option, version2, platform) {
   const scope2 = platform !== void 0 ? `${INSTRUMENTATION_SCOPE}.${platform}` : INSTRUMENTATION_SCOPE;
   return (option.tracerProvider ?? trace.getTracerProvider()).getTracer(scope2, version2);
 }
-function guardTracing(client2, step) {
+function guardTracing(client, step) {
   try {
     return step();
   } catch (problem) {
-    if (client2) {
-      loggerFor(client2).debug("could not record telemetry", problem);
+    if (client) {
+      loggerFor(client).debug("could not record telemetry", problem);
     }
     return void 0;
   }
 }
-function startApiCallSpan(client2, name, options, settings) {
+function startApiCallSpan(client, name, options, settings2) {
   if (options?.__span) {
     return options.__span;
   }
-  const tracer = client2._tracer;
+  const tracer = client._tracer;
   if (!tracer) {
     return void 0;
   }
-  return guardTracing(client2, () => {
+  return guardTracing(client, () => {
     const startTime = Date.now();
-    const threadID = settings?.attributes?.[ATTR_ANTHROPIC_SESSION_THREAD_ID];
+    const threadID = settings2?.attributes?.[ATTR_ANTHROPIC_SESSION_THREAD_ID];
     const conversationId = options?.openTelemetry?.conversationId ?? (typeof threadID === "string" ? threadID : void 0);
     const span = tracer.startSpan(name, {
       kind: SpanKind.CLIENT,
       // On the span from its start, with what the method gives, for a sampler to decide on.
       attributes: {
-        [ATTR_GEN_AI_PROVIDER_NAME]: client2._genAIProviderName,
-        ...serverAttributes(client2.baseURL),
+        [ATTR_GEN_AI_PROVIDER_NAME]: client._genAIProviderName,
+        ...serverAttributes(client.baseURL),
         ...conversationId != null ? { [ATTR_GEN_AI_CONVERSATION_ID]: conversationId } : void 0,
-        ...settings?.route != null ? { [ATTR_HTTP_ROUTE]: settings.route } : void 0,
-        ...settings?.attributes
+        ...settings2?.route != null ? { [ATTR_HTTP_ROUTE]: settings2.route } : void 0,
+        ...settings2?.attributes
       }
     });
-    if (!span.isRecording() && !(client2.openTelemetry.propagation ? Object.keys(injectContext(span)).length > 0 : trace.isSpanContextValid(span.spanContext()))) {
+    if (!span.isRecording() && !(client.openTelemetry.propagation ? Object.keys(injectContext(span)).length > 0 : trace.isSpanContextValid(span.spanContext()))) {
       return void 0;
     }
-    return { ...settings, span, name, startTime };
+    return { ...settings2, span, name, startTime };
   });
 }
 function setCreatedIDAttribute(call, data) {
@@ -10818,7 +10819,7 @@ function setResponseAttributes(span, message, usage, complete) {
     span.setAttribute(ATTR_ANTHROPIC_MESSAGE_STOP_REASON, message.stop_reason);
   }
 }
-function setAnthropicSpanAttributes(client2, span, result) {
+function setAnthropicSpanAttributes(client, span, result) {
   if (!span.isRecording()) {
     return;
   }
@@ -10832,16 +10833,16 @@ function setAnthropicSpanAttributes(client2, span, result) {
       }
     }
   } catch (problem) {
-    loggerFor(client2).debug("could not record the API call on its span", problem);
+    loggerFor(client).debug("could not record the API call on its span", problem);
   }
 }
-function messagesCreateSpanSettings(client2, body, headers) {
+function messagesCreateSpanSettings(client, body, headers) {
   const attributes = {
     [ATTR_GEN_AI_OPERATION_NAME]: GEN_AI_OPERATION_NAME_VALUE_CHAT,
     [ATTR_GEN_AI_REQUEST_MODEL]: body.model
   };
   try {
-    const betas = (buildHeaders([client2._options.defaultHeaders, headers]).values.get("anthropic-beta") ?? "").split(",").map((beta) => beta.trim()).filter(Boolean);
+    const betas = (buildHeaders([client._options.defaultHeaders, headers]).values.get("anthropic-beta") ?? "").split(",").map((beta) => beta.trim()).filter(Boolean);
     if (betas.length) {
       attributes[ATTR_ANTHROPIC_BETA] = betas;
     }
@@ -10876,54 +10877,54 @@ function messagesCreateSpanSettings(client2, body, headers) {
       attributes[ATTR_ANTHROPIC_THINKING_BUDGET_TOKENS] = thinking.budget_tokens;
     }
   } catch (problem) {
-    loggerFor(client2).debug("could not record the request on its span", problem);
+    loggerFor(client).debug("could not record the request on its span", problem);
   }
   return { route: "/v1/messages", attributes };
 }
-function recordMessagesCreateRequest(client2, call, body) {
+function recordMessagesCreateRequest(client, call, body) {
   if (!call?.span.isRecording()) {
     return call;
   }
   try {
-    const { contentMode, maxContentBytes } = client2.openTelemetry.traces;
+    const { contentMode, maxContentBytes } = client.openTelemetry.traces;
     if (contentMode === "content") {
       setMessageContentAttributes(call, body, void 0, maxContentBytes);
     }
   } catch (problem) {
-    loggerFor(client2).debug("could not record the request on its span", problem);
+    loggerFor(client).debug("could not record the request on its span", problem);
   }
   return call;
 }
-function recordMessagesCreateResponse(client2, call, body, data) {
+function recordMessagesCreateResponse(client, call, body, data) {
   if (!call?.span.isRecording() || data instanceof Stream) {
     return;
   }
   const span = call.span;
   try {
     setResponseAttributes(span, data, data.usage, true);
-    const { contentMode, maxContentBytes } = client2.openTelemetry.traces;
+    const { contentMode, maxContentBytes } = client.openTelemetry.traces;
     if (contentMode === "content") {
       setMessageContentAttributes(call, body, data.content, maxContentBytes);
     }
   } catch (problem) {
-    loggerFor(client2).debug("could not record the response on its span", problem);
+    loggerFor(client).debug("could not record the response on its span", problem);
   }
 }
-function recordCountTokensResponse(client2, call, count) {
+function recordCountTokensResponse(client, call, count) {
   try {
     call?.span.setAttribute(ATTR_ANTHROPIC_MESSAGE_COUNT_TOKENS_INPUT_TOKENS, count.input_tokens);
   } catch (problem) {
-    loggerFor(client2).debug("could not record the response on its span", problem);
+    loggerFor(client).debug("could not record the response on its span", problem);
   }
 }
-function recordSessionsCreateResponse(client2, call, session) {
+function recordSessionsCreateResponse(client, call, session) {
   try {
     call?.span.setAttributes({
       [ATTR_GEN_AI_AGENT_NAME]: session.agent.name,
       [ATTR_GEN_AI_REQUEST_MODEL]: session.agent.model.id
     });
   } catch (problem) {
-    loggerFor(client2).debug("could not record the response on its span", problem);
+    loggerFor(client).debug("could not record the response on its span", problem);
   }
 }
 function traceHeaderNames() {
@@ -10957,24 +10958,24 @@ function withoutTraceHeaders(middleware) {
     }, ctx);
   };
 }
-function recordStreamedMessageContent(client2, call, body, message) {
-  if (!call.span.isRecording() || client2.openTelemetry.traces.contentMode !== "content") {
+function recordStreamedMessageContent(client, call, body, message) {
+  if (!call.span.isRecording() || client.openTelemetry.traces.contentMode !== "content") {
     return;
   }
   try {
-    setMessageContentAttributes(call, body, message.content, client2.openTelemetry.traces.maxContentBytes);
+    setMessageContentAttributes(call, body, message.content, client.openTelemetry.traces.maxContentBytes);
   } catch (problem) {
-    loggerFor(client2).debug("could not record the streamed message on its span", problem);
+    loggerFor(client).debug("could not record the streamed message on its span", problem);
   }
 }
-function endAnthropicApiCallSpanWhenStreamEnds(client2, span, stream2, props) {
+function endAnthropicApiCallSpanWhenStreamEnds(client, span, stream2, props) {
   if (props.options.__span?.name === "anthropic.messages.create" && stream2 instanceof Stream) {
-    endMessagesCreateSpanWhenStreamEnds(client2, span, stream2, props);
+    endMessagesCreateSpanWhenStreamEnds(client, span, stream2, props);
   } else {
     endApiCallSpanWhenStreamEnds(span, stream2, props);
   }
 }
-function endMessagesCreateSpanWhenStreamEnds(client2, span, stream2, props) {
+function endMessagesCreateSpanWhenStreamEnds(client, span, stream2, props) {
   if (!span.isRecording()) {
     return;
   }
@@ -10991,8 +10992,8 @@ function endMessagesCreateSpanWhenStreamEnds(client2, span, stream2, props) {
       try {
         switch (event.type) {
           case "message_start": {
-            const { id: id2, model: model2, stop_reason } = event.message;
-            message = { id: id2, model: model2, stop_reason };
+            const { id: id2, model, stop_reason } = event.message;
+            message = { id: id2, model, stop_reason };
             usage = { ...event.message.usage };
             break;
           }
@@ -11040,7 +11041,7 @@ function endMessagesCreateSpanWhenStreamEnds(client2, span, stream2, props) {
             checkNever(event);
         }
       } catch (problem) {
-        loggerFor(client2).debug("could not record the stream on its span", problem);
+        loggerFor(client).debug("could not record the stream on its span", problem);
       }
     },
     onEnd(end) {
@@ -11049,11 +11050,11 @@ function endMessagesCreateSpanWhenStreamEnds(client2, span, stream2, props) {
           setResponseAttributes(span, message, usage, sawMessageDelta || sawStop);
         }
       } catch (problem) {
-        loggerFor(client2).debug("could not record the stream on its span", problem);
+        loggerFor(client).debug("could not record the stream on its span", problem);
       }
       const failure = call?.failure;
       if (!sawStop && call?.streamed && failure === void 0) {
-        recordStreamedMessageContent(client2, call, call.streamed.body, call.streamed.message);
+        recordStreamedMessageContent(client, call, call.streamed.body, call.streamed.message);
       }
       if (end.reason === "failed") {
         setErrorStatus(span, end.error);
@@ -11066,15 +11067,15 @@ function endMessagesCreateSpanWhenStreamEnds(client2, span, stream2, props) {
           setErrorStatus(span, new AnthropicError("The stream ended before message_stop."), "api_error");
         }
       }
-      guardTracing(client2, () => span.end());
+      guardTracing(client, () => span.end());
     }
   });
 }
-function startEnvironmentWorkSpan(client2, work, parentContext) {
-  return client2._tracer?.startSpan("anthropic.environment.work", {
+function startEnvironmentWorkSpan(client, work, parentContext) {
+  return client._tracer?.startSpan("anthropic.environment.work", {
     kind: SpanKind.INTERNAL,
     attributes: {
-      [ATTR_GEN_AI_PROVIDER_NAME]: client2._genAIProviderName,
+      [ATTR_GEN_AI_PROVIDER_NAME]: client._genAIProviderName,
       "anthropic.environment.id": work.environment_id,
       "anthropic.environment.work.id": work.id,
       "anthropic.session.id": work.data.id
@@ -11099,17 +11100,17 @@ function failEnvironmentWorkSpan(span, signal, error2) {
   }
   span.end();
 }
-async function withEnvironmentWorkSpan(client2, span, signal, handle) {
+async function withEnvironmentWorkSpan(client, span, signal, handle) {
   if (!span) {
     return handle();
   }
   try {
     await context.with(trace.setSpan(context.active(), span), handle);
   } catch (error2) {
-    guardTracing(client2, () => failEnvironmentWorkSpan(span, signal, error2));
+    guardTracing(client, () => failEnvironmentWorkSpan(span, signal, error2));
     throw error2;
   }
-  guardTracing(client2, () => endEnvironmentWorkSpan(span, signal));
+  guardTracing(client, () => endEnvironmentWorkSpan(span, signal));
 }
 const STAINLESS_HELPER_HEADER = "x-stainless-helper";
 const STAINLESS_HELPER_METHOD_HEADER = "x-stainless-helper-method";
@@ -11162,30 +11163,30 @@ function stainlessHelperHeaderFromFile(file) {
   }
   return {};
 }
-function startToolRunnerSpan(client2, params, conversationId) {
-  if (!client2._tracer)
+function startToolRunnerSpan(client, params, conversationId) {
+  if (!client._tracer)
     return void 0;
   const hasJSONOutput = params.output_config?.format?.type === "json_schema" || params.output_format?.type === "json_schema";
-  return client2._tracer.startSpan("anthropic.messages.tool_runner", {
+  return client._tracer.startSpan("anthropic.messages.tool_runner", {
     kind: SpanKind.INTERNAL,
     attributes: {
       [ATTR_GEN_AI_OPERATION_NAME]: GEN_AI_OPERATION_NAME_VALUE_INVOKE_AGENT,
-      [ATTR_GEN_AI_PROVIDER_NAME]: client2._genAIProviderName,
+      [ATTR_GEN_AI_PROVIDER_NAME]: client._genAIProviderName,
       [ATTR_GEN_AI_REQUEST_MODEL]: params.model,
       ...hasJSONOutput ? { [ATTR_GEN_AI_OUTPUT_TYPE]: GEN_AI_OUTPUT_TYPE_VALUE_JSON } : void 0,
       ...conversationId != null ? { [ATTR_GEN_AI_CONVERSATION_ID]: conversationId } : void 0
     }
   });
 }
-async function withToolUseSpan(client2, tool, toolUse, options, run) {
-  const tracer = client2._tracer;
+async function withToolUseSpan(client, tool, toolUse, options, run) {
+  const tracer = client._tracer;
   if (!tracer)
     return run();
   const { signal, conversationId, sessionID, parentContext = context.active() } = options;
   const description2 = "description" in tool ? tool.description : void 0;
   const attributes = {
     [ATTR_GEN_AI_OPERATION_NAME]: GEN_AI_OPERATION_NAME_VALUE_EXECUTE_TOOL,
-    [ATTR_GEN_AI_PROVIDER_NAME]: client2._genAIProviderName,
+    [ATTR_GEN_AI_PROVIDER_NAME]: client._genAIProviderName,
     [ATTR_GEN_AI_TOOL_NAME]: toolUse.name,
     // Only a call to a member of a toolset, such as `computer`, has one.
     ..."toolset_name" in toolUse && typeof toolUse.toolset_name === "string" ? { [ATTR_ANTHROPIC_TOOLSET_NAME]: toolUse.toolset_name } : void 0,
@@ -11198,7 +11199,7 @@ async function withToolUseSpan(client2, tool, toolUse, options, run) {
     ..."session_thread_id" in toolUse && toolUse.session_thread_id != null ? { "anthropic.session.thread.id": toolUse.session_thread_id } : void 0
   };
   const operation = toolUse.type === "agent.tool_use" ? "anthropic.tool_use" : wasCreatedByStainlessHelper(tool) && tool[SDK_HELPER_SYMBOL] === "mcpTool" ? "anthropic.mcp_tool_use" : "anthropic.custom_tool_use";
-  const span = guardTracing(client2, () => tracer.startSpan(`${operation} ${toolUse.name}`, { kind: SpanKind.INTERNAL, attributes }, parentContext));
+  const span = guardTracing(client, () => tracer.startSpan(`${operation} ${toolUse.name}`, { kind: SpanKind.INTERNAL, attributes }, parentContext));
   if (!span)
     return run();
   let result;
@@ -11208,7 +11209,7 @@ async function withToolUseSpan(client2, tool, toolUse, options, run) {
   } finally {
     const succeeded = result !== void 0 && !result.isError;
     const canceled = !succeeded && signal?.aborted === true;
-    const { contentMode, maxContentBytes } = client2.openTelemetry.traces;
+    const { contentMode, maxContentBytes } = client.openTelemetry.traces;
     if (contentMode === "content" && span.isRecording()) {
       try {
         setContentAttributes(span, {
@@ -11216,10 +11217,10 @@ async function withToolUseSpan(client2, tool, toolUse, options, run) {
           [ATTR_ANTHROPIC_TOOL_RESULT_CONTENT]: result && !canceled ? toolResultContentBlocks(result.content) : void 0
         }, maxContentBytes);
       } catch (problem) {
-        loggerFor(client2).debug("could not record the tool run on its span", problem);
+        loggerFor(client).debug("could not record the tool run on its span", problem);
       }
     }
-    guardTracing(client2, () => {
+    guardTracing(client, () => {
       if (succeeded) {
         span.setStatus({ code: SpanStatusCode.OK });
       } else if (!canceled) {
@@ -11709,12 +11710,12 @@ function cachedExchangeProvider(exchange, credentialsPath, onCacheWriteError, on
     return result;
   };
 }
-async function defaultParseResponse(client2, props) {
+async function defaultParseResponse(client, props) {
   const { response, requestLogID, retryOfRequestLogID, startTime } = props;
   const body = await (async () => {
     if (props.options.stream) {
-      loggerFor(client2).debug("response", response.status, response.url, response.headers, response.body);
-      return Stream.fromSSEResponse(response, props.controller, client2);
+      loggerFor(client).debug("response", response.status, response.url, response.headers, response.body);
+      return Stream.fromSSEResponse(response, props.controller, client);
     }
     if (response.status === 204) {
       return null;
@@ -11740,7 +11741,7 @@ async function defaultParseResponse(client2, props) {
       releaseRequestSignal(props.controller);
     }
   });
-  debugLogRequestDetails(loggerFor(client2), `[${requestLogID}] response parsed`, {
+  debugLogRequestDetails(loggerFor(client), `[${requestLogID}] response parsed`, {
     retryOfRequestLogID,
     url: response.url,
     status: response.status,
@@ -11773,13 +11774,13 @@ function isRetryableError(err) {
   }
   return false;
 }
-function wrapFetchWithMiddleware(fetchFn, middleware, options, client2) {
+function wrapFetchWithMiddleware(fetchFn, middleware, options, client) {
   return async (url, init = {}) => {
     if (middleware.length === 0) {
       return fetchFn.call(void 0, url, init);
     }
     const headers = init.headers instanceof Headers ? init.headers : new Headers(init.headers);
-    const response = await applyMiddleware(fetchFn, middleware, options, client2)({
+    const response = await applyMiddleware(fetchFn, middleware, options, client)({
       ...init,
       headers,
       url: typeof url === "string" ? url : url instanceof URL ? url.href : url.url
@@ -11790,32 +11791,32 @@ function wrapFetchWithMiddleware(fetchFn, middleware, options, client2) {
     return response;
   };
 }
-function createMiddlewareContext(options, client2) {
+function createMiddlewareContext(options, client) {
   const cache2 = /* @__PURE__ */ new WeakMap();
   return {
     options,
     // Resolved per chain, so changes to the client's `logLevel`/`logger`
     // apply to subsequent requests.
-    logger: client2 ? loggerFor(client2) : defaultLogger(),
+    logger: client ? loggerFor(client) : defaultLogger(),
     parse(response) {
       if (options?.stream && response.ok) {
-        return parseMiddlewareResponse(response, options, client2);
+        return parseMiddlewareResponse(response, options, client);
       }
       let parsed = cache2.get(response);
       if (!parsed) {
-        parsed = parseMiddlewareResponse(response, options, client2);
+        parsed = parseMiddlewareResponse(response, options, client);
         cache2.set(response, parsed);
       }
       return parsed;
     }
   };
 }
-async function parseMiddlewareResponse(response, options, client2) {
+async function parseMiddlewareResponse(response, options, client) {
   if (response.bodyUsed || response.body?.locked) {
     throw new AnthropicError("cannot ctx.parse() a response whose body was already consumed; call ctx.parse() instead of reading the body, or read via response.clone()");
   }
   if (options?.stream && response.ok) {
-    return Stream.fromSSEResponse(response.clone(), new AbortController(), client2);
+    return Stream.fromSSEResponse(response.clone(), new AbortController(), client);
   }
   if (response.status === 204) {
     return null;
@@ -11834,7 +11835,7 @@ async function parseMiddlewareResponse(response, options, client2) {
   }
   return await response.clone().text();
 }
-function applyMiddleware(fetchFn, middleware, options, client2) {
+function applyMiddleware(fetchFn, middleware, options, client) {
   let next = async ({ url, ...init }) => {
     try {
       return await fetchFn.call(void 0, url, init);
@@ -11844,7 +11845,7 @@ function applyMiddleware(fetchFn, middleware, options, client2) {
       throw error2;
     }
   };
-  const ctx = createMiddlewareContext(options, client2);
+  const ctx = createMiddlewareContext(options, client);
   for (let i = middleware.length - 1; i >= 0; i--) {
     const mw = middleware[i];
     const nextInner = next;
@@ -11944,17 +11945,17 @@ const addFormValue = async (form, key, value, stripFilenames) => {
 var _APIPromise_client;
 var APIPromise = /* @__PURE__ */ (() => {
   class APIPromise2 extends Promise {
-    constructor(client2, responsePromise, parseResponse = defaultParseResponse) {
+    constructor(client, responsePromise, parseResponse = defaultParseResponse) {
       super((resolve2) => {
         resolve2(null);
       });
       this.responsePromise = responsePromise;
       this.parseResponse = parseResponse;
       _APIPromise_client.set(this, void 0);
-      __classPrivateFieldSet(this, _APIPromise_client, client2);
+      __classPrivateFieldSet(this, _APIPromise_client, client);
     }
     _thenUnwrap(transform2) {
-      return new APIPromise2(__classPrivateFieldGet(this, _APIPromise_client, "f"), this.responsePromise, async (client2, props) => addResponseIDs(transform2(await this.parseResponse(client2, props), props), props.response));
+      return new APIPromise2(__classPrivateFieldGet(this, _APIPromise_client, "f"), this.responsePromise, async (client, props) => addResponseIDs(transform2(await this.parseResponse(client, props), props), props.response));
     }
     /**
      * Gets the raw `Response` instance instead of parsing the response
@@ -12050,9 +12051,9 @@ var APIPromise = /* @__PURE__ */ (() => {
 var _AbstractPage_client;
 var AbstractPage = /* @__PURE__ */ (() => {
   class AbstractPage2 {
-    constructor(client2, response, body, options) {
+    constructor(client, response, body, options) {
       _AbstractPage_client.set(this, void 0);
-      __classPrivateFieldSet(this, _AbstractPage_client, client2);
+      __classPrivateFieldSet(this, _AbstractPage_client, client);
       this.options = options;
       this.response = response;
       this.body = body;
@@ -12099,8 +12100,8 @@ var AbstractPage = /* @__PURE__ */ (() => {
 })();
 var PagePromise = /* @__PURE__ */ (() => {
   class PagePromise2 extends APIPromise {
-    constructor(client2, request, Page2) {
-      super(client2, request, async (client3, props) => new Page2(client3, props.response, await defaultParseResponse(client3, props), props.options));
+    constructor(client, request, Page2) {
+      super(client, request, async (client2, props) => new Page2(client2, props.response, await defaultParseResponse(client2, props), props.options));
     }
     /**
      * Allow auto-paginating iteration on an unawaited list call, eg:
@@ -12119,8 +12120,8 @@ var PagePromise = /* @__PURE__ */ (() => {
   return PagePromise2;
 })();
 class Page extends AbstractPage {
-  constructor(client2, response, body, options) {
-    super(client2, response, body, options);
+  constructor(client, response, body, options) {
+    super(client, response, body, options);
     this.data = body.data || [];
     this.has_more = body.has_more || false;
     this.first_id = body.first_id || null;
@@ -12163,8 +12164,8 @@ class Page extends AbstractPage {
   }
 }
 class PageCursor extends AbstractPage {
-  constructor(client2, response, body, options) {
-    super(client2, response, body, options);
+  constructor(client, response, body, options) {
+    super(client, response, body, options);
     this.data = body.data || [];
     this.next_page = body.next_page || null;
   }
@@ -12189,8 +12190,8 @@ class PageCursor extends AbstractPage {
   }
 }
 class BidirectionalPageCursor extends AbstractPage {
-  constructor(client2, response, body, options) {
-    super(client2, response, body, options);
+  constructor(client, response, body, options) {
+    super(client, response, body, options);
     this.data = body.data || [];
     this.next_page = body.next_page || null;
     this.prev_page = body.prev_page || null;
@@ -12216,8 +12217,8 @@ class BidirectionalPageCursor extends AbstractPage {
   }
 }
 class ReportPageCursor extends AbstractPage {
-  constructor(client2, response, body, options) {
-    super(client2, response, body, options);
+  constructor(client, response, body, options) {
+    super(client, response, body, options);
     this.data = body.data || [];
     this.next_page = body.next_page || null;
     this.has_more = body.has_more || false;
@@ -12301,8 +12302,8 @@ function propsForError(value) {
   return `; props: [${props.map((p) => `"${p}"`).join(", ")}]`;
 }
 class APIResource {
-  constructor(client2) {
-    this._client = client2;
+  constructor(client) {
+    this._client = client;
   }
 }
 function messagesCreateHeaders$1(params, options) {
@@ -12316,11 +12317,11 @@ function messagesCreateHeaders$1(params, options) {
     options?.headers
   ]);
 }
-function startMessagesStreamSpan$1(client2, body, options) {
-  if (!client2._tracer)
+function startMessagesStreamSpan$1(client, body, options) {
+  if (!client._tracer)
     return void 0;
   const headers = messagesCreateHeaders$1(body, options);
-  return startApiCallSpan(client2, "anthropic.messages.create", options, messagesCreateSpanSettings(client2, { ...body, stream: true }, headers));
+  return startApiCallSpan(client, "anthropic.messages.create", options, messagesCreateSpanSettings(client, { ...body, stream: true }, headers));
 }
 function getOutputFormat$1(params) {
   return params?.output_config?.format;
@@ -12745,8 +12746,8 @@ var MessageStream = /* @__PURE__ */ (() => {
       runner._run(() => runner._fromReadableStream(stream2));
       return runner;
     }
-    static createMessage(messages, params, options, { logger, client: client2 } = {}) {
-      const runner = new MessageStream2(params, { logger, client: client2 });
+    static createMessage(messages, params, options, { logger, client } = {}) {
+      const runner = new MessageStream2(params, { logger, client });
       for (const message of params.messages) {
         runner._addMessageParam(message);
       }
@@ -15409,12 +15410,12 @@ function jitter(lowMs, highMs) {
 function applyJitter(ms) {
   return ms * (1 - Math.random() * 0.25);
 }
-function copyClientForHelper(client2, { authToken, helper }) {
+function copyClientForHelper(client, { authToken, helper }) {
   if (!authToken) {
     throw new AnthropicError(`copyClientForHelper: expected a non-empty authToken but received ${JSON.stringify(authToken)}`);
   }
-  const parentDefaults = client2._options.defaultHeaders;
-  const parentAuthExtraHeaders = client2._authState?.extraHeaders;
+  const parentDefaults = client._options.defaultHeaders;
+  const parentAuthExtraHeaders = client._authState?.extraHeaders;
   const inheritedAuthExtraHeaders = parentAuthExtraHeaders ? Object.fromEntries(Object.entries(parentAuthExtraHeaders).filter(([name]) => {
     const lower = name.toLowerCase();
     return lower !== "authorization" && lower !== "x-api-key";
@@ -15424,10 +15425,10 @@ function copyClientForHelper(client2, { authToken, helper }) {
     parentDefaults,
     { [STAINLESS_HELPER_HEADER]: helper }
   ]);
-  return client2.withOptions({
+  return client.withOptions({
     apiKey: null,
     authToken,
-    baseURL: client2.baseURL,
+    baseURL: client.baseURL,
     credentials: void 0,
     defaultHeaders
   });
@@ -16588,9 +16589,9 @@ async function withTimeout(p, ms) {
       clearTimeout(timer);
   }
 }
-async function forceStop(client2, work, log, requestOptions) {
+async function forceStop(client, work, log, requestOptions) {
   try {
-    await client2.beta.environments.work.stop(
+    await client.beta.environments.work.stop(
       work.id,
       { environment_id: work.environment_id, force: true },
       // Caller's headers pass through; the helper-tag header is on the scoped
@@ -16639,7 +16640,7 @@ function serverLeaseState(e) {
   }
   return isObj(node2) ? node2 : {};
 }
-async function heartbeatLoop(client2, work, lease, logger, requestOptions, onLeaseTtl) {
+async function heartbeatLoop(client, work, lease, logger, requestOptions, onLeaseTtl) {
   let intervalMs = HEARTBEAT_DEFAULT_MS;
   let ttlMs = HEARTBEAT_TTL_DEFAULT_MS;
   let lastSuccessMs = Date.now();
@@ -16649,7 +16650,7 @@ async function heartbeatLoop(client2, work, lease, logger, requestOptions, onLea
     const detach = linkAbort(lease.signal, beatCtrl);
     const cutoff = setTimeout(() => beatCtrl.abort(), intervalMs);
     try {
-      const resp = await client2.beta.environments.work.heartbeat(work.id, { environment_id: work.environment_id, expected_last_heartbeat: last }, { ...requestOptions, headers: buildHeaders([requestOptions?.headers]), signal: beatCtrl.signal });
+      const resp = await client.beta.environments.work.heartbeat(work.id, { environment_id: work.environment_id, expected_last_heartbeat: last }, { ...requestOptions, headers: buildHeaders([requestOptions?.headers]), signal: beatCtrl.signal });
       lastSuccessMs = Date.now();
       last = resp.last_heartbeat;
       if (resp.ttl_seconds > 0) {
@@ -17944,11 +17945,11 @@ function messagesCreateHeaders(params, options) {
     options?.headers
   ]);
 }
-function startMessagesStreamSpan(client2, body, options) {
-  if (!client2._tracer)
+function startMessagesStreamSpan(client, body, options) {
+  if (!client._tracer)
     return void 0;
   const headers = messagesCreateHeaders(body, options);
-  return startApiCallSpan(client2, "anthropic.messages.create", options, messagesCreateSpanSettings(client2, { ...transformOutputFormat(body), stream: true }, headers));
+  return startApiCallSpan(client, "anthropic.messages.create", options, messagesCreateSpanSettings(client, { ...transformOutputFormat(body), stream: true }, headers));
 }
 function transformOutputFormat(params) {
   if (!params.output_format) {
@@ -18082,10 +18083,10 @@ var BetaMessageStream = /* @__PURE__ */ (() => {
       runner._run(() => runner._fromReadableStream(stream2));
       return runner;
     }
-    static createMessage(messages, params, options, { logger, client: client2 } = {}) {
+    static createMessage(messages, params, options, { logger, client } = {}) {
       const runner = new BetaMessageStream2(params, {
         logger,
-        client: client2
+        client
       });
       for (const message of params.messages) {
         runner._addMessageParam(message);
@@ -25077,8 +25078,8 @@ var Vaults = /* @__PURE__ */ (() => {
 var _BetaToolRunnerStream_instances, _BetaToolRunnerStream_onToolCall, _BetaToolRunnerStream_emitted, _BetaToolRunnerStream_readers, _BetaToolRunnerStream_toolCalls, _BetaToolRunnerStream_closed, _BetaToolRunnerStream_ready, _BetaToolRunnerStream_fallback, _BetaToolRunnerStream_track, _BetaToolRunnerStream_release, _BetaToolRunnerStream_removeReader;
 var BetaToolRunnerStream = /* @__PURE__ */ (() => {
   class BetaToolRunnerStream2 extends BetaMessageStream {
-    constructor(params, onToolCall, client2) {
-      super(params, { client: client2 });
+    constructor(params, onToolCall, client) {
+      super(params, { client });
       _BetaToolRunnerStream_instances.add(this);
       _BetaToolRunnerStream_onToolCall.set(this, void 0);
       _BetaToolRunnerStream_emitted.set(this, 0);
@@ -25094,12 +25095,12 @@ var BetaToolRunnerStream = /* @__PURE__ */ (() => {
       return __classPrivateFieldGet(this, _BetaToolRunnerStream_toolCalls, "f");
     }
     /** Sends the request as `client.beta.messages.stream()` does. */
-    static start(client2, params, options, onToolCall) {
-      const stream2 = new BetaToolRunnerStream2({ ...params, stream: true }, onToolCall, client2);
+    static start(client, params, options, onToolCall) {
+      const stream2 = new BetaToolRunnerStream2({ ...params, stream: true }, onToolCall, client);
       for (const message of params.messages) {
         stream2._addMessageParam(message);
       }
-      stream2._run(() => stream2._createMessage(client2.beta.messages, { ...params, stream: true }, { ...options, headers: { ...options?.headers, [STAINLESS_HELPER_METHOD_HEADER]: "stream" } }));
+      stream2._run(() => stream2._createMessage(client.beta.messages, { ...params, stream: true }, { ...options, headers: { ...options?.headers, [STAINLESS_HELPER_METHOD_HEADER]: "stream" } }));
       return stream2;
     }
     _deliverEvent(event, snapshot) {
@@ -25194,9 +25195,9 @@ const USE_A_NEW_RUNNER = "a tool runner's toolsets come only from its tools para
 const REMOVE_WITH_A_NEW_RUNNER = "a tool runner's toolsets come only from its tools param; remove it there with setMessagesParams(), or build a new runner without it";
 var BetaToolRunner = /* @__PURE__ */ (() => {
   class BetaToolRunner2 {
-    constructor(client2, params, options) {
+    constructor(client, params, options) {
       _BetaToolRunner_instances.add(this);
-      this.client = client2;
+      this.client = client;
       _BetaToolRunner_consumed.set(this, false);
       _BetaToolRunner_mutated.set(this, false);
       _BetaToolRunner_state.set(this, void 0);
@@ -25814,7 +25815,7 @@ function withToolDefinitions(messages) {
     return { ...message, content };
   });
 }
-async function generateToolResponse(params, runnable, available, lastMessage, requestOptions, calls, client2, toolOtelContext) {
+async function generateToolResponse(params, runnable, available, lastMessage, requestOptions, calls, client, toolOtelContext) {
   if (!lastMessage || lastMessage.role !== "assistant" || !lastMessage.content || typeof lastMessage.content === "string") {
     return null;
   }
@@ -25831,7 +25832,7 @@ async function generateToolResponse(params, runnable, available, lastMessage, re
       const sequence = sequences.get(family) ?? { tail: Promise.resolve(), failed: false };
       sequences.set(family, sequence);
       const registered = params.tools.some((t) => isRunnableToolset(t) && toolsetFamily(t) === family);
-      const run = started ?? sequence.tail.then(() => sequence.failed ? toolsetResultBlock(toolUse, notExecutedText(family), true) : runToolsetCall(params, family, toolUse, requestOptions, client2, toolOtelContext));
+      const run = started ?? sequence.tail.then(() => sequence.failed ? toolsetResultBlock(toolUse, notExecutedText(family), true) : runToolsetCall(params, family, toolUse, requestOptions, client, toolOtelContext));
       sequence.tail = run.then(({ is_error }) => {
         if (is_error && registered)
           sequence.failed = true;
@@ -25853,7 +25854,7 @@ async function generateToolResponse(params, runnable, available, lastMessage, re
       });
       return malformedToolsetCallResult(toolUse);
     }
-    const result = runToolCall(runnable, available, toolUse, requestOptions, client2, toolOtelContext);
+    const result = runToolCall(runnable, available, toolUse, requestOptions, client, toolOtelContext);
     calls?.set(toolUse.id, { status: "started", result });
     return result;
   }));
@@ -25862,7 +25863,7 @@ async function generateToolResponse(params, runnable, available, lastMessage, re
     content: toolResults
   };
 }
-async function runToolsetCall(params, family, toolUse, requestOptions, client2, toolOtelContext) {
+async function runToolsetCall(params, family, toolUse, requestOptions, client, toolOtelContext) {
   const toolset = params.tools.find((t) => isRunnableToolset(t) && toolsetFamily(t) === family);
   if (!toolset) {
     return toolsetResultBlock(toolUse, `Error: Toolset '${quotedName(family)}' member '${quotedName(toolUse.name)}' not found`, true);
@@ -25872,13 +25873,13 @@ async function runToolsetCall(params, family, toolUse, requestOptions, client2, 
     conversationId: requestOptions?.openTelemetry?.conversationId,
     parentContext: toolOtelContext
   };
-  const outcome = await withToolUseSpan(client2, toolset, toolUse, spanOptions, async () => {
+  const outcome = await withToolUseSpan(client, toolset, toolUse, spanOptions, async () => {
     const block = await runToolsetMember(toolset, toolUse, { signal: requestOptions?.signal });
     return { block, content: block.content ?? [], isError: block.is_error === true };
   });
   return outcome.block;
 }
-async function runToolCall(runnable, available, toolUse, requestOptions, client2, toolOtelContext) {
+async function runToolCall(runnable, available, toolUse, requestOptions, client, toolOtelContext) {
   const tool = available.has(toolUse.name) ? runnable.get(toolUse.name) : void 0;
   if (!tool) {
     return toolNotFoundResult(toolUse);
@@ -25888,7 +25889,7 @@ async function runToolCall(runnable, available, toolUse, requestOptions, client2
     conversationId: requestOptions?.openTelemetry?.conversationId,
     parentContext: toolOtelContext
   };
-  const outcome = await withToolUseSpan(client2, tool, toolUse, spanOptions, () => runRunnableTool(tool, toolUse.input, {
+  const outcome = await withToolUseSpan(client, tool, toolUse, spanOptions, () => runRunnableTool(tool, toolUse.input, {
     toolUse,
     toolUseBlock: toolUse,
     signal: requestOptions?.signal
@@ -29374,6 +29375,48 @@ var Anthropic = /* @__PURE__ */ (() => {
   Anthropic2.Beta = Beta;
   return Anthropic2;
 })();
+const CONFIG_PATH = process.env.NEED_QUEST_CONFIG || "/etc/need-quest/config.json";
+function fromEnv(env = process.env) {
+  return {
+    provider: env.NEED_QUEST_PROVIDER || "",
+    openai: { apiKey: env.OPENAI_API_KEY, baseUrl: env.OPENAI_BASE_URL, model: env.NEED_QUEST_MODEL, maxTokens: Number(env.NEED_QUEST_MAX_TOKENS) || void 0 },
+    anthropic: { apiKey: env.ANTHROPIC_API_KEY, baseUrl: env.ANTHROPIC_BASE_URL, model: env.NEED_QUEST_MODEL, effort: env.NEED_QUEST_EFFORT },
+    accessCode: env.NEED_QUEST_ACCESS_CODE,
+    limits: {
+      perIpPerHour: Number(env.NEED_QUEST_IP_LIMIT) || void 0,
+      perDay: Number(env.NEED_QUEST_DAILY_LIMIT) || void 0,
+      concurrency: Number(env.NEED_QUEST_CONCURRENCY) || void 0
+    }
+  };
+}
+function merge(base2, over) {
+  const out = { ...base2 };
+  for (const [k, v2] of Object.entries(over ?? {})) {
+    if (k.startsWith("_") || v2 === "" || v2 === null || v2 === void 0) continue;
+    out[k] = v2 && typeof v2 === "object" && !Array.isArray(v2) ? merge(out[k] ?? {}, v2) : v2;
+  }
+  return out;
+}
+let cached = null;
+function loadConfig(path2 = CONFIG_PATH) {
+  let mtime = -1;
+  try {
+    mtime = statSync(path2).mtimeMs;
+  } catch {
+    return { config: fromEnv(), error: null, fromFile: false };
+  }
+  if (cached?.mtime !== mtime) {
+    try {
+      const file = JSON.parse(readFileSync(path2, "utf8"));
+      cached = { mtime, config: merge(fromEnv(), file), error: null };
+      console.error(`loaded config ${path2}`);
+    } catch (e) {
+      cached = { mtime, config: cached?.config ?? fromEnv(), error: `配置文件格式错误：${e.message}` };
+      console.error(cached.error);
+    }
+  }
+  return { config: cached.config, error: cached.error, fromFile: true };
+}
 const LANGS = ["zh", "en", "ja", "es"];
 const MOODS = ["neutral", "happy", "sad", "angry", "surprised", "worried", "smug", "thinking"];
 const CHARACTERS = [
@@ -35335,15 +35378,14 @@ const farm = {
   secret
 };
 const MAX_FIX = 2;
-function claudeChat(client2, model2 = process.env.NEED_QUEST_MODEL || "claude-opus-5-5") {
-  const effort = process.env.NEED_QUEST_EFFORT || "low";
+function claudeChat(client, model = "claude-opus-5-5", effort = "low") {
   return (system) => {
     const messages = [];
     return {
       async send(userText) {
         messages.push({ role: "user", content: userText });
-        const msg = await client2.beta.messages.stream({
-          model: model2,
+        const msg = await client.beta.messages.stream({
+          model,
           max_tokens: 32e3,
           system,
           output_config: { effort },
@@ -35437,30 +35479,48 @@ Fix exactly these problems and output the complete corrected JSON only.`;
   }
   return { ok: false, error: "invalid" };
 }
-function chatFromEnv(env = process.env) {
-  const wantOpenAi = env.NEED_QUEST_PROVIDER === "openai" || !env.ANTHROPIC_API_KEY && !!env.OPENAI_API_KEY;
-  if (wantOpenAi && env.OPENAI_API_KEY) {
-    if (!env.NEED_QUEST_MODEL) {
-      console.error("OPENAI_API_KEY 已设置，但缺少 NEED_QUEST_MODEL（OpenAI 兼容接口必须指定模型名）");
+function chatFromConfig(c) {
+  const oa = c.openai ?? {};
+  const an = c.anthropic ?? {};
+  const wantOpenAi = c.provider === "openai" || c.provider !== "anthropic" && !an.apiKey && !!oa.apiKey;
+  if (wantOpenAi && oa.apiKey) {
+    if (!oa.model) {
+      console.error("已填 openai.apiKey，但缺少 openai.model（OpenAI 兼容接口必须指定模型名）");
       return null;
     }
-    const baseUrl = env.OPENAI_BASE_URL || "https://api.openai.com/v1";
+    const baseUrl = oa.baseUrl || "https://api.openai.com/v1";
     return {
-      start: openAiChat({ baseUrl, apiKey: env.OPENAI_API_KEY, model: env.NEED_QUEST_MODEL, maxTokens: Number(env.NEED_QUEST_MAX_TOKENS) || void 0 }),
-      label: `openai-compatible ${baseUrl} ${env.NEED_QUEST_MODEL}`
+      start: openAiChat({ baseUrl, apiKey: oa.apiKey, model: oa.model, maxTokens: oa.maxTokens }),
+      label: `openai-compatible ${baseUrl} ${oa.model}`
     };
   }
-  if (env.ANTHROPIC_API_KEY) return { start: claudeChat(new Anthropic()), label: `anthropic ${env.NEED_QUEST_MODEL || "claude-opus-5-5"}` };
+  if (an.apiKey) {
+    const model = an.model || "claude-opus-5-5";
+    const client = new Anthropic({ apiKey: an.apiKey, baseURL: an.baseUrl || void 0 });
+    return { start: claudeChat(client, model, an.effort || "low"), label: `anthropic ${model}` };
+  }
   return null;
 }
-const PER_IP_PER_HOUR = Number(process.env.NEED_QUEST_IP_LIMIT) || 5;
-const DAILY_LIMIT = Number(process.env.NEED_QUEST_DAILY_LIMIT) || 200;
-const MAX_CONCURRENT = Number(process.env.NEED_QUEST_CONCURRENCY) || 3;
 const MAX_NEED_CHARS = 200;
-const model = chatFromEnv();
-if (model) console.error(`online generation: ${model.label}`);
-const client = model?.start ?? null;
-const ACCESS_CODE = process.env.NEED_QUEST_ACCESS_CODE || "";
+let built = null;
+function settings() {
+  const { config: config2, error: error2 } = loadConfig();
+  if (built?.config !== config2) {
+    const m = chatFromConfig(config2);
+    console.error(m ? `online generation: ${m.label}` : "online generation: off（没有配置 key）");
+    built = { config: config2, start: m?.start ?? null };
+  }
+  const l = config2.limits ?? {};
+  return {
+    client: built.start,
+    /** 测试期访问码：设置后，只有带对访问码的请求才能用服务器上的 key 生成 */
+    accessCode: config2.accessCode || "",
+    perIpPerHour: l.perIpPerHour || 5,
+    perDay: l.perDay || 200,
+    concurrency: l.concurrency || 3,
+    error: error2
+  };
+}
 const hits = /* @__PURE__ */ new Map();
 let day = "";
 let dayCount = 0;
@@ -35473,16 +35533,16 @@ function clientIp(req) {
   const fwd = req.headers["x-forwarded-for"];
   return (Array.isArray(fwd) ? fwd[0] : fwd)?.split(",")[0].trim() || req.socket.remoteAddress || "?";
 }
-function allow(ip) {
+function allow(ip, perIpPerHour, perDay) {
   const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
   if (today !== day) {
     day = today;
     dayCount = 0;
   }
-  if (dayCount >= DAILY_LIMIT) return "day";
+  if (dayCount >= perDay) return "day";
   const now = Date.now();
   const recent = (hits.get(ip) ?? []).filter((t) => now - t < 36e5);
-  if (recent.length >= PER_IP_PER_HOUR) return "ip";
+  if (recent.length >= perIpPerHour) return "ip";
   recent.push(now);
   hits.set(ip, recent);
   dayCount++;
@@ -35499,8 +35559,10 @@ async function readBody(req, limit2 = 4096) {
   return JSON.parse(Buffer.concat(chunks).toString("utf8") || "null");
 }
 async function handleApi(req, res, path2) {
+  const cfg = settings();
+  const client = cfg.client;
   if (path2 === "/api/config" && req.method === "GET") {
-    json2(res, 200, { generate: !!client, needCode: !!ACCESS_CODE });
+    json2(res, 200, { generate: !!client, needCode: !!cfg.accessCode, ...cfg.error ? { configError: cfg.error } : {} });
     return true;
   }
   if (path2 !== "/api/generate") return false;
@@ -35512,15 +35574,15 @@ async function handleApi(req, res, path2) {
   } catch {
     return void json2(res, 400, { error: "bad_request" }), true;
   }
-  if (ACCESS_CODE && body?.code !== ACCESS_CODE) return void json2(res, 403, { error: "code" }), true;
+  if (cfg.accessCode && body?.code !== cfg.accessCode) return void json2(res, 403, { error: "code" }), true;
   const need2 = typeof body?.need === "string" ? body.need.trim() : "";
   const lang2 = body?.lang === "en" ? "en" : "zh";
   if (!need2 || [...need2].length > MAX_NEED_CHARS) return void json2(res, 400, { error: "need" }), true;
   const key = `${lang2}:${need2}`;
   if (cache.has(key)) return void json2(res, 200, { lesson: cache.get(key) }), true;
-  const verdict = allow(clientIp(req));
+  const verdict = allow(clientIp(req), cfg.perIpPerHour, cfg.perDay);
   if (verdict !== "ok") return void json2(res, 429, { error: verdict === "ip" ? "rate_ip" : "rate_day" }), true;
-  if (running >= MAX_CONCURRENT) return void json2(res, 429, { error: "busy" }), true;
+  if (running >= cfg.concurrency) return void json2(res, 429, { error: "busy" }), true;
   running++;
   try {
     const r = await generateLesson(client, need2, lang2);

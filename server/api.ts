@@ -1,26 +1,41 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { chatFromEnv, generateLesson, UpstreamError } from './generate';
+import { loadConfig, type Config } from './config';
+import { chatFromConfig, generateLesson, UpstreamError, type StartChat } from './generate';
 
 /**
  * 网页版的生成接口：
- *   GET  /api/config    → { generate: boolean }（服务器配了 API key 才能在线生成）
+ *   GET  /api/config    → { generate, needCode, configError? }（服务器配了 API key 才能在线生成）
  *   POST /api/generate  { need, lang } → { lesson } | { error }
  *
  * 公开网站 + 按量计费，所以有几道保护：按 IP 限频、每日总量上限、并发上限、相同需求缓存。
  */
 
-const PER_IP_PER_HOUR = Number(process.env.NEED_QUEST_IP_LIMIT) || 5;
-const DAILY_LIMIT = Number(process.env.NEED_QUEST_DAILY_LIMIT) || 200;
-const MAX_CONCURRENT = Number(process.env.NEED_QUEST_CONCURRENCY) || 3;
 const MAX_NEED_CHARS = 200;
 
-// 用哪个模型由环境变量决定（Claude 或 OpenAI 兼容接口），见 chatFromEnv
-const model = chatFromEnv();
-if (model) console.error(`online generation: ${model.label}`);
-const client = model?.start ?? null;
-/** 测试期访问码：设置后，只有带对访问码的请求才能用服务器上的 key 生成 */
-const ACCESS_CODE = process.env.NEED_QUEST_ACCESS_CODE || '';
+/**
+ * key、模型、访问码、限额都来自配置文件（见 config.ts），每次请求都读一遍：
+ * 文件没改时直接用缓存；改了就重建模型连接，不用重启服务。
+ */
+let built: { config: Config; start: StartChat | null } | null = null;
+function settings() {
+  const { config, error } = loadConfig();
+  if (built?.config !== config) {
+    const m = chatFromConfig(config);
+    console.error(m ? `online generation: ${m.label}` : 'online generation: off（没有配置 key）');
+    built = { config, start: m?.start ?? null };
+  }
+  const l = config.limits ?? {};
+  return {
+    client: built.start,
+    /** 测试期访问码：设置后，只有带对访问码的请求才能用服务器上的 key 生成 */
+    accessCode: config.accessCode || '',
+    perIpPerHour: l.perIpPerHour || 5,
+    perDay: l.perDay || 200,
+    concurrency: l.concurrency || 3,
+    error,
+  };
+}
 
 const hits = new Map<string, number[]>();
 let day = '';
@@ -37,16 +52,16 @@ function clientIp(req: IncomingMessage): string {
   return (Array.isArray(fwd) ? fwd[0] : fwd)?.split(',')[0].trim() || req.socket.remoteAddress || '?';
 }
 
-function allow(ip: string): 'ok' | 'ip' | 'day' {
+function allow(ip: string, perIpPerHour: number, perDay: number): 'ok' | 'ip' | 'day' {
   const today = new Date().toISOString().slice(0, 10);
   if (today !== day) {
     day = today;
     dayCount = 0;
   }
-  if (dayCount >= DAILY_LIMIT) return 'day';
+  if (dayCount >= perDay) return 'day';
   const now = Date.now();
   const recent = (hits.get(ip) ?? []).filter((t) => now - t < 3600_000);
-  if (recent.length >= PER_IP_PER_HOUR) return 'ip';
+  if (recent.length >= perIpPerHour) return 'ip';
   recent.push(now);
   hits.set(ip, recent);
   dayCount++;
@@ -66,8 +81,10 @@ async function readBody(req: IncomingMessage, limit = 4096): Promise<unknown> {
 
 /** 处理了返回 true */
 export async function handleApi(req: IncomingMessage, res: ServerResponse, path: string): Promise<boolean> {
+  const cfg = settings();
+  const client = cfg.client;
   if (path === '/api/config' && req.method === 'GET') {
-    json(res, 200, { generate: !!client, needCode: !!ACCESS_CODE });
+    json(res, 200, { generate: !!client, needCode: !!cfg.accessCode, ...(cfg.error ? { configError: cfg.error } : {}) });
     return true;
   }
   if (path !== '/api/generate') return false;
@@ -80,7 +97,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   } catch {
     return void json(res, 400, { error: 'bad_request' }), true;
   }
-  if (ACCESS_CODE && body?.code !== ACCESS_CODE) return void json(res, 403, { error: 'code' }), true;
+  if (cfg.accessCode && body?.code !== cfg.accessCode) return void json(res, 403, { error: 'code' }), true;
   const need = typeof body?.need === 'string' ? body.need.trim() : '';
   const lang = body?.lang === 'en' ? 'en' : 'zh';
   if (!need || [...need].length > MAX_NEED_CHARS) return void json(res, 400, { error: 'need' }), true;
@@ -88,9 +105,9 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   const key = `${lang}:${need}`;
   if (cache.has(key)) return void json(res, 200, { lesson: cache.get(key) }), true;
 
-  const verdict = allow(clientIp(req));
+  const verdict = allow(clientIp(req), cfg.perIpPerHour, cfg.perDay);
   if (verdict !== 'ok') return void json(res, 429, { error: verdict === 'ip' ? 'rate_ip' : 'rate_day' }), true;
-  if (running >= MAX_CONCURRENT) return void json(res, 429, { error: 'busy' }), true;
+  if (running >= cfg.concurrency) return void json(res, 429, { error: 'busy' }), true;
 
   running++;
   try {

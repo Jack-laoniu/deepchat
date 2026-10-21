@@ -141,14 +141,14 @@ if ! "$CADDY_BIN" validate --config /etc/caddy/Caddyfile --adapter caddyfile >/d
   warn "Caddy 配置校验没通过，为了不影响你已有的网站，这次不重启 Caddy。运行 caddy validate --config /etc/caddy/Caddyfile 看详情"
 fi
 
-# ---------- 在线生成用的 API key（可选）----------
+# ---------- 在线生成的配置（key 等，可选）----------
+. "$HERE/ensure-config.sh"
 if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
   (umask 077 && echo "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" > /etc/need-quest.env)
   log "已写入 API key 到 /etc/need-quest.env（仅 root 可读）"
 fi
-if [ ! -f /etc/need-quest.env ]; then
-  warn "没有配置 ANTHROPIC_API_KEY：网页上「生成我的关卡」不可用（示例和 MCP 不受影响）。配置：ANTHROPIC_API_KEY=sk-ant-... sudo -E bash $0 $DOMAIN"
-fi
+grep -q '"apiKey": *"[^"]' "$CONFIG_FILE" || [ -f /etc/need-quest.env ] || \
+  warn "还没配置 key：网页上「生成我的关卡」不可用（示例和 MCP 不受影响）。配置：sudo nano $CONFIG_FILE"
 
 CADDY_UNIT_NEW=0
 if ! systemctl cat caddy >/dev/null 2>&1; then

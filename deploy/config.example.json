@@ -1,0 +1,30 @@
+{
+  "_说明": "需求闯关的配置。改完保存即生效，不用重启。以 _ 开头的项是注释，可以删掉。空字符串表示不填。",
+
+  "_provider": "用哪个模型接口：openai = OpenAI 兼容接口（如 agy），anthropic = Claude；留空则自动选填了 key 的那个",
+  "provider": "",
+
+  "openai": {
+    "_说明": "OpenAI 兼容接口。baseUrl 通常以 /v1 结尾；model 必填",
+    "apiKey": "",
+    "baseUrl": "https://api.openai.com/v1",
+    "model": ""
+  },
+
+  "anthropic": {
+    "_说明": "Claude。baseUrl 留空即官方接口；model 留空默认 claude-opus-5-5",
+    "apiKey": "",
+    "baseUrl": "",
+    "model": ""
+  },
+
+  "_accessCode": "测试访问码：填了以后网页上要输入它才能在线生成，防止别人用你的额度",
+  "accessCode": "",
+
+  "limits": {
+    "_说明": "保护你的额度：每个 IP 每小时次数、每天总次数、同时生成数",
+    "perIpPerHour": 5,
+    "perDay": 200,
+    "concurrency": 3
+  }
+}

@@ -55,15 +55,15 @@ Claude Desktop 配置示例：
 
 ```bash
 git clone https://github.com/Jack-laoniu/deepchat.git && cd deepchat
-ANTHROPIC_API_KEY=sk-ant-... sudo -E bash deploy/install.sh quest.example.com
+sudo bash deploy/install.sh quest.example.com
 ```
 
 - 脚本按需安装 Node 20 和 Caddy（自动 HTTPS），注册 systemd 服务
 - **不会覆盖已有网站**：站点写在 `/etc/caddy/need-quest.caddy`，原 Caddyfile 只追加一行 `import`，改之前先备份为 `Caddyfile.bak-时间`
-- `ANTHROPIC_API_KEY` 可选，写入 `/etc/need-quest.env`（仅 root 可读）；有了它，网页上输入需求就能直接生成关卡（默认 `claude-opus-5-5`，可用 `NEED_QUEST_MODEL` 改）。每个 IP 每小时 5 次、每天总共 200 次、同时最多 3 个，可用 `NEED_QUEST_IP_LIMIT` / `NEED_QUEST_DAILY_LIMIT` / `NEED_QUEST_CONCURRENCY` 调整
+- 在线生成的配置都在 `/etc/need-quest/config.json`（模板见 `deploy/config.example.json`，root 可改、服务只读）：`provider`、`openai`（OpenAI 兼容接口的 `apiKey` / `baseUrl` / `model`）、`anthropic`（Claude 的 `apiKey` / `baseUrl` / `model`，默认 `claude-opus-5-5`）、`accessCode`（测试访问码）、`limits`（每 IP 每小时、每天总数、并发，默认 5 / 200 / 3）。用 `sudo nano` 改完保存**立即生效，不用重启**；写错了会保留上次能用的配置，`curl 127.0.0.1:8787/api/config` 会返回 `configError`。旧的 `/etc/need-quest.env` 环境变量仍兼容，配置文件里填了的项优先
 - 完成后：`https://<域名>/` 是游戏网页，`https://<域名>/mcp` 是 MCP 接口
 
-更新：`git pull && sudo bash deploy/update.sh`（只换程序、不碰 Caddy；可顺带用环境变量设置 `ANTHROPIC_API_KEY` / `ANTHROPIC_BASE_URL` / `NEED_QUEST_MODEL` / `NEED_QUEST_ACCESS_CODE`，见脚本开头说明）。关闭并移除：`sudo bash deploy/uninstall.sh`（不动其它站点）。修改代码后用 `npm run build:deploy` 重新生成打包文件再提交。
+更新：`git pull && sudo bash deploy/update.sh`（只换程序、不碰 Caddy，也不会覆盖已有的配置文件）。关闭并移除：`sudo bash deploy/uninstall.sh`（不动其它站点）。修改代码后用 `npm run build:deploy` 重新生成打包文件再提交。
 
 ## 目录
 

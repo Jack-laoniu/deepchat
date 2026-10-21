@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import type { Config } from './config';
 import { GENERATOR_RULES } from '../src/lesson/prompt';
 import { parseLesson, type Lesson } from '../src/lesson/schema';
 import dog from '../src/lessons/dog.json';
@@ -23,8 +24,7 @@ export type StartChat = (system: string) => Chat;
 
 // ---------------- Claude ----------------
 
-export function claudeChat(client: Anthropic, model = process.env.NEED_QUEST_MODEL || 'claude-opus-5-5'): StartChat {
-  const effort = (process.env.NEED_QUEST_EFFORT || 'low') as 'low' | 'medium' | 'high';
+export function claudeChat(client: Anthropic, model = 'claude-opus-5-5', effort: 'low' | 'medium' | 'high' = 'low'): StartChat {
   return (system) => {
     const messages: Anthropic.Beta.BetaMessageParam[] = [];
     return {
@@ -139,24 +139,30 @@ export async function generateLesson(startChat: StartChat, need: string, lang: '
 }
 
 /**
- * 按环境变量选模型：
- * - ANTHROPIC_API_KEY（可配 ANTHROPIC_BASE_URL）→ Claude
- * - OPENAI_API_KEY + OPENAI_BASE_URL + NEED_QUEST_MODEL → OpenAI 兼容接口
- * 两个都配时用 NEED_QUEST_PROVIDER=openai|anthropic 指定，默认 Claude。
+ * 按配置选模型：
+ * - anthropic.apiKey（可配 baseUrl）→ Claude
+ * - openai.apiKey + baseUrl + model → OpenAI 兼容接口
+ * 两个都配时用 provider: "openai" | "anthropic" 指定，默认 Claude。
  */
-export function chatFromEnv(env = process.env): { start: StartChat; label: string } | null {
-  const wantOpenAi = env.NEED_QUEST_PROVIDER === 'openai' || (!env.ANTHROPIC_API_KEY && !!env.OPENAI_API_KEY);
-  if (wantOpenAi && env.OPENAI_API_KEY) {
-    if (!env.NEED_QUEST_MODEL) {
-      console.error('OPENAI_API_KEY 已设置，但缺少 NEED_QUEST_MODEL（OpenAI 兼容接口必须指定模型名）');
+export function chatFromConfig(c: Config): { start: StartChat; label: string } | null {
+  const oa = c.openai ?? {};
+  const an = c.anthropic ?? {};
+  const wantOpenAi = c.provider === 'openai' || (c.provider !== 'anthropic' && !an.apiKey && !!oa.apiKey);
+  if (wantOpenAi && oa.apiKey) {
+    if (!oa.model) {
+      console.error('已填 openai.apiKey，但缺少 openai.model（OpenAI 兼容接口必须指定模型名）');
       return null;
     }
-    const baseUrl = env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
+    const baseUrl = oa.baseUrl || 'https://api.openai.com/v1';
     return {
-      start: openAiChat({ baseUrl, apiKey: env.OPENAI_API_KEY, model: env.NEED_QUEST_MODEL, maxTokens: Number(env.NEED_QUEST_MAX_TOKENS) || undefined }),
-      label: `openai-compatible ${baseUrl} ${env.NEED_QUEST_MODEL}`,
+      start: openAiChat({ baseUrl, apiKey: oa.apiKey, model: oa.model, maxTokens: oa.maxTokens }),
+      label: `openai-compatible ${baseUrl} ${oa.model}`,
     };
   }
-  if (env.ANTHROPIC_API_KEY) return { start: claudeChat(new Anthropic()), label: `anthropic ${env.NEED_QUEST_MODEL || 'claude-opus-5-5'}` };
+  if (an.apiKey) {
+    const model = an.model || 'claude-opus-5-5';
+    const client = new Anthropic({ apiKey: an.apiKey, baseURL: an.baseUrl || undefined });
+    return { start: claudeChat(client, model, an.effort || 'low'), label: `anthropic ${model}` };
+  }
   return null;
 }

@@ -1,7 +1,8 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import farm from '../src/lessons/farm.json';
-import { chatFromEnv, claudeChat, extractJson, generateLesson, openAiChat } from './generate';
+import { fromEnv } from './config';
+import { chatFromConfig, claudeChat, extractJson, generateLesson, openAiChat } from './generate';
 
 /** 假的 Claude 客户端：按顺序返回给定的回复，记录每次请求 */
 function fakeClient(replies: string[]) {
@@ -85,10 +86,10 @@ describe('OpenAI-compatible provider', () => {
   });
 
   it('picks the provider from env', () => {
-    expect(chatFromEnv({})).toBeNull();
-    expect(chatFromEnv({ OPENAI_API_KEY: 'k', OPENAI_BASE_URL: 'https://a/v1', NEED_QUEST_MODEL: 'm' })?.label).toContain('openai-compatible');
-    expect(chatFromEnv({ OPENAI_API_KEY: 'k' })).toBeNull(); // 必须给模型名
-    expect(chatFromEnv({ ANTHROPIC_API_KEY: 'a' })?.label).toContain('anthropic');
+    expect(chatFromConfig(fromEnv({}))).toBeNull();
+    expect(chatFromConfig(fromEnv({ OPENAI_API_KEY: 'k', OPENAI_BASE_URL: 'https://a/v1', NEED_QUEST_MODEL: 'm' }))?.label).toContain('openai-compatible');
+    expect(chatFromConfig(fromEnv({ OPENAI_API_KEY: 'k' }))).toBeNull(); // 必须给模型名
+    expect(chatFromConfig(fromEnv({ ANTHROPIC_API_KEY: 'a' }))?.label).toContain('anthropic');
   });
 
   it('extracts JSON from chatty replies', () => {
