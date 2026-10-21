@@ -53,6 +53,9 @@ export function pickVoice(locale: string, gender: Gender): SpeechSynthesisVoice 
   return v;
 }
 
+/** 英文整体语速（1 = 系统默认） */
+export const EN_RATE = 0.88;
+
 export const canSpeak = () => typeof window !== 'undefined' && 'speechSynthesis' in window;
 
 export function speak(text: string, opts: { pitch?: number; rate?: number; gender?: Gender } = {}): Promise<void> {
@@ -67,11 +70,13 @@ export function speak(text: string, opts: { pitch?: number; rate?: number; gende
       if (v) u.voice = v;
       // 已经按性别选了嗓音，音高只做轻微区分，避免变成「花栗鼠」或「怪兽」声
       u.pitch = 1 + ((opts.pitch ?? 1) - 1) * 0.45;
-      u.rate = (opts.rate ?? 1) * 1.05;
+      // 中文语音偏慢，稍微加快；英文语音（尤其 iPhone）本身就快，角色差异减半再整体放慢，免得听不清
+      const r = opts.rate ?? 1;
+      u.rate = getLang() === 'zh' ? r * 1.05 : (1 + (r - 1) * 0.5) * EN_RATE;
       u.onend = u.onerror = () => resolve();
       window.speechSynthesis.speak(u);
       // 某些环境不触发 onend，兜底
-      setTimeout(resolve, 600 + text.length * (getLang() === 'zh' || getLang() === 'ja' ? 260 : 90));
+      setTimeout(resolve, 600 + text.length * (getLang() === 'zh' || getLang() === 'ja' ? 260 : 110));
     } catch {
       resolve();
     }

@@ -2,7 +2,7 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import farm from '../src/lessons/farm.json';
 import { fromEnv } from './config';
-import { chatFromConfig, claudeChat, extractJson, generateLesson, openAiChat } from './generate';
+import { chatFromConfig, claudeChat, discussNeed, extractJson, generateLesson, openAiChat } from './generate';
 
 /** 假的 Claude 客户端：按顺序返回给定的回复，记录每次请求 */
 function fakeClient(replies: string[]) {
@@ -77,6 +77,39 @@ describe('OpenAI-compatible provider', () => {
     const second = bodies[1].body.messages;
     expect(second.map((m: any) => m.role)).toEqual(['system', 'user', 'assistant', 'user']);
     expect(second[3].content).toContain('ghost');
+  });
+
+  it('switches to max_completion_tokens when the model rejects max_tokens, and remembers it', async () => {
+    const bodies: any[] = [];
+    vi.stubGlobal('fetch', async (_url: string, init: RequestInit) => {
+      const body = JSON.parse(init.body as string);
+      bodies.push(body);
+      if ('max_tokens' in body)
+        return new Response(JSON.stringify({ error: { message: "Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead." } }), { status: 400 });
+      return sse('hello');
+    });
+    const start = openAiChat({ baseUrl: 'https://api.example/v1', apiKey: 'k', model: 'gpt-x' });
+    expect(await start('sys').send('hi')).toEqual({ text: 'hello' });
+    expect(await start('sys').send('again')).toEqual({ text: 'hello' });
+    expect(bodies.map((b) => ('max_tokens' in b ? 'max_tokens' : 'max_completion_tokens'))).toEqual(['max_tokens', 'max_completion_tokens', 'max_completion_tokens']);
+  });
+
+  it('discusses the plan with prior turns as history', async () => {
+    let sent: any;
+    vi.stubGlobal('fetch', async (_url: string, init: RequestInit) => {
+      sent = JSON.parse(init.body as string);
+      return sse('  Try a used one first. What size is your balcony?  ');
+    });
+    const start = openAiChat({ baseUrl: 'https://agy.example/v1', apiKey: 'k', model: 'm' });
+    const reply = await discussNeed(start, {
+      plan: '# PLAN',
+      history: [{ role: 'user', content: 'cheaper?' }, { role: 'assistant', content: 'yes' }],
+      message: 'what first?',
+      lang: 'en',
+    });
+    expect(reply).toBe('Try a used one first. What size is your balcony?');
+    expect(sent.messages.map((m: any) => m.role)).toEqual(['system', 'user', 'assistant', 'user']);
+    expect(sent.messages[0].content).toContain('# PLAN');
   });
 
   it('surfaces upstream HTTP errors', async () => {

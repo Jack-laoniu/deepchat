@@ -13,7 +13,7 @@ export interface Config {
   anthropic?: { apiKey?: string; baseUrl?: string; model?: string; effort?: 'low' | 'medium' | 'high' };
   /** 测试访问码：填了以后网页上要输入它才能生成 */
   accessCode?: string;
-  limits?: { perIpPerHour?: number; perDay?: number; concurrency?: number };
+  limits?: { perIpPerHour?: number; perDay?: number; concurrency?: number; discussPerIpPerHour?: number };
 }
 
 export const CONFIG_PATH = process.env.NEED_QUEST_CONFIG || '/etc/need-quest/config.json';

@@ -1,12 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { loadConfig, type Config } from './config';
-import { chatFromConfig, generateLesson, UpstreamError, type StartChat } from './generate';
+import { chatFromConfig, discussNeed, generateLesson, UpstreamError, type StartChat, type Turn } from './generate';
 
 /**
  * 网页版的生成接口：
  *   GET  /api/config    → { generate, needCode, configError? }（服务器配了 API key 才能在线生成）
  *   POST /api/generate  { need, lang } → { lesson } | { error }
+ *   POST /api/discuss   { plan, history, message, lang } → { reply } | { error }（结算后继续聊需求）
  *
  * 公开网站 + 按量计费，所以有几道保护：按 IP 限频、每日总量上限、并发上限、相同需求缓存。
  */
@@ -33,11 +34,13 @@ function settings() {
     perIpPerHour: l.perIpPerHour || 5,
     perDay: l.perDay || 200,
     concurrency: l.concurrency || 3,
+    discussPerIpPerHour: l.discussPerIpPerHour || 30,
     error,
   };
 }
 
 const hits = new Map<string, number[]>();
+const talkHits = new Map<string, number[]>();
 let day = '';
 let dayCount = 0;
 let running = 0;
@@ -52,7 +55,7 @@ function clientIp(req: IncomingMessage): string {
   return (Array.isArray(fwd) ? fwd[0] : fwd)?.split(',')[0].trim() || req.socket.remoteAddress || '?';
 }
 
-function allow(ip: string, perIpPerHour: number, perDay: number): 'ok' | 'ip' | 'day' {
+function allow(ip: string, perIpPerHour: number, perDay: number, bucket = hits): 'ok' | 'ip' | 'day' {
   const today = new Date().toISOString().slice(0, 10);
   if (today !== day) {
     day = today;
@@ -60,10 +63,10 @@ function allow(ip: string, perIpPerHour: number, perDay: number): 'ok' | 'ip' | 
   }
   if (dayCount >= perDay) return 'day';
   const now = Date.now();
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < 3600_000);
+  const recent = (bucket.get(ip) ?? []).filter((t) => now - t < 3600_000);
   if (recent.length >= perIpPerHour) return 'ip';
   recent.push(now);
-  hits.set(ip, recent);
+  bucket.set(ip, recent);
   dayCount++;
   return 'ok';
 }
@@ -87,6 +90,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
     json(res, 200, { generate: !!client, needCode: !!cfg.accessCode, ...(cfg.error ? { configError: cfg.error } : {}) });
     return true;
   }
+  if (path === '/api/discuss') return discuss(req, res, cfg);
   if (path !== '/api/generate') return false;
   if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
   if (!client) return void json(res, 503, { error: 'disabled' }), true;
@@ -117,9 +121,56 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
     if (cache.size > 200) cache.delete(cache.keys().next().value!);
     json(res, 200, { lesson: r.lesson });
   } catch (e) {
-    console.error('generate failed:', e instanceof Anthropic.APIError || e instanceof UpstreamError ? `${e.status} ${e.message}` : e);
-    const status = e instanceof Anthropic.RateLimitError || (e instanceof UpstreamError && e.status === 429) ? 429 : 502;
-    json(res, status, { error: status === 429 ? 'busy' : 'upstream' });
+    upstreamFailed(res, 'generate', e);
+  } finally {
+    running--;
+  }
+  return true;
+}
+
+function upstreamFailed(res: ServerResponse, what: string, e: unknown) {
+  console.error(`${what} failed:`, e instanceof Anthropic.APIError || e instanceof UpstreamError ? `${e.status} ${e.message}` : e);
+  const status = e instanceof Anthropic.RateLimitError || (e instanceof UpstreamError && e.status === 429) ? 429 : 502;
+  json(res, status, { error: status === 429 ? 'busy' : 'upstream' });
+}
+
+const MAX_PLAN_CHARS = 8000;
+const MAX_TURNS = 16;
+const MAX_MESSAGE_CHARS = 400;
+
+async function discuss(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<typeof settings>): Promise<boolean> {
+  if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
+  if (!cfg.client) return void json(res, 503, { error: 'disabled' }), true;
+
+  let body: { plan?: unknown; history?: unknown; message?: unknown; lang?: unknown; code?: unknown };
+  try {
+    body = (await readBody(req, 32_000)) as typeof body;
+  } catch {
+    return void json(res, 400, { error: 'bad_request' }), true;
+  }
+  if (cfg.accessCode && body?.code !== cfg.accessCode) return void json(res, 403, { error: 'code' }), true;
+  const plan = typeof body?.plan === 'string' ? body.plan.slice(0, MAX_PLAN_CHARS) : '';
+  const message = typeof body?.message === 'string' ? body.message.trim() : '';
+  const history: Turn[] = (Array.isArray(body?.history) ? body.history : [])
+    .filter((t): t is Turn => (t?.role === 'user' || t?.role === 'assistant') && typeof t?.content === 'string')
+    .slice(-MAX_TURNS)
+    .map((t) => ({ role: t.role, content: t.content.slice(0, 1200) }));
+  // 历史必须从用户开始、一问一答交替，否则模型接口会拒绝
+  while (history[0]?.role === 'assistant') history.shift();
+  if (!plan || !message || [...message].length > MAX_MESSAGE_CHARS) return void json(res, 400, { error: 'need' }), true;
+  const lang = body?.lang === 'en' ? 'en' : 'zh';
+
+  const verdict = allow(clientIp(req), cfg.discussPerIpPerHour, cfg.perDay, talkHits);
+  if (verdict !== 'ok') return void json(res, 429, { error: verdict === 'ip' ? 'rate_ip' : 'rate_day' }), true;
+  if (running >= cfg.concurrency) return void json(res, 429, { error: 'busy' }), true;
+
+  running++;
+  try {
+    const reply = await discussNeed(cfg.client, { plan, history, message, lang });
+    if (!reply) return void json(res, 422, { error: 'refused' }), true;
+    json(res, 200, { reply });
+  } catch (e) {
+    upstreamFailed(res, 'discuss', e);
   } finally {
     running--;
   }

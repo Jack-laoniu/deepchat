@@ -20,13 +20,15 @@ export type GenerateResult = { ok: true; lesson: Lesson } | { ok: false; error: 
 export interface Chat {
   send(userText: string): Promise<{ text: string } | { refused: true }>;
 }
-export type StartChat = (system: string) => Chat;
+/** 之前的对话轮次（网页上的「继续聊需求」每次把历史带上来） */
+export type Turn = { role: 'user' | 'assistant'; content: string };
+export type StartChat = (system: string, history?: Turn[]) => Chat;
 
 // ---------------- Claude ----------------
 
 export function claudeChat(client: Anthropic, model = 'claude-opus-5-5', effort: 'low' | 'medium' | 'high' = 'low'): StartChat {
-  return (system) => {
-    const messages: Anthropic.Beta.BetaMessageParam[] = [];
+  return (system, history = []) => {
+    const messages: Anthropic.Beta.BetaMessageParam[] = history.map((t) => ({ role: t.role, content: t.content }));
     return {
       async send(userText) {
         messages.push({ role: 'user', content: userText });
@@ -80,19 +82,38 @@ async function readSse(res: Response): Promise<string> {
   return out;
 }
 
+/**
+ * 输出长度参数：老接口和大多数中转只认 max_tokens；OpenAI 新一代（推理）模型只认 max_completion_tokens。
+ * 先按 max_tokens 发，被拒就换另一个重发，并记住这个接口+模型用哪个。
+ */
+const tokenParam = new Map<string, 'max_tokens' | 'max_completion_tokens'>();
+const rejectsParam = (status: number, body: string) =>
+  status === 400 && /max_completion_tokens|max_tokens/.test(body) && /unsupported|not supported|invalid|unrecognized|use/i.test(body);
+
 export function openAiChat(opts: { baseUrl: string; apiKey: string; model: string; maxTokens?: number }): StartChat {
   const url = `${opts.baseUrl.replace(/\/+$/, '')}/chat/completions`;
-  return (system) => {
-    const messages: OaMessage[] = [{ role: 'system', content: system }];
+  const key = `${url}|${opts.model}`;
+  const post = (messages: OaMessage[], param: 'max_tokens' | 'max_completion_tokens') =>
+    fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${opts.apiKey}` },
+      body: JSON.stringify({ model: opts.model, messages, stream: true, [param]: opts.maxTokens ?? 16000 }),
+    });
+  return (system, history = []) => {
+    const messages: OaMessage[] = [{ role: 'system', content: system }, ...history];
     return {
       async send(userText) {
         messages.push({ role: 'user', content: userText });
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json', authorization: `Bearer ${opts.apiKey}` },
-          body: JSON.stringify({ model: opts.model, messages, stream: true, max_tokens: opts.maxTokens ?? 16000 }),
-        });
-        if (!res.ok) throw new UpstreamError(res.status, (await res.text().catch(() => '')).slice(0, 300));
+        const param = tokenParam.get(key) ?? 'max_tokens';
+        let res = await post(messages, param);
+        if (!res.ok) {
+          const body = await res.text().catch(() => '');
+          if (!rejectsParam(res.status, body)) throw new UpstreamError(res.status, body.slice(0, 300));
+          const other = param === 'max_tokens' ? 'max_completion_tokens' : 'max_tokens';
+          res = await post(messages, other);
+          if (!res.ok) throw new UpstreamError(res.status, (await res.text().catch(() => '')).slice(0, 300));
+          tokenParam.set(key, other);
+        }
         const text = await readSse(res);
         messages.push({ role: 'assistant', content: text });
         return { text };
@@ -136,6 +157,21 @@ export async function generateLesson(startChat: StartChat, need: string, lang: '
     prompt = `The level is invalid:\n${r.errors.slice(0, 30).map((e) => `- ${e}`).join('\n')}\n\nFix exactly these problems and output the complete corrected JSON only.`;
   }
   return { ok: false, error: 'invalid' };
+}
+
+// ---------------- 结算后继续聊需求 ----------------
+
+const DISCUSS_RULES = `You are Lele, the cheerful guide of a game that helps people pin down what they really need.
+The player just finished a level about their need. Below is the plan the game produced from their answers.
+Now chat with them to refine it further: answer their question concretely, point out one thing they may not have thought of,
+and end with ONE short question that digs deeper into their real situation (budget, constraints, who uses it, timing...).
+Keep every reply short (under 90 words, or under 150 Chinese characters), warm and plain. No markdown headings or tables; a short list is fine.
+Reply in the same language as the plan (zh = Simplified Chinese, en = English).`;
+
+export async function discussNeed(startChat: StartChat, input: { plan: string; history: Turn[]; message: string; lang: 'zh' | 'en' }): Promise<string | null> {
+  const chat = startChat(`${DISCUSS_RULES}\n\nLanguage: ${input.lang}\n\nThe plan:\n${input.plan}`, input.history);
+  const reply = await chat.send(input.message);
+  return 'refused' in reply ? null : reply.text.trim();
 }
 
 /**

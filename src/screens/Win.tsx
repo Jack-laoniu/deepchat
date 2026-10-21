@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { useGame } from '../game';
 import { celebrate } from '../fx/fx';
@@ -7,7 +7,8 @@ import { superPrompt, yuan } from '../lesson/output';
 import { Emoji } from '../ui/Emoji';
 import { Btn, Mascot } from '../ui/kit';
 import { copyText } from '../ui/copy';
-import { t } from '../i18n';
+import { getLang, t } from '../i18n';
+import { Discuss, type Turn } from './Discuss';
 
 function Ring({ value, emoji, label, delay }: { value: number; emoji: string; label: string; delay: number }) {
   const r = 30;
@@ -41,7 +42,13 @@ export function Win() {
   const p = g.played!;
   const [copied, setCopied] = useState(false);
   const [showList, setShowList] = useState(false);
-  const text = useMemo(() => superPrompt(l, p, g.crashes), [l, p, g.crashes]);
+  const [turns, setTurns] = useState<Turn[]>([]);
+  const plan = useMemo(() => superPrompt(l, p, g.crashes), [l, p, g.crashes]);
+  // 交给 AI 的方案里带上结算后聊出来的补充信息
+  const text = useMemo(
+    () => (turns.length ? `${plan}\n\n## ${t('discussLog')}\n${turns.map((m) => `${m.role === 'user' ? (getLang() === 'zh' ? '我：' : 'Me: ') : 'AI: '}${m.content}`).join('\n')}` : plan),
+    [plan, turns],
+  );
   const guessTotal = l.guess.items.reduce((s, i) => s + i.price, 0);
   const saved = guessTotal - p.total;
 
@@ -85,7 +92,7 @@ export function Win() {
         <Ring value={p.score.safe} emoji="🛡️" label={t('safe')} delay={0.7} />
       </div>
 
-      <button onClick={() => setShowList((s) => !s)} className="mt-5 flex flex-wrap justify-center gap-2">
+      <button onClick={() => setShowList(true)} className="mt-5 flex flex-wrap justify-center gap-2">
         {p.cart.map((it, i) => (
           <motion.span key={it.id} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.8 + i * 0.08 }}>
             <Emoji e={it.emoji} size={40} />
@@ -97,30 +104,6 @@ export function Win() {
           {p.risks.length > 0 && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-700">{t('risks', { n: p.risks.length })}</span>}
           {g.crashes.length > 0 && <span className="rounded-full bg-rose-100 px-2 py-0.5 text-rose-600">{t('dodged', { n: g.crashes.length })}</span>}
         </div>
-      )}
-
-      {showList && (
-        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="mt-3 overflow-hidden rounded-2xl border-2 border-slate-200 bg-white">
-          {p.cart.map((it) => (
-            <div key={it.id} className="flex items-center gap-2 border-b border-slate-100 px-3 py-2 last:border-0">
-              <Emoji e={it.emoji} size={28} />
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-extrabold text-slate-700">{it.name}</div>
-                {it.spec && <div className="truncate text-xs text-slate-400">{it.spec}</div>}
-              </div>
-              <div className="text-sm font-black tabular-nums text-slate-600">
-                {yuan(it.price)}
-                {!it.source && <span className="ml-1 rounded bg-slate-100 px-1 text-[10px] text-slate-400">{t('est')}</span>}
-              </div>
-            </div>
-          ))}
-          {p.extras.map((e, i) => (
-            <div key={i} className="flex justify-between border-b border-slate-100 px-3 py-2 text-sm text-slate-500 last:border-0">
-              <span>{t('adjust')}{e.label}</span>
-              <span className="font-black tabular-nums">{e.price > 0 ? '+' : ''}{yuan(e.price)}</span>
-            </div>
-          ))}
-        </motion.div>
       )}
 
       {p.quotes.length > 0 && (
@@ -147,13 +130,63 @@ export function Win() {
         </div>
       )}
 
+      <Discuss plan={plan} turns={turns} setTurns={setTurns} />
+
       <div className="mt-auto space-y-3 pt-5">
         <Btn onClick={handoff}>{inHost() ? t('handoffHost') : copied ? t('handoffCopied') : t('handoffCopy')}</Btn>
         <div className="grid grid-cols-2 gap-3">
-          <Btn tone="white" onClick={() => setShowList((s) => !s)}>{showList ? t('hideList') : t('list')}</Btn>
+          <Btn tone="white" onClick={() => setShowList(true)}>{t('list')}</Btn>
           <Btn tone="white" onClick={() => g.open(l)}>{t('replay')}</Btn>
         </div>
       </div>
+      <AnimatePresence>
+        {showList && (
+          <motion.div
+            key="sheet"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowList(false)}
+            className="fixed inset-0 z-40 flex items-end justify-center bg-slate-900/40"
+          >
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 26, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="max-h-[75%] w-full max-w-md overflow-y-auto rounded-t-3xl bg-white pb-6"
+            >
+              <div className="sticky top-0 flex items-center justify-between border-b border-slate-100 bg-white px-4 py-3">
+                <span className="text-lg font-black text-slate-700">{t('list')}</span>
+                <span className="text-lg font-black tabular-nums text-slate-700">{yuan(p.total)}</span>
+              </div>
+              {p.cart.map((it) => (
+                <div key={it.id} className="flex items-center gap-2 border-b border-slate-100 px-4 py-2">
+                  <Emoji e={it.emoji} size={28} />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-extrabold text-slate-700">{it.name}</div>
+                    {it.spec && <div className="truncate text-xs text-slate-400">{it.spec}</div>}
+                  </div>
+                  <div className="text-sm font-black tabular-nums text-slate-600">
+                    {yuan(it.price)}
+                    {!it.source && <span className="ml-1 rounded bg-slate-100 px-1 text-[10px] text-slate-400">{t('est')}</span>}
+                  </div>
+                </div>
+              ))}
+              {p.extras.map((e, i) => (
+                <div key={i} className="flex justify-between border-b border-slate-100 px-4 py-2 text-sm text-slate-500">
+                  <span>{t('adjust')}{e.label}</span>
+                  <span className="font-black tabular-nums">{e.price > 0 ? '+' : ''}{yuan(e.price)}</span>
+                </div>
+              ))}
+              <div className="px-4 pt-4">
+                <Btn tone="white" onClick={() => setShowList(false)}>{t('hideList')}</Btn>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

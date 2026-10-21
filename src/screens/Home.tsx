@@ -10,36 +10,9 @@ import { Emoji } from '../ui/Emoji';
 import { Btn, Mascot } from '../ui/kit';
 import { copyText } from '../ui/copy';
 import { detectLang, t } from '../i18n';
+import { loadCode, saveCode, useCanGenerate } from '../api';
 
 type GenState = { phase: 'idle' } | { phase: 'loading'; started: number } | { phase: 'error'; msg: string };
-
-/** 服务端有没有配 API key（网页版能不能在线生成） */
-function useCanGenerate() {
-  const [cfg, setCfg] = useState<{ generate: boolean; needCode: boolean } | null>(null);
-  useEffect(() => {
-    fetch('/api/config')
-      .then((r) => (r.ok ? r.json() : {}))
-      .then((d: { generate?: boolean; needCode?: boolean }) => setCfg({ generate: !!d.generate, needCode: !!d.needCode }))
-      .catch(() => setCfg({ generate: false, needCode: false }));
-  }, []);
-  return cfg;
-}
-
-const CODE_KEY = 'need-quest-code';
-const loadCode = () => {
-  try {
-    return localStorage.getItem(CODE_KEY) ?? '';
-  } catch {
-    return '';
-  }
-};
-const saveCode = (c: string) => {
-  try {
-    localStorage.setItem(CODE_KEY, c);
-  } catch {
-    /* 隐私模式下存不了，下次重新输入 */
-  }
-};
 
 export function Home() {
   const g = useGame();

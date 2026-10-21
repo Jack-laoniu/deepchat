@@ -22,9 +22,10 @@
   "accessCode": "",
 
   "limits": {
-    "_说明": "保护你的额度：每个 IP 每小时次数、每天总次数、同时生成数",
+    "_说明": "保护你的额度：每个 IP 每小时生成次数、每天总次数、同时进行数、每个 IP 每小时「继续聊需求」的消息数",
     "perIpPerHour": 5,
     "perDay": 200,
-    "concurrency": 3
+    "concurrency": 3,
+    "discussPerIpPerHour": 30
   }
 }
