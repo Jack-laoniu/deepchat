@@ -15,7 +15,10 @@ const DAILY_LIMIT = Number(process.env.NEED_QUEST_DAILY_LIMIT) || 200;
 const MAX_CONCURRENT = Number(process.env.NEED_QUEST_CONCURRENCY) || 3;
 const MAX_NEED_CHARS = 200;
 
+// ANTHROPIC_BASE_URL 设置时，SDK 会改走那个兼容 Anthropic 接口的地址（比如测试期用的中转服务）
 const client = process.env.ANTHROPIC_API_KEY ? new Anthropic() : null;
+/** 测试期访问码：设置后，只有带对访问码的请求才能用服务器上的 key 生成 */
+const ACCESS_CODE = process.env.NEED_QUEST_ACCESS_CODE || '';
 
 const hits = new Map<string, number[]>();
 let day = '';
@@ -62,19 +65,20 @@ async function readBody(req: IncomingMessage, limit = 4096): Promise<unknown> {
 /** 处理了返回 true */
 export async function handleApi(req: IncomingMessage, res: ServerResponse, path: string): Promise<boolean> {
   if (path === '/api/config' && req.method === 'GET') {
-    json(res, 200, { generate: !!client });
+    json(res, 200, { generate: !!client, needCode: !!ACCESS_CODE });
     return true;
   }
   if (path !== '/api/generate') return false;
   if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
   if (!client) return void json(res, 503, { error: 'disabled' }), true;
 
-  let body: { need?: unknown; lang?: unknown };
+  let body: { need?: unknown; lang?: unknown; code?: unknown };
   try {
     body = (await readBody(req)) as typeof body;
   } catch {
     return void json(res, 400, { error: 'bad_request' }), true;
   }
+  if (ACCESS_CODE && body?.code !== ACCESS_CODE) return void json(res, 403, { error: 'code' }), true;
   const need = typeof body?.need === 'string' ? body.need.trim() : '';
   const lang = body?.lang === 'en' ? 'en' : 'zh';
   if (!need || [...need].length > MAX_NEED_CHARS) return void json(res, 400, { error: 'need' }), true;

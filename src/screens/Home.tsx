@@ -15,20 +15,38 @@ type GenState = { phase: 'idle' } | { phase: 'loading'; started: number } | { ph
 
 /** 服务端有没有配 API key（网页版能不能在线生成） */
 function useCanGenerate() {
-  const [ok, setOk] = useState<boolean | null>(null);
+  const [cfg, setCfg] = useState<{ generate: boolean; needCode: boolean } | null>(null);
   useEffect(() => {
     fetch('/api/config')
-      .then((r) => (r.ok ? r.json() : { generate: false }))
-      .then((d: { generate?: boolean }) => setOk(!!d.generate))
-      .catch(() => setOk(false));
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((d: { generate?: boolean; needCode?: boolean }) => setCfg({ generate: !!d.generate, needCode: !!d.needCode }))
+      .catch(() => setCfg({ generate: false, needCode: false }));
   }, []);
-  return ok;
+  return cfg;
 }
+
+const CODE_KEY = 'need-quest-code';
+const loadCode = () => {
+  try {
+    return localStorage.getItem(CODE_KEY) ?? '';
+  } catch {
+    return '';
+  }
+};
+const saveCode = (c: string) => {
+  try {
+    localStorage.setItem(CODE_KEY, c);
+  } catch {
+    /* 隐私模式下存不了，下次重新输入 */
+  }
+};
 
 export function Home() {
   const g = useGame();
   const lang = detectLang();
-  const canGenerate = useCanGenerate();
+  const cfg = useCanGenerate();
+  const canGenerate = cfg?.generate ?? null;
+  const [code, setCode] = useState(loadCode);
   const [studio, setStudio] = useState(false);
   const [need, setNeed] = useState('');
   const [gen, setGen] = useState<GenState>({ phase: 'idle' });
@@ -50,13 +68,16 @@ export function Home() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ need: text, lang }),
+        body: JSON.stringify({ need: text, lang, code }),
         signal: ctrl.signal,
       });
       const data = (await res.json().catch(() => ({}))) as { lesson?: unknown; error?: string };
       const r = data.lesson ? parseLesson(data.lesson) : null;
       if (r?.ok) return g.open(r.lesson);
-      const msg = data.error === 'rate_ip' || data.error === 'rate_day' ? t('genRate') : data.error === 'busy' ? t('genBusy') : t('genFail');
+      const msg =
+        data.error === 'code' ? t('genCode') :
+        data.error === 'rate_ip' || data.error === 'rate_day' ? t('genRate') :
+        data.error === 'busy' ? t('genBusy') : t('genFail');
       setGen({ phase: 'error', msg });
     } catch {
       if (!ctrl.signal.aborted) setGen({ phase: 'error', msg: t('genFail') });
@@ -81,6 +102,17 @@ export function Home() {
           placeholder={t('genPh')}
           className="w-full resize-none text-lg font-bold text-slate-700 outline-none placeholder:text-slate-300"
         />
+        {cfg?.needCode && (
+          <input
+            value={code}
+            onChange={(e) => {
+              setCode(e.target.value);
+              saveCode(e.target.value);
+            }}
+            placeholder={t('codePh')}
+            className="mb-2 w-full rounded-xl border-2 border-slate-200 px-3 py-1.5 text-sm font-bold outline-none focus:border-sky-400"
+          />
+        )}
         {gen.phase === 'error' && <div className="mb-2 text-sm font-extrabold text-rose-500">{gen.msg}</div>}
         <Btn disabled={!need.trim() || canGenerate === null} onClick={generate}>
           {t('genGo')}

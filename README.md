@@ -63,7 +63,7 @@ ANTHROPIC_API_KEY=sk-ant-... sudo -E bash deploy/install.sh quest.example.com
 - `ANTHROPIC_API_KEY` 可选，写入 `/etc/need-quest.env`（仅 root 可读）；有了它，网页上输入需求就能直接生成关卡（默认 `claude-opus-5-5`，可用 `NEED_QUEST_MODEL` 改）。每个 IP 每小时 5 次、每天总共 200 次、同时最多 3 个，可用 `NEED_QUEST_IP_LIMIT` / `NEED_QUEST_DAILY_LIMIT` / `NEED_QUEST_CONCURRENCY` 调整
 - 完成后：`https://<域名>/` 是游戏网页，`https://<域名>/mcp` 是 MCP 接口
 
-更新：`git pull && sudo bash deploy/install.sh <域名>`。关闭并移除：`sudo bash deploy/uninstall.sh`（不动其它站点）。修改代码后用 `npm run build:deploy` 重新生成打包文件再提交。
+更新：`git pull && sudo bash deploy/update.sh`（只换程序、不碰 Caddy；可顺带用环境变量设置 `ANTHROPIC_API_KEY` / `ANTHROPIC_BASE_URL` / `NEED_QUEST_MODEL` / `NEED_QUEST_ACCESS_CODE`，见脚本开头说明）。关闭并移除：`sudo bash deploy/uninstall.sh`（不动其它站点）。修改代码后用 `npm run build:deploy` 重新生成打包文件再提交。
 
 ## 目录
 

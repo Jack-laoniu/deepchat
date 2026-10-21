@@ -99,6 +99,14 @@ WantedBy=multi-user.target
 EOF
 
 # ---------- Caddy 配置（不覆盖已有站点）----------
+SKIP_CADDY=0
+if [ -f /etc/caddy/Caddyfile ] && grep -vF "import /etc/caddy/need-quest.caddy" /etc/caddy/Caddyfile | grep -qE "(^|[[:space:],])$DOMAIN([[:space:],{]|$)"; then
+  SKIP_CADDY=1
+  log "Caddyfile 里已经配置了 $DOMAIN，不改动 Caddy 配置"
+  rm -f /etc/caddy/need-quest.caddy
+  sed -i "\#^import /etc/caddy/need-quest.caddy\$#d" /etc/caddy/Caddyfile
+fi
+if [ "$SKIP_CADDY" = 0 ]; then
 # 我们的站点单独放在 need-quest.caddy，主 Caddyfile 里只加一行 import；改动前先备份。
 mkdir -p /etc/caddy
 SITES="$DOMAIN"
@@ -126,8 +134,11 @@ if [ -f /etc/caddy/Caddyfile ]; then
 else
   echo "$IMPORT_LINE" > /etc/caddy/Caddyfile
 fi
-if ! "$CADDY_BIN" validate --config /etc/caddy/Caddyfile >/dev/null 2>&1; then
-  warn "Caddy 配置校验没通过（可能和已有站点的域名冲突），运行 caddy validate --config /etc/caddy/Caddyfile 看详情"
+fi
+CADDY_OK=1
+if ! "$CADDY_BIN" validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null 2>&1; then
+  CADDY_OK=0
+  warn "Caddy 配置校验没通过，为了不影响你已有的网站，这次不重启 Caddy。运行 caddy validate --config /etc/caddy/Caddyfile 看详情"
 fi
 
 # ---------- 在线生成用的 API key（可选）----------
@@ -139,6 +150,9 @@ if [ ! -f /etc/need-quest.env ]; then
   warn "没有配置 ANTHROPIC_API_KEY：网页上「生成我的关卡」不可用（示例和 MCP 不受影响）。配置：ANTHROPIC_API_KEY=sk-ant-... sudo -E bash $0 $DOMAIN"
 fi
 
+CADDY_UNIT_NEW=0
+if ! systemctl cat caddy >/dev/null 2>&1; then
+CADDY_UNIT_NEW=1
 cat > /etc/systemd/system/caddy.service <<EOF
 [Unit]
 Description=Caddy
@@ -157,6 +171,7 @@ MemoryMax=128M
 [Install]
 WantedBy=multi-user.target
 EOF
+fi
 
 # 80/443 被别的程序（比如 nginx）占着，Caddy 就拿不到证书
 for p in 80 443; do
@@ -173,9 +188,12 @@ if command -v firewall-cmd >/dev/null && firewall-cmd --state >/dev/null 2>&1; t
 fi
 
 systemctl daemon-reload
-systemctl enable need-quest caddy >/dev/null 2>&1
+systemctl enable need-quest >/dev/null 2>&1
 systemctl restart need-quest
-systemctl restart caddy
+if [ "$CADDY_OK" = 1 ]; then
+  systemctl enable caddy >/dev/null 2>&1 || true
+  if systemctl is-active --quiet caddy; then systemctl reload caddy; else systemctl start caddy; fi
+fi
 
 log "检查服务"
 for i in $(seq 1 20); do

@@ -5,6 +5,8 @@ import type { Lang } from './chars/library';
  */
 
 const zh = {
+  genCode: '访问码不对（测试期需要访问码）',
+  codePh: '测试访问码',
   genTitle: '说说你想搞定什么',
   genPh: '比如：想在阳台种菜、给女儿挑钢琴…',
   genGo: '✨ 生成我的关卡',
@@ -81,6 +83,8 @@ const zh = {
 type Dict = typeof zh;
 
 const en: Dict = {
+  genCode: 'Wrong access code (needed during testing)',
+  codePh: 'Test access code',
   genTitle: 'What do you want to get done?',
   genPh: 'e.g. grow veggies on my balcony',
   genGo: '✨ Make my quest',
@@ -156,6 +160,8 @@ const en: Dict = {
 };
 
 const ja: Dict = {
+  genCode: 'アクセスコードが違います',
+  codePh: 'テスト用アクセスコード',
   genTitle: '何を片付けたい？',
   genPh: '例：ベランダで野菜を育てたい',
   genGo: '✨ クエストを作る',
@@ -231,6 +237,8 @@ const ja: Dict = {
 };
 
 const es: Dict = {
+  genCode: 'Código de acceso incorrecto',
+  codePh: 'Código de acceso',
   genTitle: '¿Qué quieres resolver?',
   genPh: 'p. ej. un huerto en el balcón',
   genGo: '✨ Crear mi misión',
