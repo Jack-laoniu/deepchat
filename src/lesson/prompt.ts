@@ -26,6 +26,8 @@ ROUND TYPES
 - fix: a problem appeared; 1–3 fixes + 1 gamble (skip the fix and hope)
 - boss: final test, same shape as fix, required, must be last
 - sort: drag 3–8 cards into 2–3 bins (e.g. must / nice / skip). No right answers — it reveals priorities. A card with "item" joins the plan when dropped in a bin with keep:true, and leaves it otherwise. Each drop sets the flag "<card id>_<bin id>".
+- place: an illustrated scene ("room" | "yard" | "office" | "street") with 2–4 spots (x 5–95, y 10–80) and 1–4 things; the user drags each thing to where it would go in their life. It reveals space, context and who uses it. A spot can list "bad" things with a short "warn" (it shakes and warns; the user may move it). Each placement sets "<thing id>_<spot id>".
+- day: a wordless day (Florence-style): 3–5 moments ("at": morning | noon | evening | night), each with a scene emoji and 2–3 options shown as BIG emoji only (label is a tiny caption ≤ 4 CJK / 7 letters). Use it to learn the user's real routine and when/how they would use the thing. Pick emojis that are obvious without words.
 - chain: 3–6 dilemma cards in a row (Reigns-style). Each card: a character ("who") says one line, the user swipes "left" or "right" (each side is an option with score / price / add / remove / set). Four meters (money, ease, results, safety) move with each choice; the first one to hit zero "crashes" and tells us what the user keeps sacrificing. Make the cards realistic everyday situations a few weeks after the purchase, each side costing something different.
 
 DIALOGUE
@@ -42,7 +44,7 @@ RULES
    To make something CHEAPER (downgrade, second-hand, smaller, skip it), the replacement MUST reuse the SAME id as the item it replaces (or put the old id in "remove"); a new id keeps both items and the total goes UP. A cost-cutting option must lower the total; a non-item saving is a negative "price".
 5. gamble.crash_if: flags under which it must crash ("always" or a list). When saving money is reasonable for a small scale / light load, don't use "always" and write an "ok" text.
 6. Prices are your estimates; never invent sources.
-7. 8–12 rounds: open with a chat with "${GUIDE}" asking the motivation, include at least one story, one map, one slider(budget), one sort (what they really need among optional extras) and one chain (living with the choice), and end with the boss.
+7. 8–12 rounds: open with a chat with "${GUIDE}" asking the motivation, include at least one story, one map, one slider(budget), one sort (what they really need among optional extras), one chain (living with the choice), and a place or a day when space or routine matters, and end with the boss. Max 16 rounds.
 8. ids use lowercase letters, digits, underscores only. Output JSON only, no explanation.
 9. Never put a raw double quote (") inside a string value. To quote speech inside text use 「」 (Chinese) or ‘ ’ (English).`;
 

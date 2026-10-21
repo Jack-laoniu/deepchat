@@ -980,6 +980,175 @@
       ]
     },
     {
+      "type": "place",
+      "id": "spots",
+      "title": "Where does he live?",
+      "emoji": "🏠",
+      "scene": "room",
+      "zones": [
+        {
+          "id": "window",
+          "label": "By window",
+          "emoji": "🪟",
+          "x": 24,
+          "y": 62,
+          "fact": "Sunny spot, hot in summer afternoons",
+          "bad": [
+            "bed"
+          ],
+          "warn": "Too hot in the afternoon sun"
+        },
+        {
+          "id": "sofa",
+          "label": "Lounge",
+          "emoji": "🛋️",
+          "x": 72,
+          "y": 60,
+          "fact": "Where people spend the evening"
+        },
+        {
+          "id": "kitchen",
+          "label": "Kitchen",
+          "emoji": "🍳",
+          "x": 50,
+          "y": 34,
+          "fact": "Easy to clean, near the water",
+          "bad": [
+            "crate"
+          ],
+          "warn": "Hot stove, busy floor"
+        }
+      ],
+      "things": [
+        {
+          "id": "bed",
+          "emoji": "🛏️",
+          "label": "Dog bed",
+          "fact": "Where the dog sleeps"
+        },
+        {
+          "id": "bowl",
+          "emoji": "🥣",
+          "label": "Food bowl",
+          "fact": "Where the dog eats"
+        },
+        {
+          "id": "crate",
+          "emoji": "📦",
+          "label": "Crate",
+          "fact": "Where the crate stands"
+        }
+      ]
+    },
+    {
+      "type": "day",
+      "id": "routine",
+      "title": "A day together",
+      "emoji": "🗓️",
+      "moments": [
+        {
+          "id": "m_am",
+          "at": "morning",
+          "emoji": "⏰",
+          "options": [
+            {
+              "id": "m_am_walk",
+              "emoji": "🚶",
+              "label": "Walk",
+              "fact": "Takes the dog out every morning",
+              "score": {
+                "good": 10,
+                "easy": -5
+              }
+            },
+            {
+              "id": "m_am_snooze",
+              "emoji": "😴",
+              "label": "Snooze",
+              "fact": "Skips the morning walk",
+              "score": {
+                "good": -10,
+                "easy": 5
+              }
+            }
+          ]
+        },
+        {
+          "id": "m_noon",
+          "at": "noon",
+          "emoji": "🏢",
+          "options": [
+            {
+              "id": "m_noon_office",
+              "emoji": "💼",
+              "label": "Office",
+              "fact": "Away at the office all day; the dog is alone 8+ hours",
+              "score": {
+                "good": -10
+              }
+            },
+            {
+              "id": "m_noon_home",
+              "emoji": "🏠",
+              "label": "Home",
+              "fact": "Works from home at noon",
+              "score": {
+                "good": 10
+              }
+            }
+          ]
+        },
+        {
+          "id": "m_eve",
+          "at": "evening",
+          "emoji": "🌳",
+          "options": [
+            {
+              "id": "m_eve_park",
+              "emoji": "🎾",
+              "label": "Park",
+              "fact": "Plays in the park in the evening",
+              "score": {
+                "good": 10,
+                "easy": -5
+              }
+            },
+            {
+              "id": "m_eve_sofa",
+              "emoji": "🛋️",
+              "label": "Sofa",
+              "fact": "Stays in on the sofa in the evening",
+              "score": {
+                "easy": 5
+              }
+            }
+          ]
+        },
+        {
+          "id": "m_night",
+          "at": "night",
+          "emoji": "🛏️",
+          "options": [
+            {
+              "id": "m_night_bed",
+              "emoji": "🧑‍🤝‍🧑",
+              "label": "My bed",
+              "fact": "Lets the dog sleep in their bed"
+            },
+            {
+              "id": "m_night_crate",
+              "emoji": "📦",
+              "label": "Crate",
+              "fact": "Dog sleeps in the crate",
+              "score": {
+                "safe": 5
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "type": "slider",
       "id": "budget",
       "q": "First-year budget?",

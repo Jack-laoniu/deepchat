@@ -18,7 +18,11 @@ export type Answer =
   /** 连环取舍：每张卡选了左还是右；accepted = 某条槽见底后用户选择「就这样」接受了（重来则不会提交） */
   | { round: string; chain: { picks: Record<string, 'left' | 'right'>; accepted?: Meter } }
   /** 整理归类：卡片 id → 筐 id */
-  | { round: string; sort: Record<string, string> };
+  | { round: string; sort: Record<string, string> }
+  /** 摆进生活：东西 id → 位置 id */
+  | { round: string; place: Record<string, string> }
+  /** 无文字的一天：时刻 id → 选项 id */
+  | { round: string; day: Record<string, string> };
 
 /** 连环取舍的四条槽 */
 export const METERS = ['money', 'easy', 'good', 'safe'] as const;
@@ -206,6 +210,19 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
         const name = METER_NAME[lesson.lang === 'zh' ? 'zh' : 'en'][a.chain.accepted];
         facts.push(lesson.lang === 'zh' ? `连环取舍里用户一路牺牲「${name}」直到见底，并表示可以接受` : `In the trade-off run the user kept sacrificing ${name} until it ran out, and accepted that`);
         risks.push(lesson.lang === 'zh' ? `「${name}」被压到了底` : `${name} was pushed to zero`);
+      }
+    } else if ('place' in a && r.type === 'place') {
+      for (const th of r.things) {
+        const z = r.zones.find((x) => x.id === a.place[th.id]);
+        if (!z) continue;
+        flags.add(`${th.id}_${z.id}`);
+        facts.push(`${th.fact} → ${z.label}${z.fact ? `（${z.fact}）` : ''}`);
+        if (z.bad.includes(th.id) && z.warn) risks.push(`${th.label} → ${z.label}: ${z.warn}`);
+      }
+    } else if ('day' in a && r.type === 'day') {
+      for (const m of r.moments) {
+        const o = m.options.find((x) => x.id === a.day[m.id]);
+        if (o) applyOption(o);
       }
     } else if ('sort' in a && r.type === 'sort') {
       for (const c of r.cards) {

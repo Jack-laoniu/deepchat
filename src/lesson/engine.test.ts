@@ -131,6 +131,8 @@ describe('play', () => {
           home: { time: { option: 'tday' }, wish: { text: '多陪陪孩子' } },
         },
       },
+      { round: 'spots', place: { pump: 'well', box: 'shed' } },
+      { round: 'routine', day: { m_am: 'm_am_phone', m_noon: 'm_noon_market', m_eve: 'm_eve_tea', m_night: 'm_night_sleep' } },
       { round: 'budget', value: 5000 },
       { round: 'boss', gamble: true },
     ];
@@ -160,6 +162,8 @@ describe('play', () => {
         else if (c.type === 'map') answers.push({ round: c.id, map: Object.fromEntries(c.spots.map((s) => [s.id, firstReplies(s.beats)])) });
         else if (c.type === 'chain') answers.push({ round: c.id, chain: { picks: Object.fromEntries(c.cards.map((x) => [x.id, 'left' as const])) } });
         else if (c.type === 'sort') answers.push({ round: c.id, sort: Object.fromEntries(c.cards.map((x) => [x.id, c.bins[0].id])) });
+        else if (c.type === 'place') answers.push({ round: c.id, place: Object.fromEntries(c.things.map((x) => [x.id, c.zones[0].id])) });
+        else if (c.type === 'day') answers.push({ round: c.id, day: Object.fromEntries(c.moments.map((m) => [m.id, m.options[0].id])) });
         else answers.push(pick(c.id, c.options[0].id));
       }
       expect(play(l, answers).current, l.title).toBeNull();
@@ -196,6 +200,8 @@ describe('characters & languages', () => {
       else if (c.type === 'swipe') answers.push(pick(c.id, c.yes.id));
       else if (c.type === 'chain') answers.push({ round: c.id, chain: { picks: Object.fromEntries(c.cards.map((x) => [x.id, 'left' as const])) } });
       else if (c.type === 'sort') answers.push({ round: c.id, sort: Object.fromEntries(c.cards.map((x) => [x.id, c.bins[0].id])) });
+      else if (c.type === 'place') answers.push({ round: c.id, place: Object.fromEntries(c.things.map((x) => [x.id, c.zones[0].id])) });
+      else if (c.type === 'day') answers.push({ round: c.id, day: Object.fromEntries(c.moments.map((m) => [m.id, m.options[0].id])) });
       else answers.push(pick(c.id, c.options[0].id));
     }
     const text = superPrompt(dog, play(dog, answers), []);
@@ -260,5 +266,31 @@ describe('sort and chain rounds', () => {
     const p = play(farmL, [...before, { round: 'extras', sort: {} }, { round: 'season', chain: { picks: { c_dry: 'right', c_clog: 'left' }, accepted: 'easy' } }]);
     expect(p.facts.some((f) => f.includes('省心'))).toBe(true);
     expect(p.risks.some((f) => f.includes('省心'))).toBe(true);
+  });
+});
+
+describe('place and day rounds', () => {
+  const farmL = lessons.find((l) => l.title === '农场自动浇水')!;
+  it('a bad spot becomes a risk; placements set flags and facts', () => {
+    const answers: Answer[] = [];
+    for (let i = 0; i < 30; i++) {
+      const c = play(farmL, answers).current;
+      if (!c || c.type === 'place') break;
+      if (c.type === 'talk') answers.push({ round: c.id, talk: {} });
+      else if (c.type === 'map') answers.push({ round: c.id, map: {} });
+      else if (c.type === 'slider') answers.push({ round: c.id, value: c.max });
+      else if (c.type === 'chain') answers.push({ round: c.id, chain: { picks: {} } });
+      else if (c.type === 'sort') answers.push({ round: c.id, sort: {} });
+      else if (c.type === 'day') answers.push({ round: c.id, day: {} });
+      else if (c.type === 'swipe') answers.push({ round: c.id, option: c.yes.id });
+      else if ('options' in c) answers.push({ round: c.id, option: c.options[0].id });
+    }
+    const p = play(farmL, [...answers, { round: 'spots', place: { pump: 'well', box: 'edge' } }]);
+    expect(p.flags.has('box_edge')).toBe(true);
+    expect(p.risks.some((r) => r.includes('短路'))).toBe(true);
+    expect(p.facts.some((f) => f.includes('井边'))).toBe(true);
+    const q = play(farmL, [...answers, { round: 'spots', place: { pump: 'well', box: 'shed' } }, { round: 'routine', day: { m_am: 'm_am_phone' } }]);
+    expect(q.risks.some((r) => r.includes('短路'))).toBe(false);
+    expect(q.facts).toContain('早上想在手机上看看就行');
   });
 });

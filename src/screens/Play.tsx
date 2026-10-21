@@ -9,6 +9,8 @@ import { Talk } from '../rounds/Talk';
 import { MapQuest } from '../rounds/Map';
 import { Chain } from '../rounds/Chain';
 import { Sort } from '../rounds/Sort';
+import { Place } from '../rounds/Place';
+import { Day } from '../rounds/Day';
 import { FeedbackSheet } from '../ui/FeedbackSheet';
 import { TopBar } from '../ui/kit';
 import { t } from '../i18n';
@@ -33,6 +35,10 @@ function RoundView({ round }: { round: Round }) {
       return <Chain round={round} />;
     case 'sort':
       return <Sort round={round} />;
+    case 'place':
+      return <Place round={round} />;
+    case 'day':
+      return <Day round={round} />;
   }
 }
 

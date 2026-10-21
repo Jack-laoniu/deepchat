@@ -253,7 +253,65 @@ export const SortRound = z.object({
 });
 export type SortRound = z.infer<typeof SortRound>;
 
-export const Round = z.discriminatedUnion('type', [PickRound, SwipeRound, SliderRound, FixRound, BossRound, TalkRound, MapRound, ChainRound, SortRound]);
+/**
+ * 摆进生活（借鉴 Unpacking）：一个场景（房间/院子/办公室/街上）里有几个位置，把东西拖到你会放的地方。
+ * 放在哪儿说明了空间、场景、谁在用。某些位置不适合某些东西（bad），放上去会晃一下并提示 warn，用户可以挪走。
+ * 每次摆放打标记「东西id_位置id」。
+ */
+export const PlaceRound = z.object({
+  type: z.literal('place'),
+  id,
+  title: short(14),
+  emoji,
+  scene: z.enum(['room', 'yard', 'office', 'street']).default('room'),
+  zones: z
+    .array(
+      z.object({
+        id,
+        label: short(6),
+        emoji,
+        x: z.number().min(5).max(95),
+        y: z.number().min(10).max(80),
+        /** 这个位置的特点（给下游 AI） */
+        fact: upto(80).default(''),
+        /** 不适合放在这里的东西 */
+        bad: z.array(id).default([]),
+        warn: upto(28).default(''),
+      }),
+    )
+    .min(2)
+    .max(5),
+  things: z.array(z.object({ id, emoji, label: short(8), fact: short(120) })).min(1).max(6),
+  if: Cond.optional(),
+});
+export type PlaceRound = z.infer<typeof PlaceRound>;
+
+/**
+ * 无文字的一天（借鉴 Florence）：天色从早到晚变化，每个时刻点一个大图标表示你会怎么过/怎么用。
+ * 选项就是普通选项（label 只做小字注释和给 AI 的说明），要选清楚一看就懂的 emoji。
+ */
+export const DayRound = z.object({
+  type: z.literal('day'),
+  id,
+  title: short(14),
+  emoji,
+  moments: z
+    .array(
+      z.object({
+        id,
+        at: z.enum(['morning', 'noon', 'evening', 'night']),
+        /** 这个时刻场景里的道具 */
+        emoji,
+        options: z.array(Option).min(2).max(3),
+      }),
+    )
+    .min(3)
+    .max(6),
+  if: Cond.optional(),
+});
+export type DayRound = z.infer<typeof DayRound>;
+
+export const Round = z.discriminatedUnion('type', [PickRound, SwipeRound, SliderRound, FixRound, BossRound, TalkRound, MapRound, ChainRound, SortRound, PlaceRound, DayRound]);
 export type Round = z.infer<typeof Round>;
 export type PickRound = z.infer<typeof PickRound>;
 export type SwipeRound = z.infer<typeof SwipeRound>;
@@ -307,6 +365,8 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
         ...(r.type === 'swipe' ? [...r.yes.set, ...r.no.set] : []),
         ...(r.type === 'chain' ? r.cards.flatMap((c) => [...c.left.set, ...c.right.set]) : []),
         ...(r.type === 'sort' ? r.cards.flatMap((c) => r.bins.map((b) => `${c.id}_${b.id}`)) : []),
+        ...(r.type === 'place' ? r.things.flatMap((t) => r.zones.map((z) => `${t.id}_${z.id}`)) : []),
+        ...(r.type === 'day' ? r.moments.flatMap((m) => m.options.flatMap((o) => o.set)) : []),
         ...asksOf(r).flatMap((a) => [...a.options.flatMap((o) => o.set), ...(a.free?.match.flatMap((m) => m.set) ?? [])]),
       ]),
     );
@@ -325,8 +385,9 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
       if (r.type === 'talk' && r.with && !speakers.has(r.with)) err(['rounds', i, 'with'], `角色 ${r.with} 不在 cast 里`);
       if (r.type === 'map') r.spots.forEach((s, j) => !speakers.has(s.who) && err(['rounds', i, 'spots', j], `角色 ${s.who} 不在 cast 里`));
       if (r.type === 'chain') r.cards.forEach((c, j) => !speakers.has(c.who) && err(['rounds', i, 'cards', j], `角色 ${c.who} 不在 cast 里`));
-      if (r.type === 'sort' || r.type === 'chain') {
-        const ids = r.cards.map((c) => c.id);
+      if (r.type === 'place') r.zones.forEach((z, j) => z.bad.forEach((b) => !r.things.some((t) => t.id === b) && err(['rounds', i, 'zones', j], `bad 里的 ${b} 不是这一关的东西`)));
+      if (r.type === 'sort' || r.type === 'chain' || r.type === 'place' || r.type === 'day') {
+        const ids = r.type === 'place' ? r.things.map((c) => c.id) : r.type === 'day' ? r.moments.map((c) => c.id) : r.cards.map((c) => c.id);
         if (new Set(ids).size !== ids.length) err(['rounds', i], '同一关里卡片 id 重复');
       }
       const askIds = asksOf(r).map((a) => a.id);
@@ -342,7 +403,8 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
       const opts =
         r.type === 'pick' || r.type === 'fix' || r.type === 'boss' ? r.options :
         r.type === 'swipe' ? [r.yes, r.no] :
-        r.type === 'chain' ? r.cards.flatMap((c) => [c.left, c.right]) : [];
+        r.type === 'chain' ? r.cards.flatMap((c) => [c.left, c.right]) :
+        r.type === 'day' ? r.moments.flatMap((m) => m.options) : [];
       opts.forEach((o) =>
         o.add.forEach((it) => {
           const old = guessByEmoji.get(it.emoji);

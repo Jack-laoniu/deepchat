@@ -37,6 +37,10 @@ interface Game {
   chain(round: Round, picks: Record<string, 'left' | 'right'>, accepted?: Meter): void;
   /** 整理归类整轮提交：卡片 → 筐 */
   sort(round: Round, bins: Record<string, string>): void;
+  /** 摆进生活整轮提交：东西 → 位置 */
+  place(round: Round, spots: Record<string, string>): void;
+  /** 无文字的一天整轮提交：时刻 → 选项 */
+  day(round: Round, picks: Record<string, string>): void;
   next(): void;
   undo(): void;
   home(): void;
@@ -153,6 +157,28 @@ export function GameProvider({ children }: { children: ReactNode }) {
         tip: problem ? problem.q : undefined,
         delta: a.total - b.total,
         emoji: problem ? problem.emoji : '🗂️',
+        round,
+      }));
+      if (f?.tone === 'good') sfx.good();
+    },
+    place(round, spots) {
+      const f = commit({ round: round.id, place: spots }, (b, a, problem) => ({
+        tone: problem ? 'warn' : a.risks.length > b.risks.length ? 'risk' : 'good',
+        title: problem ? t('oops') : t('gotIt'),
+        tip: problem ? problem.q : undefined,
+        delta: a.total - b.total,
+        emoji: problem ? problem.emoji : '🏠',
+        round,
+      }));
+      if (f?.tone === 'good') sfx.good();
+    },
+    day(round, picks) {
+      const f = commit({ round: round.id, day: picks }, (b, a, problem) => ({
+        tone: problem ? 'warn' : 'good',
+        title: problem ? t('oops') : pickCheer(),
+        tip: problem ? problem.q : undefined,
+        delta: a.total - b.total,
+        emoji: problem ? problem.emoji : '🌙',
         round,
       }));
       if (f?.tone === 'good') sfx.good();

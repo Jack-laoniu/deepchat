@@ -1179,6 +1179,168 @@
       ]
     },
     {
+      "type": "place",
+      "id": "spots",
+      "title": "东西放哪？",
+      "emoji": "📍",
+      "scene": "yard",
+      "zones": [
+        {
+          "id": "well",
+          "label": "井边",
+          "emoji": "🕳️",
+          "x": 22,
+          "y": 64,
+          "fact": "离水源最近，管子最短"
+        },
+        {
+          "id": "shed",
+          "label": "棚子里",
+          "emoji": "🛖",
+          "x": 74,
+          "y": 58,
+          "fact": "有顶、有电，离地 50 米"
+        },
+        {
+          "id": "edge",
+          "label": "地头",
+          "emoji": "🌾",
+          "x": 50,
+          "y": 76,
+          "fact": "露天，下雨会淋",
+          "bad": [
+            "box"
+          ],
+          "warn": "露天淋雨，控制箱会短路"
+        }
+      ],
+      "things": [
+        {
+          "id": "pump",
+          "emoji": "⚙️",
+          "label": "水泵",
+          "fact": "水泵的位置"
+        },
+        {
+          "id": "box",
+          "emoji": "🎛️",
+          "label": "控制箱",
+          "fact": "控制箱/定时器的位置"
+        }
+      ]
+    },
+    {
+      "type": "day",
+      "id": "routine",
+      "title": "农忙的一天",
+      "emoji": "🗓️",
+      "moments": [
+        {
+          "id": "m_am",
+          "at": "morning",
+          "emoji": "🐓",
+          "options": [
+            {
+              "id": "m_am_field",
+              "emoji": "🚜",
+              "label": "下地",
+              "fact": "早上习惯先下地看一圈",
+              "score": {
+                "good": 5
+              }
+            },
+            {
+              "id": "m_am_phone",
+              "emoji": "📱",
+              "label": "看手机",
+              "fact": "早上想在手机上看看就行",
+              "score": {
+                "easy": 10
+              }
+            }
+          ]
+        },
+        {
+          "id": "m_noon",
+          "at": "noon",
+          "emoji": "☀️",
+          "options": [
+            {
+              "id": "m_noon_nap",
+              "emoji": "😴",
+              "label": "午睡",
+              "fact": "中午要休息，没人看着地",
+              "score": {
+                "easy": 5
+              }
+            },
+            {
+              "id": "m_noon_market",
+              "emoji": "🛒",
+              "label": "赶集",
+              "fact": "中午常出门赶集，离家远",
+              "score": {
+                "safe": -5
+              }
+            }
+          ]
+        },
+        {
+          "id": "m_eve",
+          "at": "evening",
+          "emoji": "🌾",
+          "options": [
+            {
+              "id": "m_eve_water",
+              "emoji": "💧",
+              "label": "浇水",
+              "fact": "傍晚亲自浇水",
+              "score": {
+                "easy": -10,
+                "good": 5
+              }
+            },
+            {
+              "id": "m_eve_tea",
+              "emoji": "🍵",
+              "label": "喝茶",
+              "fact": "傍晚想歇着，让机器自己浇",
+              "score": {
+                "easy": 10
+              }
+            }
+          ]
+        },
+        {
+          "id": "m_night",
+          "at": "night",
+          "emoji": "🌙",
+          "options": [
+            {
+              "id": "m_night_check",
+              "emoji": "🔦",
+              "label": "巡一圈",
+              "fact": "睡前要去关阀、巡一圈",
+              "score": {
+                "safe": 5,
+                "easy": -5
+              }
+            },
+            {
+              "id": "m_night_sleep",
+              "emoji": "🛌",
+              "label": "直接睡",
+              "fact": "晚上不想再出门",
+              "score": {
+                "easy": 5,
+                "safe": -5
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "type": "slider",
       "id": "budget",
       "q": "媳妇批多少钱？",

@@ -59,9 +59,12 @@ function Screens() {
       '🔥', '✨', '💥', '🎙️', l.emoji,
       ...l.rounds.flatMap((r) => [...asksOf(r).flatMap((a) => a.options.map((o) => o.emoji)), ...(r.type === 'map' ? r.spots.map((s) => s.emoji) : [])]),
       ...l.rounds.flatMap((r) =>
-        r.type === 'chain' ? r.cards.flatMap((c) => [c.emoji, c.left.emoji, c.right.emoji]) : r.type === 'sort' ? [...r.cards.map((c) => c.emoji), ...r.bins.map((b) => b.emoji)] : [],
+        r.type === 'chain' ? r.cards.flatMap((c) => [c.emoji, c.left.emoji, c.right.emoji]) :
+        r.type === 'sort' ? [...r.cards.map((c) => c.emoji), ...r.bins.map((b) => b.emoji)] :
+        r.type === 'place' ? [...r.things.map((x) => x.emoji), ...r.zones.map((z) => z.emoji)] :
+        r.type === 'day' ? r.moments.flatMap((m) => [m.emoji, ...m.options.map((o) => o.emoji)]) : [],
       ),
-      '💰', '😌', '🎯', '🛡️', '👆',
+      '💰', '😌', '🎯', '🛡️', '👆', '🌅', '☀️', '🌇', '🌙',
       ...l.guess.items.map((i) => i.emoji),
       ...l.rounds.flatMap((r) => [r.emoji, ...optionsOf(r).flatMap((o) => [o.emoji, ...o.add.map((i) => i.emoji)])]),
     ]);
