@@ -47,12 +47,16 @@ export async function requestLesson(
   need: string,
   opts: { context?: string; signal?: AbortSignal } = {},
 ): Promise<{ lesson: Lesson } | { error: string }> {
+  // 服务器最多花 5 分钟（含备用模型和兜底），这边多等一点再放弃
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 330_000);
+  opts.signal?.addEventListener('abort', () => ctrl.abort());
   try {
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ need, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode(), context: opts.context }),
-      signal: opts.signal,
+      signal: ctrl.signal,
     });
     const data = (await res.json().catch(() => ({}))) as { lesson?: unknown; error?: string; detail?: string };
     const r = data.lesson ? parseLesson(data.lesson) : null;
@@ -62,7 +66,9 @@ export async function requestLesson(
     if (!data.error) return { error: t('genUpstream', { d: `HTTP ${res.status}` }) }; // 代理/网关自己报的错（如超时）
     return { error: t(ERRORS[data.error] ?? 'genFail') };
   } catch {
-    return { error: opts.signal?.aborted ? '' : t('genFail') };
+    return { error: opts.signal?.aborted ? '' : ctrl.signal.aborted ? t('genTimeout') : t('genFail') };
+  } finally {
+    clearTimeout(timer);
   }
 }
 

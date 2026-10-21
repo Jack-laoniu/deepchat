@@ -5,10 +5,12 @@
   "provider": "",
 
   "openai": {
-    "_说明": "OpenAI 兼容接口。baseUrl 通常以 /v1 结尾；model 必填",
+    "_说明": "OpenAI 兼容接口。baseUrl 通常以 /v1 结尾；model 必填。timeoutSec 单次调用超时秒数；fallbackModel 备用模型：主模型超时或一直写不对时换它再试（可留空）",
     "apiKey": "",
     "baseUrl": "https://api.openai.com/v1",
-    "model": ""
+    "model": "",
+    "timeoutSec": 150,
+    "fallbackModel": ""
   },
 
   "anthropic": {
@@ -27,6 +29,9 @@
     "voiceF": "nova",
     "voiceM": "onyx"
   },
+
+  "_generateBudgetSec": "一次生成（含返修、备用模型）最多等多少秒，超时就先给用户一个通用关卡",
+  "generateBudgetSec": 300,
 
   "_accessCode": "测试访问码：填了以后网页上要输入它才能在线生成，防止别人用你的额度",
   "accessCode": "",

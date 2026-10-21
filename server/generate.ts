@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { Config } from './config';
+import { dropNulls, lessonJsonSchema } from './jsonSchema';
 import { charById, MOODS } from '../src/chars/library';
 import { GENERATOR_RULES } from '../src/lesson/prompt';
 import { salvage, explainIssues, type Salvaged } from '../src/lesson/salvage';
@@ -24,12 +25,19 @@ export interface Chat {
 }
 /** 之前的对话轮次（网页上的「继续聊需求」每次把历史带上来） */
 export type Turn = { role: 'user' | 'assistant'; content: string };
-/** json：要求模型只输出 JSON（支持的接口会用 response_format 强制） */
-export type StartChat = (system: string, history?: Turn[], opts?: { json?: boolean }) => Chat;
+/**
+ * json：要求模型只输出 JSON。true = 任意 JSON；给 schema = 结构化输出（按 schema 约束，strict 时不会缺字段）。
+ * 接口不支持时自动降级：schema(strict) → 任意 JSON → 不加约束。
+ */
+export type JsonFormat = boolean | { name: string; schema: Record<string, unknown> };
+export type StartChat = (system: string, history?: Turn[], opts?: { json?: JsonFormat }) => Chat;
+
+/** 单次模型调用的超时（毫秒），可在配置里改 */
+export const DEFAULT_CALL_TIMEOUT = 150_000;
 
 // ---------------- Claude ----------------
 
-export function claudeChat(client: Anthropic, model = 'claude-opus-5-5', effort: 'low' | 'medium' | 'high' = 'low'): StartChat {
+export function claudeChat(client: Anthropic, model = 'claude-opus-5-5', effort: 'low' | 'medium' | 'high' = 'low', timeout = DEFAULT_CALL_TIMEOUT): StartChat {
   return (system, history = []) => {
     const messages: Anthropic.Beta.BetaMessageParam[] = history.map((t) => ({ role: t.role, content: t.content }));
     return {
@@ -44,7 +52,7 @@ export function claudeChat(client: Anthropic, model = 'claude-opus-5-5', effort:
             betas: ['server-side-fallback-2026-07-01'],
             fallbacks: 'default',
             messages,
-          })
+          }, { timeout, maxRetries: 1 })
           .finalMessage();
         // 保留完整回复（含思考块），下一轮原样带回
         messages.push({ role: 'assistant', content: msg.content });
@@ -86,10 +94,14 @@ async function readSse(res: Response): Promise<string> {
 }
 
 const tokenParam = new Map<string, 'max_tokens' | 'max_completion_tokens' | 'none'>();
-/** 不支持 response_format 的接口+模型 */
-const noJsonMode = new Set<string>();
+/** 每个接口+模型能用的最强输出约束（被拒后记住降级结果） */
+type Mode = 'schema' | 'object' | 'none';
+const jsonMode = new Map<string, Mode>();
+const DOWNGRADE: Record<Mode, Mode> = { schema: 'object', object: 'none', none: 'none' };
+const RANK: Record<Mode, number> = { none: 0, object: 1, schema: 2 };
 const rejectsParam = (status: number, body: string) =>
   status === 400 && /max_completion_tokens|max_tokens|max output|maximum/i.test(body) && /unsupported|not supported|invalid|unrecognized|use|too large|exceed|maximum/i.test(body);
+const rejectsFormat = (status: number, body: string) => (status === 400 || status === 422) && /response_format|json_schema|json_object|json mode|schema|strict/i.test(body);
 
 /** 读回复：正常是 SSE 流；有的中转不支持流式，直接回一个完整 JSON，也认 */
 async function readReply(res: Response): Promise<string> {
@@ -104,10 +116,15 @@ async function readReply(res: Response): Promise<string> {
   }
 }
 
-export function openAiChat(opts: { baseUrl: string; apiKey: string; model: string; maxTokens?: number }): StartChat {
+export function openAiChat(opts: { baseUrl: string; apiKey: string; model: string; maxTokens?: number; timeoutMs?: number }): StartChat {
   const url = `${opts.baseUrl.replace(/\/+$/, '')}/chat/completions`;
   const key = `${url}|${opts.model}`;
-  const post = (messages: OaMessage[], param: 'max_tokens' | 'max_completion_tokens' | 'none', json: boolean) =>
+  const timeout = opts.timeoutMs ?? DEFAULT_CALL_TIMEOUT;
+  const format = (mode: Mode, json: JsonFormat | undefined) =>
+    !json || mode === 'none' ? {} :
+    mode === 'schema' && typeof json === 'object' ? { response_format: { type: 'json_schema', json_schema: { name: json.name, strict: true, schema: json.schema } } } :
+    { response_format: { type: 'json_object' } };
+  const post = (messages: OaMessage[], param: 'max_tokens' | 'max_completion_tokens' | 'none', mode: Mode, json: JsonFormat | undefined, signal: AbortSignal) =>
     fetch(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: `Bearer ${opts.apiKey}` },
@@ -116,40 +133,52 @@ export function openAiChat(opts: { baseUrl: string; apiKey: string; model: strin
         messages,
         stream: true,
         ...(param === 'none' ? {} : { [param]: opts.maxTokens ?? 16000 }),
-        ...(json ? { response_format: { type: 'json_object' } } : {}),
+        ...format(mode, json),
       }),
+      signal,
     });
   return (system, history = [], chatOpts = {}) => {
     const messages: OaMessage[] = [{ role: 'system', content: system }, ...history];
     return {
       async send(userText) {
         messages.push({ role: 'user', content: userText });
+        // 整次调用（含流式读取）超时就放弃，免得一直挂着
+        const signal = AbortSignal.timeout(timeout);
         // 输出长度参数：老接口和多数中转只认 max_tokens；OpenAI 新一代模型只认 max_completion_tokens；
         // 有的模型输出上限比 16000 小，会说「太大」。依次换着试，记住这个接口+模型能用的那个。
         const order = (['max_tokens', 'max_completion_tokens', 'none'] as const).filter((p) => p !== tokenParam.get(key));
         const tries = tokenParam.has(key) ? [tokenParam.get(key)!, ...order] : order;
+        const wanted: Mode = !chatOpts.json ? 'none' : typeof chatOpts.json === 'object' ? 'schema' : 'object';
+        // 想要的约束，但不超过这个接口已知能接受的上限
+        const cap = jsonMode.get(key) ?? 'schema';
+        let mode: Mode = RANK[wanted] <= RANK[cap] ? wanted : cap;
         let res: Response | null = null;
-        let json = !!chatOpts.json && !noJsonMode.has(key);
-        for (let i = 0; i < tries.length; i++) {
-          const param = tries[i];
-          res = await post(messages, param, json);
-          if (res.ok) {
-            tokenParam.set(key, param);
-            break;
+        try {
+          for (let i = 0; i < tries.length; i++) {
+            const param = tries[i];
+            res = await post(messages, param, mode, chatOpts.json, signal);
+            if (res.ok) {
+              tokenParam.set(key, param);
+              break;
+            }
+            const body = await res.text().catch(() => '');
+            // 不认这种输出约束：降一级，用同一个长度参数再试
+            if (mode !== 'none' && rejectsFormat(res.status, body)) {
+              console.error(`${opts.model}: response_format ${mode} not accepted, falling back to ${DOWNGRADE[mode]}`);
+              mode = DOWNGRADE[mode];
+              jsonMode.set(key, mode);
+              i--;
+              continue;
+            }
+            if (!rejectsParam(res.status, body) || i === tries.length - 1) throw new UpstreamError(res.status, body.slice(0, 300));
           }
-          const body = await res.text().catch(() => '');
-          // 不认 response_format：去掉它用同一个长度参数再试
-          if (json && res.status === 400 && /response_format|json_object|json mode/i.test(body)) {
-            noJsonMode.add(key);
-            json = false;
-            i--;
-            continue;
-          }
-          if (!rejectsParam(res.status, body) || i === tries.length - 1) throw new UpstreamError(res.status, body.slice(0, 300));
+          const text = await readReply(res!);
+          messages.push({ role: 'assistant', content: text });
+          return { text };
+        } catch (e) {
+          if (signal.aborted) throw new UpstreamError(408, `timeout after ${Math.round(timeout / 1000)}s`);
+          throw e;
         }
-        const text = await readReply(res!);
-        messages.push({ role: 'assistant', content: text });
-        return { text };
       },
     };
   };
@@ -181,9 +210,9 @@ export function extractJson(text: string): string {
  * context：「再玩一轮」时带上上一关的结果（方案、用户原话、结算后聊的内容、用户觉得没说清的地方），
  * 让新关卡去挖还不清楚的部分，而不是把问过的再问一遍。
  */
-export async function generateLesson(startChat: StartChat, need: string, lang: 'zh' | 'en', context = ''): Promise<GenerateResult> {
+export async function generateLesson(startChat: StartChat, need: string, lang: 'zh' | 'en', context = '', deadline = Infinity): Promise<GenerateResult> {
   const example = lang === 'zh' ? farm : dog;
-  const chat = startChat(GENERATOR_RULES, [], { json: true });
+  const chat = startChat(GENERATOR_RULES, [], { json: { name: 'need_quest_level', schema: lessonJsonSchema(true) } });
   const followUp = context
     ? `\n\nThis is a FOLLOW-UP level. The user already played one level for this need. What we learned so far:\n${context}\n\n` +
       `Design a NEW level that digs into what is still unclear or was never covered (especially anything the user says is still unclear). ` +
@@ -196,10 +225,22 @@ export async function generateLesson(startChat: StartChat, need: string, lang: '
   const done = (l: Lesson): GenerateResult => ({ ok: true, lesson: { ...l, need: l.need || need } });
 
   for (let attempt = 0; attempt <= MAX_FIX; attempt++) {
+    // 总时间快用完了就别再让模型改了，有修补版就用修补版
+    if (attempt > 0 && Date.now() > deadline - 20_000) {
+      console.error('generate: out of time budget, stop asking for fixes');
+      break;
+    }
     const reply = await chat.send(prompt);
     if ('refused' in reply) return fallback ? done(fallback.lesson) : { ok: false, error: 'refused' };
     const json = extractJson(reply.text);
-    const r = parseLesson(json);
+    // 结构化输出里可选字段会是 null，我们的校验不认 null
+    let parsed: unknown = json;
+    try {
+      parsed = dropNulls(JSON.parse(json));
+    } catch {
+      /* 不是合法 JSON：交给 parseLesson 去修 */
+    }
+    const r = parseLesson(parsed);
     if (r.ok) return done(r.lesson);
     console.error(`generate attempt ${attempt + 1}: invalid level (${reply.text.length} chars):`, r.errors.slice(0, 5).join(' | '));
 
@@ -279,7 +320,9 @@ export async function discussNeed(startChat: StartChat, input: { plan: string; h
  * - openai.apiKey + baseUrl + model → OpenAI 兼容接口
  * 两个都配时用 provider: "openai" | "anthropic" 指定，默认 Claude。
  */
-export function chatFromConfig(c: Config): { start: StartChat; label: string } | null {
+export type ModelChoice = { start: StartChat; label: string; fallback?: { start: StartChat; label: string } };
+
+export function chatFromConfig(c: Config): ModelChoice | null {
   const oa = c.openai ?? {};
   const an = c.anthropic ?? {};
   const wantOpenAi = c.provider === 'openai' || (c.provider !== 'anthropic' && !an.apiKey && !!oa.apiKey);
@@ -289,15 +332,22 @@ export function chatFromConfig(c: Config): { start: StartChat; label: string } |
       return null;
     }
     const baseUrl = oa.baseUrl || 'https://api.openai.com/v1';
+    const make = (model: string) => openAiChat({ baseUrl, apiKey: oa.apiKey!, model, maxTokens: oa.maxTokens, timeoutMs: (oa.timeoutSec ?? 150) * 1000 });
     return {
-      start: openAiChat({ baseUrl, apiKey: oa.apiKey, model: oa.model, maxTokens: oa.maxTokens }),
+      start: make(oa.model),
       label: `openai-compatible ${baseUrl} ${oa.model}`,
+      ...(oa.fallbackModel ? { fallback: { start: make(oa.fallbackModel), label: oa.fallbackModel } } : {}),
     };
   }
   if (an.apiKey) {
     const model = an.model || 'claude-opus-5-5';
     const client = new Anthropic({ apiKey: an.apiKey, baseURL: an.baseUrl || undefined });
-    return { start: claudeChat(client, model, an.effort || 'low'), label: `anthropic ${model}` };
+    const make = (m: string) => claudeChat(client, m, an.effort || 'low', (an.timeoutSec ?? 150) * 1000);
+    return {
+      start: make(model),
+      label: `anthropic ${model}`,
+      ...(an.fallbackModel ? { fallback: { start: make(an.fallbackModel), label: an.fallbackModel } } : {}),
+    };
   }
   return null;
 }

@@ -148,7 +148,9 @@ describe('OpenAI-compatible provider', () => {
     });
     const start = openAiChat({ baseUrl: 'https://relay.example/v1', apiKey: 'k', model: 'json-less' });
     expect((await generateLesson(start, '农场浇水', 'zh')).ok).toBe(true);
-    expect(bodies.map((b) => !!b.response_format)).toEqual([true, false]);
+    // 先要 strict schema，不行降成任意 JSON，还不行就不加约束
+    expect(bodies.map((b) => b.response_format?.type)).toEqual(['json_schema', 'json_object', undefined]);
+    expect(bodies[0].response_format.json_schema.strict).toBe(true);
     await generateLesson(start, '再来', 'zh');
     expect(bodies.at(-1).response_format).toBeUndefined(); // 记住了
   });
@@ -185,6 +187,25 @@ describe('OpenAI-compatible provider', () => {
     const r = await generateLesson(start, '农场浇水', 'zh');
     expect(r.ok).toBe(true);
     expect(calls).toBe(3); // 先让模型改，改不好才用删掉一张卡的版本
+  });
+
+  it('keeps strict schema mode when supported and strips nulls from the reply', async () => {
+    const withNulls = JSON.parse(JSON.stringify(farm), (_k, v) => v);
+    withNulls.secret = null; // strict 模式下可选字段会是 null
+    const bodies: any[] = [];
+    vi.stubGlobal('fetch', async (_u: string, init: RequestInit) => {
+      bodies.push(JSON.parse(init.body as string));
+      return sse(JSON.stringify(withNulls));
+    });
+    const start = openAiChat({ baseUrl: 'https://api.example/v1', apiKey: 'k', model: 'strict-ok' });
+    expect((await generateLesson(start, '农场浇水', 'zh')).ok).toBe(true);
+    expect(bodies[0].response_format.type).toBe('json_schema');
+  });
+
+  it('gives up on a call that hangs past the timeout', async () => {
+    vi.stubGlobal('fetch', (_u: string, init: RequestInit) => new Promise((_, reject) => init.signal!.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')))));
+    const start = openAiChat({ baseUrl: 'https://slow.example/v1', apiKey: 'k', model: 'slow', timeoutMs: 50 });
+    await expect(start('sys').send('hi')).rejects.toMatchObject({ status: 408 });
   });
 
   it('surfaces upstream HTTP errors', async () => {

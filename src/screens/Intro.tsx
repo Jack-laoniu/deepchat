@@ -21,6 +21,8 @@ export function Intro() {
 
   return (
     <div className="flex h-full flex-col px-5 pb-6 pt-8">
+      {/* 兜底的通用关卡：告诉用户 AI 这次没出好，先玩通用版，玩完可以「再玩一轮」让 AI 重出 */}
+      {l.domain === 'generic' && <div className="mb-3 rounded-2xl border-2 border-amber-300 bg-amber-50 px-3 py-2 text-sm font-extrabold text-amber-800">{t('genericNotice')}</div>}
       <Mascot mood="happy" say={l.guess.line} size={88} />
       <div className="mt-6 grid flex-1 content-center grid-cols-3 gap-3">
         {l.guess.items.map((it, i) => (

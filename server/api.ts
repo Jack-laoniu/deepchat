@@ -2,7 +2,8 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { loadConfig, type Config } from './config';
 import { ttsFromConfig, type Tts } from './tts';
-import { chatFromConfig, discussNeed, generateLesson, reactLine, UpstreamError, type StartChat, type Turn } from './generate';
+import { genericLesson } from '../src/lesson/generic';
+import { chatFromConfig, discussNeed, generateLesson, reactLine, UpstreamError, type GenerateResult, type ModelChoice, type StartChat, type Turn } from './generate';
 
 /**
  * 网页版的生成接口：
@@ -20,7 +21,7 @@ const MAX_NEED_CHARS = 200;
  * key、模型、访问码、限额都来自配置文件（见 config.ts），每次请求都读一遍：
  * 文件没改时直接用缓存；改了就重建模型连接，不用重启服务。
  */
-let built: { config: Config; start: StartChat | null; tts: Tts | null } | null = null;
+let built: { config: Config; start: StartChat | null; model: ModelChoice | null; tts: Tts | null } | null = null;
 function settings() {
   const { config, error } = loadConfig();
   if (built?.config !== config) {
@@ -28,11 +29,13 @@ function settings() {
     console.error(m ? `online generation: ${m.label}` : 'online generation: off（没有配置 key）');
     const tts = ttsFromConfig(config);
     if (tts) console.error('server tts: on');
-    built = { config, start: m?.start ?? null, tts };
+    built = { config, start: m?.start ?? null, model: m, tts };
   }
   const l = config.limits ?? {};
   return {
     client: built.start,
+    model: built.model,
+    budgetMs: (config.generateBudgetSec ?? 300) * 1000,
     tts: built.tts,
     ttsPerIpPerHour: config.tts?.perIpPerHour || 600,
     /** 测试期访问码：设置后，只有带对访问码的请求才能用服务器上的 key 生成 */
@@ -129,16 +132,32 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   console.error(`generate: start (${lang}${context ? ', follow-up' : ''}) ${need.slice(0, 40)}`);
   // 用户关掉页面/断网：记下来，方便区分「接口慢」和「前端放弃了」
   req.socket.once('close', () => Date.now() - t0 > 1000 && !res.writableEnded && console.error(`generate: client went away after ${secs()}`));
+  // 降级链：主模型 → 备用模型（配了的话）→ 兜底的通用关卡。任何一步都不让用户只看到一个报错
+  const deadline = t0 + cfg.budgetMs;
+  const attempt = async (start: StartChat, label: string): Promise<GenerateResult | { ok: false; error: string; detail: string }> => {
+    try {
+      return await generateLesson(start, need, lang, context, deadline);
+    } catch (e) {
+      const detail = e instanceof Anthropic.APIError || e instanceof UpstreamError ? `HTTP ${e.status}` : (e as Error)?.name ?? 'error';
+      console.error(`generate: ${label} failed after ${secs()}:`, e instanceof Error ? e.message : e);
+      return { ok: false, error: 'upstream', detail };
+    }
+  };
   try {
-    const r = await generateLesson(client, need, lang, context);
+    let r = await attempt(client, cfg.model!.label);
+    if (!r.ok && cfg.model?.fallback && Date.now() < deadline - 30_000) {
+      console.error(`generate: trying fallback model ${cfg.model.fallback.label}`);
+      r = await attempt(cfg.model.fallback.start, cfg.model.fallback.label);
+    }
     console.error(`generate: ${r.ok ? 'ok' : r.error} after ${secs()}`);
-    if (!r.ok) return void json(res, 422, { error: r.error }), true;
-    cache.set(key, r.lesson);
-    if (cache.size > 200) cache.delete(cache.keys().next().value!);
-    json(res, 200, { lesson: r.lesson });
-  } catch (e) {
-    console.error(`generate: failed after ${secs()}`);
-    upstreamFailed(res, 'generate', e);
+    if (r.ok) {
+      cache.set(key, r.lesson);
+      if (cache.size > 200) cache.delete(cache.keys().next().value!);
+      return void json(res, 200, { lesson: r.lesson }), true;
+    }
+    // 兜底：不依赖模型的通用关卡（不进缓存，下次还会再试模型）
+    console.error('generate: serving the generic fallback level');
+    json(res, 200, { lesson: genericLesson(need, lang), generic: true, reason: 'detail' in r ? r.detail : r.error });
   } finally {
     running--;
   }
