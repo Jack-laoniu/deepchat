@@ -3,6 +3,9 @@ import { useGame } from '../game';
 import { sfx } from '../fx/fx';
 import type { SwipeRound } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
+import { HandHint } from '../ui/Hint';
+import { t } from '../i18n';
+import { useState } from 'react';
 
 /** 左右滑卡：右滑 = yes，左滑 = no */
 export function Swipe({ round }: { round: SwipeRound }) {
@@ -11,9 +14,11 @@ export function Swipe({ round }: { round: SwipeRound }) {
   const rotate = useTransform(x, [-200, 200], [-18, 18]);
   const yesOpacity = useTransform(x, [20, 120], [0, 1]);
   const noOpacity = useTransform(x, [-120, -20], [1, 0]);
+  const [touched, setTouched] = useState(false);
 
   const decide = (yes: boolean) => {
     sfx.whoosh();
+    setTouched(true);
     animate(x, yes ? 500 : -500, { duration: 0.3 }).then(() => g.choose(round, yes ? round.yes.id : round.no.id));
   };
 
@@ -26,6 +31,7 @@ export function Swipe({ round }: { round: SwipeRound }) {
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.9}
           style={{ x, rotate }}
+          onDragStart={() => setTouched(true)}
           onDragEnd={(_, info) => {
             if (info.offset.x > 110) decide(true);
             else if (info.offset.x < -110) decide(false);
@@ -42,6 +48,7 @@ export function Swipe({ round }: { round: SwipeRound }) {
             {round.no.label}
           </motion.div>
         </motion.div>
+        <HandHint show={!touched} mode="drag" from={{ x: 50, y: 60 }} to={{ x: 80, y: 60 }} label={t('hintSwipe')} delay={1200} />
       </div>
       <div className="mt-6 flex w-full justify-center gap-10">
         <Choice emoji={round.no.emoji} label={round.no.label} tone="rose" onClick={() => decide(false)} />

@@ -36,6 +36,10 @@ export interface CharacterDef {
   look: Look;
 }
 
+/**
+ * 角色外形不带职业标志（安全帽、草帽、耳麦、反光背心…），名字也不带头衔：
+ * 同一个人在不同需求里可能演医生、房东、销售，靠「as」给身份，靠性格和长相区分。
+ */
 export const CHARACTERS: CharacterDef[] = [
   {
     id: 'lele',
@@ -51,12 +55,12 @@ export const CHARACTERS: CharacterDef[] = [
     persona: '过来人。干了二十年，嘴硬心软，爱讲自己踩过的坑，看不惯花冤枉钱。',
     roles: '过来人、老师傅、邻居、父亲',
     voice: { pitch: 0.8, rate: 0.95, gender: 'm' },
-    look: { skin: '#D9A066', hair: { style: 'bald', color: '#8A8A8A' }, top: '#4C8C4A', accent: '#2F5E2E', bottom: '#6B5B45', outfit: 'plaid', acc: ['strawHat', 'mustache', 'wrinkles'] },
+    look: { skin: '#D9A066', hair: { style: 'bald', color: '#8A8A8A' }, top: '#4C8C4A', accent: '#2F5E2E', bottom: '#6B5B45', outfit: 'plaid', acc: ['cap', 'mustache', 'wrinkles'] },
   },
   {
     id: 'qian',
-    name: { zh: '钱老板', en: 'Boss Qian', ja: '銭社長', es: 'Jefe Qian' },
-    persona: '商家。能说会道，总想让你加钱升级，但确实懂行；被戳穿时会打哈哈。',
+    name: { zh: '钱哥', en: 'Qian', ja: '銭さん', es: 'Qian' },
+    persona: '能说会道、八面玲珑，总想让你加钱升级，但确实懂行；被戳穿时会打哈哈。',
     roles: '商家、销售、中介、装修公司',
     voice: { pitch: 1, rate: 1.18, gender: 'm' },
     look: { skin: '#F2C9A0', hair: { style: 'slick', color: '#1F1F1F' }, top: '#2F3E66', accent: '#D7263D', bottom: '#2F3E66', outfit: 'suit', acc: [] },
@@ -64,7 +68,7 @@ export const CHARACTERS: CharacterDef[] = [
   {
     id: 'mei',
     name: { zh: '美姐', en: 'Mei', ja: 'メイ', es: 'Mei' },
-    persona: '管钱的人。精打细算，说话直接，一针见血地问「值不值」「真的需要吗」。',
+    persona: '精打细算，说话直接，一针见血地问「值不值」「真的需要吗」。',
     roles: '伴侣、家人、合伙人、财务',
     voice: { pitch: 1.35, rate: 1.08, gender: 'f' },
     look: { skin: '#F7D2B6', hair: { style: 'bun', color: '#2B1B17' }, top: '#8E5CC9', accent: '#E9D8FD', bottom: '#3F3D56', outfit: 'cardigan', acc: ['glasses', 'earrings'] },
@@ -72,10 +76,10 @@ export const CHARACTERS: CharacterDef[] = [
   {
     id: 'zack',
     name: { zh: '阿哲', en: 'Zack', ja: 'ザック', es: 'Zack' },
-    persona: '技术发烧友。爱抠参数和细节，看不惯奸商，说话快、爱用术语。',
+    persona: '发烧友性格。爱抠参数和细节，看不惯奸商，说话快、爱用术语。',
     roles: '懂技术的朋友、发烧友、程序员',
     voice: { pitch: 1.15, rate: 1.2, gender: 'm' },
-    look: { skin: '#EBC09B', hair: { style: 'spiky', color: '#22223B' }, top: '#2EC4B6', accent: '#0B7A70', bottom: '#30343F', outfit: 'hoodie', acc: ['squareGlasses', 'headset'] },
+    look: { skin: '#EBC09B', hair: { style: 'spiky', color: '#22223B' }, top: '#2EC4B6', accent: '#0B7A70', bottom: '#30343F', outfit: 'hoodie', acc: ['squareGlasses'] },
   },
   {
     id: 'nana',
@@ -95,11 +99,11 @@ export const CHARACTERS: CharacterDef[] = [
   },
   {
     id: 'gong',
-    name: { zh: '龚工', en: 'Engineer Gong', ja: 'ゴン技師', es: 'Ing. Gong' },
-    persona: '工程师/专家。冷静专业，讲数据和标准，专门提醒风险和隐患。',
+    name: { zh: '老龚', en: 'Gong', ja: 'ゴンさん', es: 'Gong' },
+    persona: '冷静严谨，讲数据和标准，专门提醒风险和隐患。',
     roles: '工程师、专家、医生、律师、老师',
     voice: { pitch: 0.9, rate: 1, gender: 'm' },
-    look: { skin: '#B97A4F', hair: { style: 'short', color: '#1A1A1A' }, top: '#3D5A80', accent: '#FFB400', bottom: '#293241', outfit: 'vest', acc: ['hardHat'] },
+    look: { skin: '#B97A4F', hair: { style: 'short', color: '#1A1A1A' }, top: '#3D5A80', accent: '#9FB4D3', bottom: '#293241', outfit: 'shirt', acc: ['beard', 'glasses'] },
   },
   {
     id: 'dou',
