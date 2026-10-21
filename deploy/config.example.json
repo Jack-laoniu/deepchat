@@ -18,6 +18,16 @@
     "model": ""
   },
 
+  "tts": {
+    "_说明": "服务器朗读（可选）：很多安卓机/微信里浏览器自己念不出台词，打开后自动改由服务器转语音。走 OpenAI 兼容的 /audio/speech 接口；apiKey、baseUrl 留空就用上面 openai 那组。voiceF / voiceM 是女声 / 男声",
+    "enabled": false,
+    "apiKey": "",
+    "baseUrl": "",
+    "model": "gpt-4o-mini-tts",
+    "voiceF": "nova",
+    "voiceM": "onyx"
+  },
+
   "_accessCode": "测试访问码：填了以后网页上要输入它才能在线生成，防止别人用你的额度",
   "accessCode": "",
 

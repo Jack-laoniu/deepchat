@@ -2,15 +2,15 @@ import { useEffect, useState } from 'react';
 import { getLang, t, type MsgKey } from './i18n';
 import { parseLesson, type Lesson } from './lesson/schema';
 
-export type ServerConfig = { generate: boolean; needCode: boolean };
+export type ServerConfig = { generate: boolean; needCode: boolean; tts: boolean };
 
 /** 服务端有没有配 API key（网页版能不能在线生成）。整页只问一次 */
 let configOnce: Promise<ServerConfig> | null = null;
 export const serverConfig = () =>
   (configOnce ??= fetch('/api/config')
     .then((r) => (r.ok ? r.json() : {}))
-    .then((d: { generate?: boolean; needCode?: boolean }) => ({ generate: !!d.generate, needCode: !!d.needCode }))
-    .catch(() => ({ generate: false, needCode: false })));
+    .then((d: { generate?: boolean; needCode?: boolean; tts?: boolean }) => ({ generate: !!d.generate, needCode: !!d.needCode, tts: !!d.tts }))
+    .catch(() => ({ generate: false, needCode: false, tts: false })));
 
 export function useCanGenerate() {
   const [cfg, setCfg] = useState<ServerConfig | null>(null);
@@ -54,10 +54,13 @@ export async function requestLesson(
       body: JSON.stringify({ need, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode(), context: opts.context }),
       signal: opts.signal,
     });
-    const data = (await res.json().catch(() => ({}))) as { lesson?: unknown; error?: string };
+    const data = (await res.json().catch(() => ({}))) as { lesson?: unknown; error?: string; detail?: string };
     const r = data.lesson ? parseLesson(data.lesson) : null;
     if (r?.ok) return { lesson: r.lesson };
-    return { error: t(ERRORS[data.error ?? ''] ?? 'genFail') };
+    if (data.error === 'upstream') return { error: t('genUpstream', { d: data.detail ?? '?' }) };
+    if (data.error === 'invalid') return { error: t('genInvalid') };
+    if (!data.error) return { error: t('genUpstream', { d: `HTTP ${res.status}` }) }; // 代理/网关自己报的错（如超时）
+    return { error: t(ERRORS[data.error] ?? 'genFail') };
   } catch {
     return { error: opts.signal?.aborted ? '' : t('genFail') };
   }

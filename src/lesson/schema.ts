@@ -278,6 +278,19 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
         if (!a.options.length && !a.free) err(['rounds', i], `提问 ${a.id} 既没有选项也不允许自由回答`);
       });
     });
+    // 「换成便宜的」写成了新 id 又没移除旧的：两样都算钱，省钱方案反而加钱
+    const guessByEmoji = new Map(l.guess.items.map((g) => [g.emoji, g]));
+    const guessIds = new Set(l.guess.items.map((g) => g.id));
+    l.rounds.forEach((r, i) => {
+      const opts = r.type === 'pick' || r.type === 'fix' || r.type === 'boss' ? r.options : r.type === 'swipe' ? [r.yes, r.no] : [];
+      opts.forEach((o) =>
+        o.add.forEach((it) => {
+          const old = guessByEmoji.get(it.emoji);
+          if (old && !guessIds.has(it.id) && !o.remove.includes(old.id))
+            err(['rounds', i], `选项 ${o.id} 新增的 ${it.id} 像是替换 ${old.id}（同一个 emoji），但用了新 id 又没 remove ${old.id}，两样都会算钱。替换请用相同 id "${old.id}"，或把 "${old.id}" 放进 remove；真是额外新增就换一个 emoji`);
+        }),
+      );
+    });
     if (!l.rounds.some((r) => r.type === 'boss')) err(['rounds'], '至少需要一个 boss 回合');
   });
 export type Lesson = z.infer<typeof Lesson>;

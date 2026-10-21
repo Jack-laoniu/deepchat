@@ -83,39 +83,52 @@ async function readSse(res: Response): Promise<string> {
   return out;
 }
 
-/**
- * 输出长度参数：老接口和大多数中转只认 max_tokens；OpenAI 新一代（推理）模型只认 max_completion_tokens。
- * 先按 max_tokens 发，被拒就换另一个重发，并记住这个接口+模型用哪个。
- */
-const tokenParam = new Map<string, 'max_tokens' | 'max_completion_tokens'>();
+const tokenParam = new Map<string, 'max_tokens' | 'max_completion_tokens' | 'none'>();
 const rejectsParam = (status: number, body: string) =>
-  status === 400 && /max_completion_tokens|max_tokens/.test(body) && /unsupported|not supported|invalid|unrecognized|use/i.test(body);
+  status === 400 && /max_completion_tokens|max_tokens|max output|maximum/i.test(body) && /unsupported|not supported|invalid|unrecognized|use|too large|exceed|maximum/i.test(body);
+
+/** 读回复：正常是 SSE 流；有的中转不支持流式，直接回一个完整 JSON，也认 */
+async function readReply(res: Response): Promise<string> {
+  if (/event-stream/.test(res.headers.get('content-type') ?? '')) return readSse(res);
+  const raw = await res.text();
+  try {
+    const j = JSON.parse(raw) as { choices?: { message?: { content?: string } }[] };
+    return j.choices?.[0]?.message?.content ?? '';
+  } catch {
+    // 没标 content-type 的 SSE
+    return raw.includes('data:') ? readSse(new Response(raw)) : raw;
+  }
+}
 
 export function openAiChat(opts: { baseUrl: string; apiKey: string; model: string; maxTokens?: number }): StartChat {
   const url = `${opts.baseUrl.replace(/\/+$/, '')}/chat/completions`;
   const key = `${url}|${opts.model}`;
-  const post = (messages: OaMessage[], param: 'max_tokens' | 'max_completion_tokens') =>
+  const post = (messages: OaMessage[], param: 'max_tokens' | 'max_completion_tokens' | 'none') =>
     fetch(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: `Bearer ${opts.apiKey}` },
-      body: JSON.stringify({ model: opts.model, messages, stream: true, [param]: opts.maxTokens ?? 16000 }),
+      body: JSON.stringify({ model: opts.model, messages, stream: true, ...(param === 'none' ? {} : { [param]: opts.maxTokens ?? 16000 }) }),
     });
   return (system, history = []) => {
     const messages: OaMessage[] = [{ role: 'system', content: system }, ...history];
     return {
       async send(userText) {
         messages.push({ role: 'user', content: userText });
-        const param = tokenParam.get(key) ?? 'max_tokens';
-        let res = await post(messages, param);
-        if (!res.ok) {
+        // 输出长度参数：老接口和多数中转只认 max_tokens；OpenAI 新一代模型只认 max_completion_tokens；
+        // 有的模型输出上限比 16000 小，会说「太大」。依次换着试，记住这个接口+模型能用的那个。
+        const order = (['max_tokens', 'max_completion_tokens', 'none'] as const).filter((p) => p !== tokenParam.get(key));
+        const tries = tokenParam.has(key) ? [tokenParam.get(key)!, ...order] : order;
+        let res: Response | null = null;
+        for (const param of tries) {
+          res = await post(messages, param);
+          if (res.ok) {
+            tokenParam.set(key, param);
+            break;
+          }
           const body = await res.text().catch(() => '');
-          if (!rejectsParam(res.status, body)) throw new UpstreamError(res.status, body.slice(0, 300));
-          const other = param === 'max_tokens' ? 'max_completion_tokens' : 'max_tokens';
-          res = await post(messages, other);
-          if (!res.ok) throw new UpstreamError(res.status, (await res.text().catch(() => '')).slice(0, 300));
-          tokenParam.set(key, other);
+          if (!rejectsParam(res.status, body) || param === tries.at(-1)) throw new UpstreamError(res.status, body.slice(0, 300));
         }
-        const text = await readSse(res);
+        const text = await readReply(res!);
         messages.push({ role: 'assistant', content: text });
         return { text };
       },
@@ -164,6 +177,7 @@ export async function generateLesson(startChat: StartChat, need: string, lang: '
     if ('refused' in reply) return { ok: false, error: 'refused' };
     const r = parseLesson(extractJson(reply.text));
     if (r.ok) return { ok: true, lesson: { ...r.lesson, need: r.lesson.need || need } };
+    console.error(`generate attempt ${attempt + 1}: invalid level (${reply.text.length} chars):`, r.errors.slice(0, 5).join(' | '));
     prompt = `The level is invalid:\n${r.errors.slice(0, 30).map((e) => `- ${e}`).join('\n')}\n\nFix exactly these problems and output the complete corrected JSON only.`;
   }
   return { ok: false, error: 'invalid' };

@@ -11,6 +11,11 @@ export interface Config {
   provider?: 'openai' | 'anthropic' | '';
   openai?: { apiKey?: string; baseUrl?: string; model?: string; maxTokens?: number };
   anthropic?: { apiKey?: string; baseUrl?: string; model?: string; effort?: 'low' | 'medium' | 'high' };
+  /**
+   * 服务器朗读（可选）：浏览器自己念不出声时（很多安卓机、微信等内置浏览器），由服务器把台词转成语音。
+   * 走 OpenAI 兼容的 /audio/speech 接口；apiKey/baseUrl 不填就沿用 openai 那组。
+   */
+  tts?: { enabled?: boolean; apiKey?: string; baseUrl?: string; model?: string; voiceF?: string; voiceM?: string; perIpPerHour?: number };
   /** 测试访问码：填了以后网页上要输入它才能生成 */
   accessCode?: string;
   limits?: { perIpPerHour?: number; perDay?: number; concurrency?: number; discussPerIpPerHour?: number };

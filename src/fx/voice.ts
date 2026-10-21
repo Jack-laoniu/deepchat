@@ -1,5 +1,6 @@
 import { getLang, LOCALE } from '../i18n';
-import { isMuted } from './fx';
+import { loadCode, serverConfig } from '../api';
+import { ac, isMuted } from './fx';
 
 /** 浏览器自带朗读：每个角色用不同音高/语速，像听力故事一样把台词念出来 */
 
@@ -34,6 +35,8 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   const unlock = () => {
     if (unlocked) return;
     unlocked = true;
+    ac(); // 服务器朗读走 AudioContext，同样要在点击里先建好
+
     try {
       const u = new SpeechSynthesisUtterance(' ');
       u.volume = 0;
@@ -74,7 +77,23 @@ export function pickVoice(locale: string, gender: Gender): SpeechSynthesisVoice 
 /** 英文整体语速（1 = 系统默认） */
 export const EN_RATE = 0.88;
 
-export const canSpeak = () => typeof window !== 'undefined' && 'speechSynthesis' in window;
+const hasBrowserTts = () => typeof window !== 'undefined' && 'speechSynthesis' in window;
+export const canSpeak = () => typeof window !== 'undefined';
+
+/**
+ * 两种念法：
+ * - browser：浏览器自带朗读（iPhone、电脑、大部分带谷歌服务的安卓）
+ * - server：服务器把台词转成 mp3，用和按钮音效同一个 AudioContext 播放。
+ *   很多安卓机/内置浏览器没有朗读引擎或没有中英文语音，「按钮有声、台词没声」，这时自动切过来（需服务器开启 tts）
+ */
+let engine: 'browser' | 'server' = hasBrowserTts() ? 'browser' : 'server';
+
+/** 浏览器语音已加载、却没有当前语言的语音 → 浏览器念不了 */
+function browserLacksLang(): boolean {
+  const vs = window.speechSynthesis.getVoices();
+  const lang = LOCALE[getLang()].slice(0, 2);
+  return vs.length > 0 && !vs.some((v) => v.lang.toLowerCase().startsWith(lang));
+}
 
 type Opts = { pitch?: number; rate?: number; gender?: Gender };
 type Job = { text: string; opts: Opts; done: () => void };
@@ -106,7 +125,85 @@ export function speakNow(text: string, opts: Opts = {}): Promise<void> {
 
 function next() {
   current = queue.shift() ?? null;
-  if (current) utter(current, true);
+  if (!current) return;
+  if (engine === 'server') void playServer(current, false);
+  else if (browserLacksLang()) void playServer(current, true);
+  else utter(current, true);
+}
+
+// ---- 服务器朗读 ----
+
+let playing: AudioBufferSourceNode | null = null;
+const audio = new Map<string, Promise<AudioBuffer | null>>();
+
+function serverAudio(text: string, gender: Gender): Promise<AudioBuffer | null> {
+  const key = `${gender}|${text}`;
+  let p = audio.get(key);
+  if (!p) {
+    p = (async () => {
+      if (!(await serverConfig()).tts) return null;
+      const ctx = ac();
+      if (!ctx) return null;
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ text, g: gender, code: loadCode() }),
+      });
+      if (!res.ok) return null;
+      const data = await res.arrayBuffer();
+      // 老安卓 WebView 只支持回调写法
+      return new Promise<AudioBuffer>((ok, bad) => ctx.decodeAudioData(data, ok, bad));
+    })().catch(() => null);
+    p.then((b) => !b && audio.delete(key));
+    audio.set(key, p);
+    if (audio.size > 120) audio.delete(audio.keys().next().value!);
+  }
+  return p;
+}
+
+/** 提前把下一句要念的准备好（只在服务器朗读模式下有用） */
+export function prefetchSpeech(text: string, opts: Opts = {}) {
+  if (engine !== 'server' || isMuted()) return;
+  const clean = text.replace(/[\p{Extended_Pictographic}️]/gu, '').trim();
+  if (clean) void serverAudio(clean, opts.gender ?? 'f');
+}
+
+async function playServer(job: Job, browserFallback: boolean) {
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    clearTimeout(fallback);
+    if (current !== job) return;
+    playing = null;
+    job.done();
+    next();
+  };
+  const fallback = setTimeout(finish, 5000 + job.text.length * (getLang() === 'zh' ? 300 : 120));
+  const buf = await serverAudio(job.text, job.opts.gender ?? 'f');
+  if (current !== job || finished) return;
+  const ctx = ac();
+  // AudioContext 被系统挂起（切后台、还没点过屏幕）时 start() 不出声也不结束，先唤醒，唤不醒就跳过这句
+  if (ctx && ctx.state !== 'running') await Promise.race([ctx.resume().catch(() => {}), new Promise((r) => setTimeout(r, 400))]);
+  if (current !== job || finished) return;
+  if (ctx && ctx.state !== 'running') return finish();
+  if (!buf || !ctx) {
+    // 服务器没开朗读：还是让浏览器试一下（可能用别的语言的嗓音念）
+    if (browserFallback && hasBrowserTts()) {
+      finished = true;
+      clearTimeout(fallback);
+      return utter(job, false);
+    }
+    return finish();
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  // 服务器嗓音已按性别区分，这里只轻微变速，让不同角色听起来有点差别
+  src.playbackRate.value = 1 + ((job.opts.rate ?? 1) - 1) * 0.3;
+  src.connect(ctx.destination);
+  src.onended = finish;
+  playing = src;
+  src.start();
 }
 
 function utter(job: Job, withVoice: boolean) {
@@ -151,7 +248,16 @@ function utter(job: Job, withVoice: boolean) {
     // 被我们自己 cancel 的不算
     if ((e as SpeechSynthesisErrorEvent).error === 'interrupted' || (e as SpeechSynthesisErrorEvent).error === 'canceled') return finish();
     if (v && !started) return retry();
+    if (!started && unlocked) return toServer(); // 安卓上常见：没有朗读引擎，直接报 synthesis-failed
     finish();
+  };
+  const toServer = () => {
+    finished = true;
+    clearTimeout(watchdog);
+    clearTimeout(fallback);
+    synth.cancel();
+    engine = 'server';
+    if (current === job) void playServer(job, false);
   };
   const retry = () => {
     finished = true;
@@ -164,9 +270,11 @@ function utter(job: Job, withVoice: boolean) {
     synth.cancel();
     if (current === job) utter(job, !!v && mute.size < 6); // 换下一个嗓音；试了好几个都哑就交给系统默认
   };
-  // 1.5 秒还没开口：这个嗓音多半是哑的，换一个
+  // 1.5 秒还没开口：有指定嗓音就换一个；连系统默认都不出声，说明这个浏览器念不了，改用服务器朗读
   const watchdog = setTimeout(() => {
-    if (!started && !finished && v && unlocked && startEvents !== false) retry();
+    if (started || finished || !unlocked || startEvents === false) return;
+    if (v) return retry();
+    toServer();
   }, 1500);
   // 某些环境不触发 onend，兜底
   const fallback = setTimeout(finish, 1500 + job.text.length * (getLang() === 'zh' || getLang() === 'ja' ? 300 : 120));
@@ -182,6 +290,12 @@ export function hush() {
   const pending = queue.splice(0);
   const cur = current;
   current = null;
+  try {
+    playing?.stop();
+  } catch {
+    /* 已经播完 */
+  }
+  playing = null;
   try {
     window.speechSynthesis?.cancel();
   } catch {

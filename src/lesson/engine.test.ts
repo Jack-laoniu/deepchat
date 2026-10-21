@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SAMPLES } from '../lessons';
+import dog from '../lessons/dog.json';
 import { gambleCrashes, play, revealsProblem, walkBeats, type Answer, type Replies } from './engine';
 import { superPrompt } from './output';
 import { parseLesson, textWidth, type Beat, type Lesson } from './schema';
@@ -196,5 +197,20 @@ describe('characters & languages', () => {
     expect(text).toContain('$3,000');
     expect(text).toContain('Answer in English.');
     setLocale('zh', 'CNY');
+  });
+});
+
+describe('cheaper replacements', () => {
+  it('rejects a downgrade that adds a new id without removing the original (it would raise the total)', () => {
+    const l = structuredClone(dog) as any;
+    const pick = l.rounds.find((r: any) => r.type === 'pick');
+    pick.options[0].add = [{ id: 'used_dog', emoji: '🐕', name: 'Shelter dog', price: 150 }];
+    pick.options[0].remove = [];
+    const r = parseLesson(l);
+    expect(r.ok).toBe(false);
+    expect(!r.ok && r.errors.join('\n')).toMatch(/used_dog.*dog/);
+
+    pick.options[0].add = [{ id: 'dog', emoji: '🐕', name: 'Shelter dog', price: 150 }]; // 同 id = 替换
+    expect(parseLesson(l).ok).toBe(true);
   });
 });

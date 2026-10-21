@@ -8,7 +8,8 @@ let muted = false;
 export const setMuted = (m: boolean) => (muted = m);
 export const isMuted = () => muted;
 
-function ac(): AudioContext | null {
+/** 音效和服务器朗读共用的 AudioContext（静音时为 null） */
+export function ac(): AudioContext | null {
   if (muted) return null;
   try {
     ctx ??= new AudioContext();

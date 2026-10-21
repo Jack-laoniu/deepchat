@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Character, type Mood } from '../chars/Character';
 import { charById, GUIDE } from '../chars/library';
 import { sfx } from '../fx/fx';
-import { canListen, hush, listen, speak, speakNow } from '../fx/voice';
+import { canListen, hush, listen, prefetchSpeech, speak, speakNow } from '../fx/voice';
 import { useGame } from '../game';
 import { getLang, t } from '../i18n';
 import { matchFree, walkBeats, type Replies } from '../lesson/engine';
@@ -166,9 +166,16 @@ export function Dialogue({
     }
     const text = last.kind === 'line' ? last.say : last.beat.q;
     const c = who(npcSpeaker);
+    // 服务器朗读时，提前把下一句的语音要来，免得等
+    const upcoming = items[shown];
+    if (upcoming && !(upcoming.kind === 'line' && (upcoming.who === 'me' || upcoming.who === 'narrator'))) {
+      const n = who(upcoming.kind === 'line' ? upcoming.who : upcoming.beat.who);
+      prefetchSpeech(upcoming.kind === 'line' ? upcoming.say : upcoming.beat.q, { rate: n.rate, gender: n.gender });
+    }
     setTalking(true);
     let alive = true;
-    const minTalk = new Promise((r) => setTimeout(r, 400 + [...text].length * 110));
+    // 嘴型至少动这么久（中文一个字约 110ms，英文一个字母约 50ms）；真正念完以朗读结束为准
+    const minTalk = new Promise((r) => setTimeout(r, 400 + [...text].length * (getLang() === 'zh' || getLang() === 'ja' ? 110 : 50)));
     void Promise.all([speak(text, { pitch: c.pitch, rate: c.rate, gender: c.gender }), minTalk]).then(() => alive && setTalking(false));
     return () => {
       alive = false;

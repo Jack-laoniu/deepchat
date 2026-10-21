@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { loadConfig, type Config } from './config';
+import { ttsFromConfig, type Tts } from './tts';
 import { chatFromConfig, discussNeed, generateLesson, reactLine, UpstreamError, type StartChat, type Turn } from './generate';
 
 /**
@@ -19,17 +20,21 @@ const MAX_NEED_CHARS = 200;
  * key、模型、访问码、限额都来自配置文件（见 config.ts），每次请求都读一遍：
  * 文件没改时直接用缓存；改了就重建模型连接，不用重启服务。
  */
-let built: { config: Config; start: StartChat | null } | null = null;
+let built: { config: Config; start: StartChat | null; tts: Tts | null } | null = null;
 function settings() {
   const { config, error } = loadConfig();
   if (built?.config !== config) {
     const m = chatFromConfig(config);
     console.error(m ? `online generation: ${m.label}` : 'online generation: off（没有配置 key）');
-    built = { config, start: m?.start ?? null };
+    const tts = ttsFromConfig(config);
+    if (tts) console.error('server tts: on');
+    built = { config, start: m?.start ?? null, tts };
   }
   const l = config.limits ?? {};
   return {
     client: built.start,
+    tts: built.tts,
+    ttsPerIpPerHour: config.tts?.perIpPerHour || 600,
     /** 测试期访问码：设置后，只有带对访问码的请求才能用服务器上的 key 生成 */
     accessCode: config.accessCode || '',
     perIpPerHour: l.perIpPerHour || 5,
@@ -42,6 +47,7 @@ function settings() {
 
 const hits = new Map<string, number[]>();
 const talkHits = new Map<string, number[]>();
+const ttsHits = new Map<string, number[]>();
 let day = '';
 let dayCount = 0;
 let running = 0;
@@ -56,19 +62,19 @@ function clientIp(req: IncomingMessage): string {
   return (Array.isArray(fwd) ? fwd[0] : fwd)?.split(',')[0].trim() || req.socket.remoteAddress || '?';
 }
 
-function allow(ip: string, perIpPerHour: number, perDay: number, bucket = hits): 'ok' | 'ip' | 'day' {
+function allow(ip: string, perIpPerHour: number, perDay: number, bucket = hits, countDay = true): 'ok' | 'ip' | 'day' {
   const today = new Date().toISOString().slice(0, 10);
   if (today !== day) {
     day = today;
     dayCount = 0;
   }
-  if (dayCount >= perDay) return 'day';
+  if (countDay && dayCount >= perDay) return 'day';
   const now = Date.now();
   const recent = (bucket.get(ip) ?? []).filter((t) => now - t < 3600_000);
   if (recent.length >= perIpPerHour) return 'ip';
   recent.push(now);
   bucket.set(ip, recent);
-  dayCount++;
+  if (countDay) dayCount++;
   return 'ok';
 }
 
@@ -88,11 +94,12 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   const cfg = settings();
   const client = cfg.client;
   if (path === '/api/config' && req.method === 'GET') {
-    json(res, 200, { generate: !!client, needCode: !!cfg.accessCode, ...(cfg.error ? { configError: cfg.error } : {}) });
+    json(res, 200, { generate: !!client, needCode: !!cfg.accessCode, tts: !!cfg.tts, ...(cfg.error ? { configError: cfg.error } : {}) });
     return true;
   }
   if (path === '/api/discuss') return discuss(req, res, cfg);
   if (path === '/api/react') return react(req, res, cfg);
+  if (path === '/api/tts') return speech(req, res, cfg);
   if (path !== '/api/generate') return false;
   if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
   if (!client) return void json(res, 503, { error: 'disabled' }), true;
@@ -134,7 +141,9 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
 function upstreamFailed(res: ServerResponse, what: string, e: unknown) {
   console.error(`${what} failed:`, e instanceof Anthropic.APIError || e instanceof UpstreamError ? `${e.status} ${e.message}` : e);
   const status = e instanceof Anthropic.RateLimitError || (e instanceof UpstreamError && e.status === 429) ? 429 : 502;
-  json(res, status, { error: status === 429 ? 'busy' : 'upstream' });
+  // detail 只给状态码，方便排查（401 = key 不对，404 = 地址或模型名不对，400 = 参数不被接受…），不带上游原文
+  const detail = e instanceof Anthropic.APIError || e instanceof UpstreamError ? `HTTP ${e.status}` : (e as Error)?.name === 'TimeoutError' ? 'timeout' : 'network';
+  json(res, status, { error: status === 429 ? 'busy' : 'upstream', detail });
 }
 
 const MAX_PLAN_CHARS = 8000;
@@ -220,6 +229,29 @@ async function react(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<
     upstreamFailed(res, 'react', e);
   } finally {
     running--;
+  }
+  return true;
+}
+
+/** 朗读一句台词，返回 mp3（只在浏览器自己念不出声时用；不计入每日生成上限，单独按 IP 限次） */
+async function speech(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<typeof settings>): Promise<boolean> {
+  if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
+  if (!cfg.tts) return void json(res, 503, { error: 'disabled' }), true;
+  let body: Record<string, unknown>;
+  try {
+    body = (await readBody(req, 4096)) as typeof body;
+  } catch {
+    return void json(res, 400, { error: 'bad_request' }), true;
+  }
+  if (cfg.accessCode && body?.code !== cfg.accessCode) return void json(res, 403, { error: 'code' }), true;
+  const text = str(body?.text, 300);
+  if (!text) return void json(res, 400, { error: 'need' }), true;
+  if (allow(clientIp(req), cfg.ttsPerIpPerHour, cfg.perDay, ttsHits, false) !== 'ok') return void json(res, 429, { error: 'rate_ip' }), true;
+  try {
+    const mp3 = await cfg.tts(text, body?.g === 'm' ? 'm' : 'f');
+    res.writeHead(200, { 'content-type': 'audio/mpeg', 'cache-control': 'private, max-age=86400' }).end(mp3);
+  } catch (e) {
+    upstreamFailed(res, 'tts', e);
   }
   return true;
 }
