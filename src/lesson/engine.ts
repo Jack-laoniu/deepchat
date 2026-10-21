@@ -150,7 +150,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
       facts.push(r.fact.replace('{v}', String(a.value)));
     } else if ('gamble' in a && (r.type === 'fix' || r.type === 'boss')) {
       if (r.gamble.fact) facts.push(r.gamble.fact);
-      risks.push(`${r.problem}：选择「${r.gamble.label}」。${r.gamble.ok}`);
+      risks.push(`${r.problem} → 「${r.gamble.label}」${r.gamble.ok ? `: ${r.gamble.ok}` : ""}`);
       score.safe -= 15;
     } else if ('option' in a) {
       const o = optionsOf(r).find((x) => x.id === a.option);

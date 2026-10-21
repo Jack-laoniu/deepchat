@@ -1,47 +1,54 @@
-import farm from '../lessons/farm.json';
+import { characterCatalog, GUIDE, LANGS, MOODS } from '../chars/library';
+import dog from '../lessons/dog.json';
 
 /** 让任意大模型把一句需求编译成关卡 JSON。商店版里它就是 MCP 工具描述。 */
-export const GENERATOR_RULES = `你要把用户的一句模糊需求，做成一个「需求闯关」小游戏的关卡 JSON。
+export const GENERATOR_RULES = `You turn a user's vague one-line need into a JSON level for "Need Quest", a Duolingo-style mini game.
 
-玩法：用户先看到你盲猜的方案（一组物品和总价），然后一关一关地玩。目标不是让用户填表，而是让他在游戏里自然地说出真实情况和真实意图：
-- 用小故事演出这个需求在现实里常踩的坑（多个角色对话，像听力故事），故事中间停下来问用户「你家是哪种？」；
-- 用聊天/角色扮演让用户用自己的话说出动机、担心和愿望；
-- 用地图让用户去找几个不同的人打听，每个人负责问清一个方面（比如商家问方案、过来人问坑、家人问动机和预算）。
-选择会改变方案里的物品和价格，还可能「炸出」新的坑（fix 关），最后一个 boss 关是该领域最典型的极端情况。
+GOAL: never make the user fill a form. Inside the game they naturally reveal their real situation and their real intent:
+- a short STORY (several characters bickering, read aloud like a listening story) acts out the pitfalls this need runs into in real life, and pauses to ask "which one are you?";
+- a CHAT / roleplay lets the user say, in their own words, their motivation, worries and wishes;
+- a MAP lets the user walk around and ask several people, each covering one aspect (seller → the plan, old-timer → pitfalls, family → motivation & budget).
+Choices change the plan's items and price and can "blow up" new problems (fix rounds). The last round is a boss: the most typical extreme situation in this field.
 
-关卡类型：
-- talk：剧情关。style="story" 是多人小故事（旁白 narrator + 角色对话），style="chat" 是和一个角色（with）聊天
-- map：地图关。2~4 个地点（x、y 为 0~100 的位置），每个地点有一个角色和一段 chat 对话
-- pick：2~4 个选项点选
-- swipe：是/否 二选一（yes / no）
-- slider：拖动数值；kind="budget" 用来问预算上限，fact 里用 {v} 代表数值
-- fix：出问题了，给 1~3 个修法 + 1 个 gamble（赌一把不修）
-- boss：终极考验，结构同 fix，必须有且放在最后
+LANGUAGE: write ALL text in the user's language. Set "lang" to one of ${LANGS.join(', ')} and "currency" to the ISO code they'd pay in (CNY, USD, JPY, EUR…).
 
-角色与对话：
-- 在 cast 里定义 2~4 个有个性、彼此有冲突的角色（比如过来人 vs 想多卖货的老板 vs 管钱的家人），给不同的 pitch/rate 让声音有区别。保留角色：me（用户）、fox（向导狐狸）、narrator（旁白）。
-- talk/map 的 beats 是台词和提问的序列：台词 {"who","say"}；提问 {"id","who","q","options":[...],"free":{...}}。
-- 提问的选项可以带 reply：角色对这个回答的即时反应（让对话活起来，可以吐槽、反驳、提醒）。
-- free 让用户用自己的话回答（可打字或语音），fact 里用 {v} 代表原话；match 按关键词命中设置标记并给出反应；chips 是几个快捷短语。每局至少 2 处 free，其中一处问动机（为什么想做），一处问最担心什么或最想要什么。
-- 任何台词或提问都可以加 if 条件，根据前面的回答出现或不出现（比如用户说人常不在家却选了手动，就让角色提醒他）。
+CHARACTERS: do NOT invent characters. Pick 2–4 from this fixed library and give each an "as" role for this story (e.g. {"id":"wang","as":"Dad"}). Pick people whose personalities clash.
+${characterCatalog()}
+Reserved speakers usable without being in cast: "me" (the user), "narrator", "${GUIDE}" (the guide, use for the opening chat).
+Each line may have "mood": ${MOODS.join(' | ')} — use them, it makes the characters act.
 
-规则：
-1. 屏幕上的字越少越好：关卡 q ≤ 14 字，卡片 label ≤ 8 字，对话回答 label ≤ 14 字，台词 say ≤ 40 字，对话提问 q ≤ 24 字，tip / crash / ok ≤ 28 字。每个选项和角色都必须配一个贴切的 emoji。
-2. 完整信息写在 fact 里（给后续 AI 看，不上屏），要具体到数字和规格。
-3. 用 set 给选项打标记，用 if:{all,any,none} 控制某关是否出现。fix 关要紧跟在触发它的那关后面。
-4. 选项用 add 放入/替换物品（同 id 即替换），remove 移除，price 做非物品的价格调整。
-5. gamble.crash_if：在哪些标记下必然翻车（"always" 或标记数组）。规模小、负载低时省钱是合理的，就不要设成 always，并写好 ok 文案。
-6. 价格是你的估算即可，不要编造来源；没有来源就不写 source。
-7. 8~12 关为宜：开头一个 chat 问动机，至少一个 story、一个 map、一个 slider(budget)，最后是 boss。
-8. id 只用小写字母、数字、下划线。只输出 JSON，不要任何解释。`;
+ROUND TYPES
+- talk: style "story" (narrator + characters) or "chat" (with one character, field "with")
+- map: 2–4 spots (x, y from 0–100; keep y between 20 and 75), each spot has a character ("who") and a chat (beats)
+- pick: 2–4 option cards
+- swipe: yes / no
+- slider: drag a number; kind "budget" asks the budget cap; "{v}" in fact is the value
+- fix: a problem appeared; 1–3 fixes + 1 gamble (skip the fix and hope)
+- boss: final test, same shape as fix, required, must be last
+
+DIALOGUE
+- beats = lines {"who","say","mood"} and questions {"id","who","q","options":[...],"free":{...}}.
+- options may carry "reply": the characters' immediate reaction (tease, push back, warn).
+- "free" lets the user answer in their own words (typing or voice). "{v}" in fact is their words; "match" sets flags by keywords and reacts; "chips" are quick phrases. Use free at least twice: once for the motivation (why), once for the biggest worry or wish.
+- any line or question can have "if" to appear depending on earlier answers (e.g. the user said they're rarely home but picked manual control → a character calls it out).
+
+RULES
+1. Very little text on screen. Limits are in "width" (a CJK char = 1, a Latin letter ≈ 0.55): round q ≤ 14, card label ≤ 8, dialogue reply label ≤ 14, line say ≤ 40, dialogue question q ≤ 24, tip / crash / ok ≤ 28. Every option needs a fitting emoji.
+2. Put the full detail in "fact" (for the downstream AI, never shown): concrete numbers and specs.
+3. Use "set" flags on options and "if": {all, any, none} to show rounds conditionally. A fix round must come right after the round that triggers it.
+4. Options "add" items to the plan (same id = replace), "remove" items, "price" adjusts non-item cost.
+5. gamble.crash_if: flags under which it must crash ("always" or a list). When saving money is reasonable for a small scale / light load, don't use "always" and write an "ok" text.
+6. Prices are your estimates; never invent sources.
+7. 8–12 rounds: open with a chat with "${GUIDE}" asking the motivation, include at least one story, one map, one slider(budget), and end with the boss.
+8. ids use lowercase letters, digits, underscores only. Output JSON only, no explanation.`;
 
 export function generatorPrompt(need: string): string {
   return `${GENERATOR_RULES}
 
-示例（另一个需求）：
+Example (a different need):
 \`\`\`json
-${JSON.stringify(farm)}
+${JSON.stringify(dog)}
 \`\`\`
 
-用户的需求：${need || '（在这里写需求）'}`;
+The user's need: ${need || '(write the need here)'}`;
 }

@@ -6,6 +6,7 @@ import { gambleCrashes, optionDelta } from '../lesson/engine';
 import type { BossRound, FixRound, Option } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
 import { PriceBadge } from '../ui/kit';
+import { t } from '../i18n';
 
 type Stage = 'idle' | 'fixed' | 'boom' | 'shrug';
 
@@ -90,7 +91,7 @@ export function Fix({ round }: { round: FixRound }) {
       </div>
 
       <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 1.2 }} className="mb-2 text-center text-sm font-extrabold text-slate-400">
-        👆 拖上去修好它
+        {t('dragToFix')}
       </motion.div>
       <div className="flex justify-center gap-3">
         {round.options.map((o) => (
@@ -239,7 +240,7 @@ export function Boss({ round }: { round: BossRound }) {
               </motion.div>
             ))}
           </div>
-          <div className="mt-1 text-center text-xs font-extrabold text-slate-400">你的方案</div>
+          <div className="mt-1 text-center text-xs font-extrabold text-slate-400">{t('yourPlan')}</div>
         </div>
       </div>
 

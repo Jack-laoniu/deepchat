@@ -7,6 +7,7 @@ import { superPrompt, yuan } from '../lesson/output';
 import { Emoji } from '../ui/Emoji';
 import { Btn, Mascot } from '../ui/kit';
 import { copyText } from '../ui/copy';
+import { t } from '../i18n';
 
 function Ring({ value, emoji, label, delay }: { value: number; emoji: string; label: string; delay: number }) {
   const r = 30;
@@ -61,27 +62,27 @@ export function Win() {
       <div className="flex flex-col items-center">
         <Mascot mood="party" size={110} />
         <motion.h1 initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.2 }} className="mt-2 text-4xl font-black text-green-500">
-          通关！
+          {t('win')}
         </motion.h1>
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-3">
         <div className="rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-3 text-center">
-          <div className="text-xs font-black text-slate-400">AI 盲猜</div>
+          <div className="text-xs font-black text-slate-400">{t('guessLabel')}</div>
           <div className="text-xl font-black text-slate-400 line-through decoration-2">{yuan(guessTotal)}</div>
         </div>
         <div className={`rounded-2xl border-2 border-b-4 p-3 text-center ${saved >= 0 ? 'border-green-300 bg-green-50' : 'border-amber-300 bg-amber-50'}`}>
           <div className={`text-xs font-black ${saved >= 0 ? 'text-green-600' : 'text-amber-600'}`}>
-            {saved >= 0 ? `省了 ${yuan(saved)}` : `多花 ${yuan(-saved)}，但更靠谱`}
+            {saved >= 0 ? t('saved', { x: yuan(saved) }) : t('more', { x: yuan(-saved) })}
           </div>
           <div className="text-xl font-black text-slate-700">{yuan(p.total)}</div>
         </div>
       </div>
 
       <div className="mt-5 flex justify-around">
-        <Ring value={p.score.easy} emoji="😌" label="省心" delay={0.3} />
-        <Ring value={p.score.good} emoji="🎯" label="效果" delay={0.5} />
-        <Ring value={p.score.safe} emoji="🛡️" label="安全" delay={0.7} />
+        <Ring value={p.score.easy} emoji="😌" label={t('easy')} delay={0.3} />
+        <Ring value={p.score.good} emoji="🎯" label={t('good')} delay={0.5} />
+        <Ring value={p.score.safe} emoji="🛡️" label={t('safe')} delay={0.7} />
       </div>
 
       <button onClick={() => setShowList((s) => !s)} className="mt-5 flex flex-wrap justify-center gap-2">
@@ -93,8 +94,8 @@ export function Win() {
       </button>
       {(p.risks.length > 0 || g.crashes.length > 0) && (
         <div className="mt-2 flex justify-center gap-2 text-sm font-black">
-          {p.risks.length > 0 && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-700">🎲 接受风险 {p.risks.length}</span>}
-          {g.crashes.length > 0 && <span className="rounded-full bg-rose-100 px-2 py-0.5 text-rose-600">💥 避开大坑 {g.crashes.length}</span>}
+          {p.risks.length > 0 && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-700">{t('risks', { n: p.risks.length })}</span>}
+          {g.crashes.length > 0 && <span className="rounded-full bg-rose-100 px-2 py-0.5 text-rose-600">{t('dodged', { n: g.crashes.length })}</span>}
         </div>
       )}
 
@@ -109,13 +110,13 @@ export function Win() {
               </div>
               <div className="text-sm font-black tabular-nums text-slate-600">
                 {yuan(it.price)}
-                {!it.source && <span className="ml-1 rounded bg-slate-100 px-1 text-[10px] text-slate-400">估</span>}
+                {!it.source && <span className="ml-1 rounded bg-slate-100 px-1 text-[10px] text-slate-400">{t('est')}</span>}
               </div>
             </div>
           ))}
           {p.extras.map((e, i) => (
             <div key={i} className="flex justify-between border-b border-slate-100 px-3 py-2 text-sm text-slate-500 last:border-0">
-              <span>调整：{e.label}</span>
+              <span>{t('adjust')}{e.label}</span>
               <span className="font-black tabular-nums">{e.price > 0 ? '+' : ''}{yuan(e.price)}</span>
             </div>
           ))}
@@ -124,7 +125,7 @@ export function Win() {
 
       {p.quotes.length > 0 && (
         <div className="mt-4 space-y-2">
-          <div className="text-sm font-black text-slate-400">💬 你亲口说的，AI 会照这个来</div>
+          <div className="text-sm font-black text-slate-400">{t('yourWords')}</div>
           {p.quotes.map((q, i) => (
             <motion.div
               key={i}
@@ -147,10 +148,10 @@ export function Win() {
       )}
 
       <div className="mt-auto space-y-3 pt-5">
-        <Btn onClick={handoff}>{inHost() ? '🤖 交给 AI 出详细方案' : copied ? '✅ 已复制，粘贴给任意 AI' : '🤖 复制方案给 AI'}</Btn>
+        <Btn onClick={handoff}>{inHost() ? t('handoffHost') : copied ? t('handoffCopied') : t('handoffCopy')}</Btn>
         <div className="grid grid-cols-2 gap-3">
-          <Btn tone="white" onClick={() => setShowList((s) => !s)}>{showList ? '收起清单' : '🧾 清单'}</Btn>
-          <Btn tone="white" onClick={() => g.open(l)}>🔄 重玩</Btn>
+          <Btn tone="white" onClick={() => setShowList((s) => !s)}>{showList ? t('hideList') : t('list')}</Btn>
+          <Btn tone="white" onClick={() => g.open(l)}>{t('replay')}</Btn>
         </div>
       </div>
     </div>

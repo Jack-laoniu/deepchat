@@ -4,6 +4,7 @@ import { optionDelta } from '../lesson/engine';
 import type { PickRound } from '../lesson/schema';
 import { Btn, PriceBadge, Tile } from '../ui/kit';
 import { Ask } from './Ask';
+import { t } from '../i18n';
 
 export function Pick({ round }: { round: PickRound }) {
   const g = useGame();
@@ -27,7 +28,7 @@ export function Pick({ round }: { round: PickRound }) {
         ))}
       </div>
       <Btn disabled={!sel} onClick={() => sel && g.choose(round, sel)} className="mt-4">
-        确定
+        {t('confirm')}
       </Btn>
     </div>
   );

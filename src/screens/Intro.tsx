@@ -5,6 +5,7 @@ import { sfx } from '../fx/fx';
 import { yuan } from '../lesson/output';
 import { Emoji } from '../ui/Emoji';
 import { Btn, Mascot, useCountUp } from '../ui/kit';
+import { t } from '../i18n';
 
 /** 盲猜亮相：物品一个个飞进来，总价跟着往上跳 */
 export function Intro() {
@@ -37,10 +38,10 @@ export function Intro() {
         ))}
       </div>
       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5 + l.guess.items.length * 0.18 }} className="my-5 text-center">
-        <div className="text-sm font-extrabold text-slate-400">我猜要花</div>
+        <div className="text-sm font-extrabold text-slate-400">{t('iGuess')}</div>
         <div className="text-5xl font-black tabular-nums text-slate-700">{yuan(shown)}</div>
       </motion.div>
-      <Btn onClick={g.begin}>哪里不对？来找茬 →</Btn>
+      <Btn onClick={g.begin}>{t('findWrong')}</Btn>
     </div>
   );
 }

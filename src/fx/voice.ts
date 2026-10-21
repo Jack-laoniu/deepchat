@@ -1,15 +1,17 @@
+import { getLang, LOCALE } from '../i18n';
 import { isMuted } from './fx';
 
 /** 浏览器自带朗读：每个角色用不同音高/语速，像听力故事一样把台词念出来 */
 
-let zhVoice: SpeechSynthesisVoice | null | undefined;
+const voices = new Map<string, SpeechSynthesisVoice | null>();
 
-function pickVoice(): SpeechSynthesisVoice | null {
-  if (zhVoice !== undefined) return zhVoice;
+function pickVoice(locale: string): SpeechSynthesisVoice | null {
+  if (voices.has(locale)) return voices.get(locale)!;
   const vs = window.speechSynthesis?.getVoices() ?? [];
   if (!vs.length) return null; // 还没加载好，下次再找
-  zhVoice = vs.find((v) => v.lang === 'zh-CN') ?? vs.find((v) => v.lang.startsWith('zh')) ?? null;
-  return zhVoice;
+  const v = vs.find((x) => x.lang === locale) ?? vs.find((x) => x.lang.startsWith(locale.slice(0, 2))) ?? null;
+  voices.set(locale, v);
+  return v;
 }
 
 export const canSpeak = () => typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -20,15 +22,16 @@ export function speak(text: string, opts: { pitch?: number; rate?: number } = {}
     try {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text.replace(/[\p{Extended_Pictographic}️]/gu, ''));
-      u.lang = 'zh-CN';
-      const v = pickVoice();
+      const locale = LOCALE[getLang()];
+      u.lang = locale;
+      const v = pickVoice(locale);
       if (v) u.voice = v;
       u.pitch = opts.pitch ?? 1;
       u.rate = (opts.rate ?? 1) * 1.05;
       u.onend = u.onerror = () => resolve();
       window.speechSynthesis.speak(u);
       // 某些环境不触发 onend，兜底
-      setTimeout(resolve, 600 + text.length * 260);
+      setTimeout(resolve, 600 + text.length * (getLang() === 'zh' || getLang() === 'ja' ? 260 : 90));
     } catch {
       resolve();
     }
@@ -70,7 +73,7 @@ export function listen(onText: (t: string) => void, onEnd: () => void): () => vo
     return () => {};
   }
   const r = new R();
-  r.lang = 'zh-CN';
+  r.lang = LOCALE[getLang()];
   r.interimResults = true;
   r.onresult = (e) => onText(Array.from(e.results).map((x) => x[0].transcript).join(''));
   r.onend = r.onerror = onEnd;

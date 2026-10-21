@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CHARACTER_IDS, GUIDE, LANGS, MOODS } from '../chars/library';
 
 /**
  * 一个「关卡」= 一次需求闯关。由大模型生成，前端只负责演。
@@ -9,16 +10,22 @@ import { z } from 'zod';
 
 const id = z.string().regex(/^[a-z0-9_]+$/, '只允许小写字母、数字和下划线');
 const emoji = z.string().min(1).max(16);
-const short = (n: number) => z.string().min(1).max(n, `不超过 ${n} 个字`);
+/** 显示宽度：中日韩字符算 1，其余（拉丁字母、数字、空格）算 0.55，这样各语言的字数上限差不多公平 */
+export const textWidth = (s: string) => [...s].reduce((w, c) => w + (/[\u2E80-\uFFEF]/.test(c) ? 1 : 0.55), 0);
+const tooLong = (n: number) => `太长了：不超过 ${n} 个汉字宽（英文约 ${Math.floor(n / 0.55)} 个字母）`;
+/** 必填的短文本 */
+const short = (n: number) => z.string().min(1).refine((s) => textWidth(s) <= n, { message: tooLong(n) });
+/** 可以为空的短文本 */
+const upto = (n: number) => z.string().refine((s) => textWidth(s) <= n, { message: tooLong(n) });
 
 export const Item = z.object({
   id,
   emoji,
   name: short(10),
   price: z.number().min(0),
-  spec: z.string().max(80).default(''),
+  spec: upto(80).default(''),
   /** 价格是否为估算（默认是）。只有给出来源的才算非估算 */
-  source: z.string().max(80).optional(),
+  source: upto(80).optional(),
 });
 export type Item = z.infer<typeof Item>;
 
@@ -39,9 +46,9 @@ export const Option = z.object({
   emoji,
   label: short(8),
   /** 给下游 AI 的完整事实描述，不上屏 */
-  fact: z.string().min(1).max(120),
+  fact: short(120),
   /** 选完后狐狸说的一句话 */
-  tip: z.string().max(28).optional(),
+  tip: upto(28).optional(),
   /** 放入方案的物品；与已有物品同 id 时替换 */
   add: z.array(Item).default([]),
   /** 从方案中移除的物品 id */
@@ -56,12 +63,12 @@ export type Option = z.infer<typeof Option>;
 export const Gamble = z.object({
   emoji: emoji.default('🎲'),
   label: short(8),
-  fact: z.string().max(120).default(''),
+  fact: upto(120).default(''),
   /** 'always' 必翻车；数组 = 命中其中任一标记时翻车；空数组 = 不会翻车，只是风险 */
   crash_if: z.union([z.literal('always'), z.array(id)]).default([]),
-  crash: z.string().max(28).default(''),
+  crash: upto(28).default(''),
   loss: z.number().min(0).default(0),
-  ok: z.string().max(28).default(''),
+  ok: upto(28).default(''),
 });
 export type Gamble = z.infer<typeof Gamble>;
 
@@ -78,9 +85,9 @@ export const SliderRound = z.object({
   max: z.number(),
   step: z.number().positive(),
   value: z.number().optional(),
-  unit: z.string().max(6).default(''),
+  unit: upto(6).default(''),
   /** 事实模板，{v} 会被替换为数值 */
-  fact: z.string().max(80),
+  fact: upto(80),
 });
 export const FixRound = z.object({
   type: z.literal('fix'),
@@ -100,40 +107,36 @@ export const BossRound = z.object({
 
 // ---------------- 剧情：角色、台词、对话中的提问 ----------------
 
-/** 角色。保留 id：me（用户本人）、fox（向导狐狸）、narrator（旁白） */
-export const Character = z.object({
-  id,
-  name: short(6),
-  emoji,
-  /** 朗读音色：音高 0.5~2、语速 0.6~1.5 */
-  pitch: z.number().min(0.5).max(2).default(1),
-  rate: z.number().min(0.6).max(1.5).default(1),
-});
-export type Character = z.infer<typeof Character>;
-export const RESERVED_SPEAKERS = ['me', 'fox', 'narrator'] as const;
+/** 出场角色：从固定角色库里挑，as 是他在这个故事里的身份（如「爸爸」「农资店老板」） */
+export const CastMember = z.object({ id: z.enum(CHARACTER_IDS), as: short(8).optional() });
+export type CastMember = z.infer<typeof CastMember>;
+/** 不用写进 cast 也能说话的：me（用户本人）、narrator（旁白）、向导 */
+export const RESERVED_SPEAKERS = ['me', 'narrator', GUIDE] as const;
 
-export const Line = z.object({ who: id, say: short(40), if: Cond.optional() });
+export const Line = z.object({ who: id, say: short(40), mood: z.enum(MOODS).optional(), if: Cond.optional() });
 export type Line = z.infer<typeof Line>;
 
 /** 对话里的回答选项：比卡片标签长一点，可以带角色的即时反应 */
 export const Reply = Option.extend({
   label: short(14),
   reply: z.array(Line).default([]),
+  /** 用户选这个回答时，提问者的表情 */
+  mood: z.enum(MOODS).optional(),
 });
 export type Reply = z.infer<typeof Reply>;
 
 /** 让用户用自己的话说。关键词命中会打标记，原话进交付物 */
 export const Free = z.object({
-  placeholder: z.string().max(20).default('用你自己的话说说…'),
+  placeholder: upto(20).default('用你自己的话说说…'),
   chips: z.array(short(12)).max(4).default([]),
   /** 事实模板，{v} = 用户原话 */
-  fact: z.string().max(80),
+  fact: upto(80),
   match: z
     .array(
       z.object({
         words: z.array(z.string().min(1)).min(1),
         set: z.array(id).default([]),
-        fact: z.string().max(80).optional(),
+        fact: upto(80).optional(),
         reply: z.array(Line).default([]),
       }),
     )
@@ -221,22 +224,25 @@ export function linesOf(r: Round): Line[] {
   ];
 }
 
-export const Lesson = z
-  .object({
+/** 关卡的结构（不含跨字段校验），用作 MCP 工具的输入 schema */
+export const LessonShape = z.object({
     v: z.literal(1),
-    need: z.string().min(1).max(200),
+    need: short(200),
     title: short(14),
     emoji,
-    domain: z.string().max(30).default(''),
-    cast: z.array(Character).max(8).default([]),
+    domain: upto(40).default(''),
+    lang: z.enum(LANGS).default('zh'),
+    currency: z.string().length(3).default('CNY'),
+    cast: z.array(CastMember).max(6).default([]),
     guess: z.object({
       line: short(28),
       items: z.array(Item).min(2).max(8),
     }),
     rounds: z.array(Round).min(3).max(16),
-    secret: z.string().max(60).optional(),
-  })
-  .superRefine((l, ctx) => {
+    secret: upto(60).optional(),
+});
+
+export const Lesson = LessonShape.superRefine((l, ctx) => {
     const err = (path: (string | number)[], message: string) => ctx.addIssue({ code: 'custom', path, message });
     const seen = new Set<string>();
     l.rounds.forEach((r, i) => {

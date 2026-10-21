@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { SAMPLES } from '../lessons';
 import { gambleCrashes, play, revealsProblem, walkBeats, type Answer, type Replies } from './engine';
 import { superPrompt } from './output';
-import { parseLesson, type Beat, type Lesson } from './schema';
+import { parseLesson, textWidth, type Beat, type Lesson } from './schema';
+import { setLocale } from '../i18n';
 
 const lessons = SAMPLES.map((s) => {
   const r = parseLesson(s);
@@ -22,7 +23,7 @@ const why = talk('why', { why: { option: 'tired' } });
 const story = (land: string, water: string) => talk('story', { land: { option: land }, water: { option: water } });
 
 describe('samples', () => {
-  it('all samples are valid', () => expect(lessons).toHaveLength(3));
+  it('all samples are valid', () => expect(lessons).toHaveLength(4));
 
   it('rejects walls of text, dangling flags and unknown speakers', () => {
     const bad = structuredClone(SAMPLES[0]) as any;
@@ -158,5 +159,42 @@ describe('play', () => {
       }
       expect(play(l, answers).current, l.title).toBeNull();
     }
+  });
+});
+
+describe('characters & languages', () => {
+  const dog = lessons.find((l) => l.lang === 'en')!;
+
+  it('rejects characters that are not in the library', () => {
+    const bad = structuredClone(SAMPLES[0]) as any;
+    bad.cast.push({ id: 'unicorn' });
+    expect(parseLesson(bad).ok).toBe(false);
+  });
+
+  it('measures length by display width so English is not squeezed', () => {
+    expect(textWidth('地有多大？')).toBe(5);
+    expect(textWidth('Where do you live?')).toBeCloseTo(18 * 0.55);
+    const bad = structuredClone(SAMPLES[3]) as any;
+    bad.rounds[1].q = 'Where exactly do you and your family currently live?';
+    expect(parseLesson(bad).ok).toBe(false);
+  });
+
+  it('writes the hand-off in the level language and currency', () => {
+    setLocale(dog.lang, dog.currency);
+    const answers: Answer[] = [];
+    for (let i = 0; i < 30; i++) {
+      const c = play(dog, answers).current;
+      if (!c) break;
+      if (c.type === 'slider') answers.push({ round: c.id, value: 3000 });
+      else if (c.type === 'talk') answers.push(talk(c.id, firstReplies(c.beats)));
+      else if (c.type === 'map') answers.push({ round: c.id, map: Object.fromEntries(c.spots.map((s) => [s.id, firstReplies(s.beats)])) });
+      else if (c.type === 'swipe') answers.push(pick(c.id, c.yes.id));
+      else answers.push(pick(c.id, c.options[0].id));
+    }
+    const text = superPrompt(dog, play(dog, answers), []);
+    expect(text).toContain('## Confirmed by the user');
+    expect(text).toContain('$3,000');
+    expect(text).toContain('Answer in English.');
+    setLocale('zh', 'CNY');
   });
 });

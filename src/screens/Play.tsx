@@ -9,6 +9,7 @@ import { Talk } from '../rounds/Talk';
 import { MapQuest } from '../rounds/Map';
 import { FeedbackSheet } from '../ui/FeedbackSheet';
 import { TopBar } from '../ui/kit';
+import { t } from '../i18n';
 
 function RoundView({ round }: { round: Round }) {
   switch (round.type) {
@@ -58,7 +59,7 @@ export function Play() {
       </div>
       {p.done > 0 && !g.feedback && (
         <button onClick={g.undo} className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs font-extrabold text-slate-300 hover:text-slate-500">
-          ↶ 悔一步
+          {t('undo')}
         </button>
       )}
       <AnimatePresence>

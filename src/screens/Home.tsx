@@ -7,6 +7,7 @@ import { parseLesson, type Lesson } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
 import { Btn, Mascot } from '../ui/kit';
 import { copyText } from '../ui/copy';
+import { t } from '../i18n';
 
 export function Home() {
   const g = useGame();
@@ -14,14 +15,14 @@ export function Home() {
   const samples = useMemo(() => SAMPLES.map((s) => parseLesson(s)).flatMap((r) => (r.ok ? [r.lesson] : [])), []);
 
   return (
-    <div className="flex h-full flex-col px-5 pb-6 pt-10">
+    <div className="flex h-full flex-col overflow-y-auto px-5 pb-6 pt-8">
       <div className="flex flex-col items-center">
-        <Mascot mood="idle" size={120} />
-        <h1 className="mt-3 text-center text-3xl font-black text-slate-700">想搞定什么？</h1>
-        <p className="mt-1 text-center text-base font-bold text-slate-400">玩一局，帮你理清需求</p>
+        <Mascot mood="idle" size={84} />
+        <h1 className="mt-3 text-center text-3xl font-black text-slate-700">{t('homeTitle')}</h1>
+        <p className="mt-1 text-center text-base font-bold text-slate-400">{t('homeSub')}</p>
       </div>
 
-      <div className="mt-8 space-y-3">
+      <div className="mt-5 space-y-3">
         {samples.map((l, i) => (
           <motion.button
             key={l.title}
@@ -34,7 +35,10 @@ export function Home() {
           >
             <Emoji e={l.emoji} size={56} />
             <div className="min-w-0 flex-1">
-              <div className="text-lg font-black text-slate-700">{l.title}</div>
+              <div className="flex items-center gap-2 text-lg font-black text-slate-700">
+                {l.title}
+                <span className="rounded-md bg-slate-100 px-1.5 text-[11px] font-black text-slate-400">{l.lang.toUpperCase()}</span>
+              </div>
               <div className="truncate text-sm font-bold text-slate-400">「{l.need}」</div>
             </div>
             <span className="text-2xl text-slate-300">›</span>
@@ -44,7 +48,7 @@ export function Home() {
 
       <div className="mt-auto pt-6">
         <Btn tone="blue" onClick={() => setStudio(true)}>
-          ✨ 我的需求，生成新关卡
+          {t('newQuest')}
         </Btn>
       </div>
 
@@ -70,11 +74,11 @@ function Studio({ onClose, onLoad }: { onClose: () => void; onLoad: (l: Lesson) 
         onClick={(e) => e.stopPropagation()}
         className="mx-auto w-full max-w-md space-y-3 rounded-t-3xl bg-white p-5"
       >
-        <div className="text-xl font-black text-slate-700">① 写下你的需求</div>
+        <div className="text-xl font-black text-slate-700">{t('step1')}</div>
         <input
           value={need}
           onChange={(e) => setNeed(e.target.value)}
-          placeholder="比如：想在阳台种菜"
+          placeholder={t('needPh')}
           className="w-full rounded-2xl border-2 border-slate-200 px-4 py-3 text-lg font-bold outline-none focus:border-sky-400"
         />
         <Btn
@@ -87,9 +91,9 @@ function Studio({ onClose, onLoad }: { onClose: () => void; onLoad: (l: Lesson) 
             }
           }}
         >
-          {copied ? '✅ 已复制，发给任意 AI' : '📋 复制提示词'}
+          {copied ? t('copied') : t('copyPrompt')}
         </Btn>
-        <div className="pt-2 text-xl font-black text-slate-700">② 粘贴 AI 回复的 JSON</div>
+        <div className="pt-2 text-xl font-black text-slate-700">{t('step2')}</div>
         <textarea
           value={json}
           onChange={(e) => setJson(e.target.value)}
@@ -100,7 +104,7 @@ function Studio({ onClose, onLoad }: { onClose: () => void; onLoad: (l: Lesson) 
             {errors.slice(0, 8).map((e) => (
               <div key={e}>• {e}</div>
             ))}
-            <div className="mt-1 text-rose-400">把这些错误发回给 AI，让它改一下</div>
+            <div className="mt-1 text-rose-400">{t('errorsHint')}</div>
           </div>
         )}
         <Btn
@@ -111,7 +115,7 @@ function Studio({ onClose, onLoad }: { onClose: () => void; onLoad: (l: Lesson) 
             onLoad(r.lesson);
           }}
         >
-          开玩！
+          {t('play')}
         </Btn>
       </motion.div>
     </motion.div>

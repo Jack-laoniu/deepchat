@@ -1,53 +1,85 @@
-import type { Lesson } from './schema';
+import type { Lang } from '../chars/library';
+import { money } from '../i18n';
 import type { Crash, Played } from './engine';
+import type { Lesson } from './schema';
 
-export const yuan = (n: number) => `¥${Math.round(n).toLocaleString('zh-CN')}`;
+/** 金额按关卡的币种和语言格式化 */
+export const yuan = (n: number) => money(n);
 
-/** 通关后交给下游 AI 的上下文：事实、方案、风险、待核实项分开写。 */
+const H: Record<Lang, Record<string, string>> = {
+  zh: {
+    need: '用户原话', quotes: '用户自己说的话（原话，最能代表真实意图）', ask: '问', facts: '用户亲自确认的情况', plan: '当前方案',
+    est: '估算', adjust: '调整', total: '合计', guess: 'AI 盲猜起点', cap: '用户预算上限', noCap: '用户没有给出预算上限',
+    risks: '用户明确接受的风险', crashes: '已验证不可行的省钱做法（用户试过，在其条件下会出问题）', verify: '待核实（沿用 AI 盲猜，用户未确认）',
+    todo: '请你', t1: '先就「待核实」各项向用户确认；', t2: '在预算内给出可执行的详细方案：采购清单（含规格型号）、实施步骤、验收标准；', t3: '以上价格均为估算，请给出核价渠道和方法，不要把估算当报价。',
+    lang: '请用中文回答。',
+  },
+  en: {
+    need: "User's original request", quotes: "In the user's own words (best signal of real intent)", ask: 'Asked', facts: 'Confirmed by the user', plan: 'Current plan',
+    est: 'estimate', adjust: 'Adjustment', total: 'Total', guess: 'AI initial guess', cap: 'User budget cap', noCap: 'User did not set a budget cap',
+    risks: 'Risks the user explicitly accepted', crashes: 'Cost-cutting ideas proven not to work (the user tried; they fail under their conditions)', verify: 'To verify (kept from the AI guess, not confirmed)',
+    todo: 'Please', t1: 'First confirm each "to verify" item with the user;', t2: 'Within budget, give an actionable detailed plan: bill of materials (with specs/models), steps, acceptance criteria;', t3: 'All prices are estimates — explain how to get real quotes; do not present estimates as quotes.',
+    lang: 'Answer in English.',
+  },
+  ja: {
+    need: 'ユーザーの元の要望', quotes: 'ユーザー自身の言葉（本当の意図に最も近い）', ask: '質問', facts: 'ユーザーが確認した事実', plan: '現在のプラン',
+    est: '概算', adjust: '調整', total: '合計', guess: 'AI の初期予想', cap: 'ユーザーの予算上限', noCap: '予算上限は未設定',
+    risks: 'ユーザーが明示的に受け入れたリスク', crashes: '効かないと確認された節約案（ユーザーの条件では失敗する）', verify: '要確認（AI の予想のまま、未確認）',
+    todo: 'お願い', t1: 'まず「要確認」の各項目をユーザーに確認してください；', t2: '予算内で実行可能な詳細プラン（型番付きの購入リスト、手順、検収基準）を作成；', t3: '価格はすべて概算です。見積もりの取り方を示し、概算を見積もりとして扱わないこと。',
+    lang: '日本語で回答してください。',
+  },
+  es: {
+    need: 'Petición original del usuario', quotes: 'En palabras del usuario (la mejor señal de su intención real)', ask: 'Pregunta', facts: 'Confirmado por el usuario', plan: 'Plan actual',
+    est: 'estimado', adjust: 'Ajuste', total: 'Total', guess: 'Estimación inicial de la IA', cap: 'Presupuesto máximo', noCap: 'El usuario no fijó presupuesto',
+    risks: 'Riesgos aceptados explícitamente', crashes: 'Ideas de ahorro que no funcionan (el usuario las probó; fallan en sus condiciones)', verify: 'Por verificar (de la estimación de la IA, sin confirmar)',
+    todo: 'Por favor', t1: 'Primero confirma con el usuario cada punto «por verificar»;', t2: 'Dentro del presupuesto, da un plan detallado y ejecutable: lista de compras (con especificaciones), pasos, criterios de aceptación;', t3: 'Todos los precios son estimados: explica cómo obtener presupuestos reales; no los presentes como cotizaciones.',
+    lang: 'Responde en español.',
+  },
+};
+
+/** 通关后交给下游 AI 的上下文：原话、事实、方案、风险、待核实项分开写。 */
 export function superPrompt(lesson: Lesson, p: Played, crashes: Crash[]): string {
+  const h = H[lesson.lang];
   const guessTotal = lesson.guess.items.reduce((s, i) => s + i.price, 0);
   const untouched = lesson.guess.items.filter((i) => p.untouched.includes(i.id));
   const L: string[] = [];
 
-  L.push(`# ${lesson.title}${lesson.domain ? `（${lesson.domain}）` : ''}`, '');
-  L.push('## 用户原话', `> ${lesson.need}`, '');
+  L.push(`# ${lesson.title}${lesson.domain ? ` (${lesson.domain})` : ''}`, '');
+  L.push(`## ${h.need}`, `> ${lesson.need}`, '');
 
   if (p.quotes.length) {
-    L.push('## 用户自己说的话（原话，最能代表真实意图）');
-    p.quotes.forEach((q) => L.push(`- 问「${q.q}」→ 「${q.text}」`));
+    L.push(`## ${h.quotes}`);
+    p.quotes.forEach((q) => L.push(`- ${h.ask}「${q.q}」→「${q.text}」`));
     L.push('');
   }
 
-  L.push('## 用户亲自确认的情况');
+  L.push(`## ${h.facts}`);
   p.facts.forEach((f) => L.push(`- ${f}`));
   L.push('');
 
-  L.push('## 当前方案');
-  for (const i of p.cart) L.push(`- ${i.name}：${yuan(i.price)}${i.source ? `（${i.source}）` : '（估算）'}${i.spec ? ` — ${i.spec}` : ''}`);
-  for (const e of p.extras) L.push(`- 调整「${e.label}」：${e.price > 0 ? '+' : ''}${yuan(e.price)}`);
-  L.push(`- 合计：${yuan(p.total)}（AI 盲猜起点 ${yuan(guessTotal)}）`);
-  L.push(p.budget !== null ? `- 用户预算上限：${yuan(p.budget)}` : '- 用户没有给出预算上限');
+  L.push(`## ${h.plan}`);
+  for (const i of p.cart) L.push(`- ${i.name}: ${yuan(i.price)} (${i.source ?? h.est})${i.spec ? ` — ${i.spec}` : ''}`);
+  for (const e of p.extras) L.push(`- ${h.adjust}「${e.label}」: ${e.price > 0 ? '+' : ''}${yuan(e.price)}`);
+  L.push(`- ${h.total}: ${yuan(p.total)} (${h.guess} ${yuan(guessTotal)})`);
+  L.push(p.budget !== null ? `- ${h.cap}: ${yuan(p.budget)}` : `- ${h.noCap}`);
   L.push('');
 
   if (p.risks.length) {
-    L.push('## 用户明确接受的风险');
+    L.push(`## ${h.risks}`);
     p.risks.forEach((r) => L.push(`- ${r}`));
     L.push('');
   }
   if (crashes.length) {
-    L.push('## 已验证不可行的省钱做法（用户试过，在其条件下会出问题）');
+    L.push(`## ${h.crashes}`);
     crashes.forEach((c) => L.push(`- ${c.msg}`));
     L.push('');
   }
   if (untouched.length) {
-    L.push('## 待核实（沿用 AI 盲猜，用户未确认）');
-    untouched.forEach((i) => L.push(`- ${i.name}${i.spec ? `：${i.spec}` : ''}`));
+    L.push(`## ${h.verify}`);
+    untouched.forEach((i) => L.push(`- ${i.name}${i.spec ? `: ${i.spec}` : ''}`));
     L.push('');
   }
 
-  L.push('## 请你');
-  L.push('1. 先就「待核实」各项向用户确认；');
-  L.push(`2. 在${p.budget !== null ? '预算上限' : '合理预算'}内给出可执行的详细方案：采购清单（含规格型号）、实施步骤、验收标准；`);
-  L.push('3. 以上价格均为估算，请给出核价渠道和方法，不要把估算当报价。');
+  L.push(`## ${h.todo}`, `1. ${h.t1}`, `2. ${h.t2}`, `3. ${h.t3}`, '', h.lang);
   return L.join('\n');
 }

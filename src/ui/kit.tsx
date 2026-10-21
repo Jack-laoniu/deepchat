@@ -1,4 +1,6 @@
-import { animate, AnimatePresence, motion, type TargetAndTransition } from 'framer-motion';
+import { animate, AnimatePresence, motion } from 'framer-motion';
+import { Character } from '../chars/Character';
+import { GUIDE } from '../chars/library';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { sfx } from '../fx/fx';
 import { yuan } from '../lesson/output';
@@ -94,31 +96,25 @@ export type Mood = 'idle' | 'happy' | 'worried' | 'shock' | 'party';
 
 /** 吉祥物：一只狐狸 + 情绪气泡 */
 export function Mascot({ mood = 'idle', size = 96, say }: { mood?: Mood; size?: number; say?: string }) {
-  const motionFor: Record<Mood, TargetAndTransition> = {
-    idle: { y: [0, -4, 0], transition: { repeat: Infinity, duration: 2.4 } },
-    happy: { y: [0, -18, 0, -8, 0], transition: { duration: 0.7 } },
-    worried: { rotate: [0, -6, 6, -4, 0], transition: { duration: 0.6 } },
-    shock: { x: [0, -10, 10, -8, 8, 0], scale: [1, 0.9, 1], transition: { duration: 0.5 } },
-    party: { rotate: [0, 360], y: [0, -24, 0], transition: { duration: 0.9 } },
-  };
-  const bubble: Partial<Record<Mood, string>> = { happy: '😄', worried: '😬', shock: '😵', party: '🎉' };
+  const face = { idle: 'neutral', happy: 'happy', worried: 'worried', shock: 'surprised', party: 'happy' } as const;
+  const act = mood === 'party' ? 'party' : mood === 'happy' ? 'jump' : 'idle';
+  const [talking, setTalking] = useState(!!say);
+  useEffect(() => {
+    if (!say) return;
+    setTalking(true);
+    const timer = setTimeout(() => setTalking(false), 500 + [...say].length * 110);
+    return () => clearTimeout(timer);
+  }, [say]);
   return (
     <div className="relative flex items-end gap-2">
-      <motion.div key={mood} animate={motionFor[mood]} className="relative">
-        <Emoji e="🦊" size={size} loop />
-        {bubble[mood] && (
-          <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -right-2 -top-2 text-2xl">
-            {bubble[mood]}
-          </motion.span>
-        )}
-      </motion.div>
+      <Character id={GUIDE} size={size} mood={face[mood]} act={act} talking={talking} />
       <AnimatePresence mode="wait">
         {say && (
           <motion.div
             key={say}
             initial={{ opacity: 0, scale: 0.8, x: -8 }}
             animate={{ opacity: 1, scale: 1, x: 0 }}
-            className="relative mb-6 rounded-2xl border-2 border-slate-200 bg-white px-3 py-2 text-base font-extrabold text-slate-700"
+            className="relative mb-16 rounded-2xl border-2 border-slate-200 bg-white px-3 py-2 text-base font-extrabold text-slate-700"
           >
             {say}
           </motion.div>
@@ -167,7 +163,7 @@ export function TopBar({
 
   return (
     <div className="flex items-center gap-3 px-4 pt-4">
-      <button onClick={onClose} className="text-2xl font-black text-slate-400 hover:text-slate-600" aria-label="退出">
+      <button onClick={onClose} className="text-2xl font-black text-slate-400 hover:text-slate-600" aria-label="close">
         ✕
       </button>
       <div className="relative h-4 flex-1 overflow-hidden rounded-full bg-slate-200">

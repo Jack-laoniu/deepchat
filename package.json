@@ -7,19 +7,24 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "build:widget": "tsc --noEmit && vite build --mode widget",
+    "build:server": "npm run build:widget && vite build --mode server",
+    "start": "node dist-server/index.js --http",
+    "start:stdio": "node dist-server/index.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "canvas-confetti": "1.9.3",
     "framer-motion": "11.11.17",
     "lottie-web": "5.12.2",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "zod": "3.23.8"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/canvas-confetti": "1.6.4",
+    "@types/node": "^22.10.1",
     "@types/react": "18.3.12",
     "@types/react-dom": "18.3.1",
     "@vitejs/plugin-react": "4.3.3",
@@ -30,5 +35,8 @@
     "vite": "5.4.11",
     "vite-plugin-singlefile": "2.0.3",
     "vitest": "2.1.5"
+  },
+  "bin": {
+    "need-quest-mcp": "dist-server/index.js"
   }
 }

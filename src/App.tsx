@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { isMuted, setMuted } from './fx/fx';
 import { GameProvider, useGame } from './game';
-import { hostLesson } from './host';
+import { onHostLesson } from './host';
 import { optionsOf } from './lesson/engine';
 import { asksOf, parseLesson } from './lesson/schema';
 import { Home } from './screens/Home';
@@ -15,21 +15,21 @@ function Screens() {
   const g = useGame();
 
   // 商店宿主里：模型已经通过工具调用把关卡传进来了，直接开局
-  useEffect(() => {
-    const data = hostLesson();
-    if (!data) return;
-    const r = parseLesson(data);
-    if (r.ok) g.open(r.lesson);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useEffect(
+    () =>
+      onHostLesson((data) => {
+        const r = parseLesson(data);
+        if (r.ok) g.open(r.lesson);
+      }),
+    [], // eslint-disable-line react-hooks/exhaustive-deps
+  );
 
   // 开局就把整关会用到的动画表情拉下来，避免玩的时候闪
   useEffect(() => {
     if (!g.lesson) return;
     const l = g.lesson;
     preload([
-      '🦊', '🔥', '✨', '💥', '🙂', '🧑', '🎙️', l.emoji,
-      ...l.cast.map((c) => c.emoji),
+      '🔥', '✨', '💥', '🎙️', l.emoji,
       ...l.rounds.flatMap((r) => [...asksOf(r).flatMap((a) => a.options.map((o) => o.emoji)), ...(r.type === 'map' ? r.spots.map((s) => s.emoji) : [])]),
       ...l.guess.items.map((i) => i.emoji),
       ...l.rounds.flatMap((r) => [r.emoji, ...optionsOf(r).flatMap((o) => [o.emoji, ...o.add.map((i) => i.emoji)])]),
@@ -65,7 +65,7 @@ export default function App() {
             setM(!muted);
           }}
           className="absolute bottom-2 right-3 z-10 text-lg opacity-40 hover:opacity-80"
-          aria-label="声音开关"
+          aria-label="sound"
         >
           {muted ? '🔇' : '🔊'}
         </button>

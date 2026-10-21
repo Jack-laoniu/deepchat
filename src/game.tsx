@@ -1,5 +1,6 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import { sfx } from './fx/fx';
+import { money, pickCheer, setLocale, t } from './i18n';
 import { gambleCrashes, optionsOf, play, revealsProblem, type Answer, type Crash, type Played, type Replies } from './lesson/engine';
 import type { FixRound, Lesson, Round } from './lesson/schema';
 
@@ -80,6 +81,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     crashes,
     feedback,
     open(l) {
+      setLocale(l.lang, l.currency);
       setLesson(l);
       setAnswers([]);
       setHearts(MAX_HEARTS);
@@ -94,7 +96,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (!o) return;
       const f = commit({ round: round.id, option: optionId }, (b, a, problem) => ({
         tone: problem ? 'warn' : 'good',
-        title: problem ? '糟了，有坑！' : round.type === 'fix' || round.type === 'boss' ? '修好了！' : pickCheer(),
+        title: problem ? t('oops') : round.type === 'fix' || round.type === 'boss' ? t('fixed') : pickCheer(),
         tip: problem ? problem.q : o.tip,
         delta: a.total - b.total,
         emoji: problem ? problem.emoji : o.emoji,
@@ -106,8 +108,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       sfx.good();
       commit({ round: round.id, value }, (b, a) => ({
         tone: 'good',
-        title: '记下了！',
-        tip: a.budget !== null && a.total > a.budget ? `当前方案超出 ¥${(a.total - a.budget).toLocaleString()}` : undefined,
+        title: t('gotIt'),
+        tip: a.budget !== null && a.total > a.budget ? t('over', { x: money(a.total - a.budget) }) : undefined,
         delta: a.total - b.total,
         round,
       }));
@@ -119,8 +121,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         const said = after.quotes.length - b.quotes.length;
         return {
           tone: problem ? 'warn' : 'good',
-          title: problem ? '糟了，有坑！' : '记下了！',
-          tip: problem ? problem.q : said ? `记住了你说的 ${said} 句话` : learned ? `打听到 ${learned} 条情况` : undefined,
+          title: problem ? t('oops') : t('gotIt'),
+          tip: problem ? problem.q : said ? t('saidN', { n: said }) : learned ? t('learnedN', { n: learned }) : undefined,
           delta: after.total - b.total,
           emoji: problem ? problem.emoji : said ? '💬' : '📝',
           round,
@@ -135,12 +137,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
         sfx.crash();
         setHearts((h) => Math.max(0, h - 1));
         setStreak(0);
-        setCrashes((c) => [...c, { round: round.id, msg: `${round.problem}时选择「${g.label}」：${g.crash}`, loss: g.loss }]);
-        setFeedback({ tone: 'crash', title: '翻车了！', tip: g.crash, delta: g.loss, emoji: '💥', round });
+        setCrashes((c) => [...c, { round: round.id, msg: `${round.problem} → 「${g.label}」: ${g.crash}`, loss: g.loss }]);
+        setFeedback({ tone: 'crash', title: t('crash'), tip: g.crash, delta: g.loss, emoji: '💥', round });
         return;
       }
       sfx.warn();
-      commit({ round: round.id, gamble: true }, (b, a) => ({ tone: 'risk', title: '险过！', tip: g.ok, delta: a.total - b.total, emoji: g.emoji, round }));
+      commit({ round: round.id, gamble: true }, (b, a) => ({ tone: 'risk', title: t('risky'), tip: g.ok, delta: a.total - b.total, emoji: g.emoji, round }));
     },
     next() {
       const wasCrash = feedback?.tone === 'crash';
@@ -164,5 +166,4 @@ export function GameProvider({ children }: { children: ReactNode }) {
   return <Ctx.Provider value={game}>{children}</Ctx.Provider>;
 }
 
-const CHEERS = ['收到！', '懂了！', '好嘞！', '明白！', '记住了！'];
-const pickCheer = () => CHEERS[Math.floor(Math.random() * CHEERS.length)];
+

@@ -1,10 +1,13 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Character, type Mood } from '../chars/Character';
+import { charById, GUIDE } from '../chars/library';
 import { sfx } from '../fx/fx';
 import { canListen, hush, listen, speak } from '../fx/voice';
 import { useGame } from '../game';
+import { getLang, t } from '../i18n';
 import { matchFree, walkBeats, type Replies } from '../lesson/engine';
-import type { AskBeat, Beat, Character, Line, TalkRound } from '../lesson/schema';
+import type { AskBeat, Beat, Line, TalkRound } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
 import { Btn } from '../ui/kit';
 
@@ -12,26 +15,47 @@ import { Btn } from '../ui/kit';
 
 const COLORS = ['text-sky-600', 'text-purple-600', 'text-orange-600', 'text-pink-600', 'text-teal-600', 'text-indigo-600'];
 
+export interface Who {
+  id: string;
+  name: string;
+  /** 在这个故事里的身份 */
+  as?: string;
+  color: string;
+  pitch: number;
+  rate: number;
+}
+
+/** speaker id → 显示名、颜色、声音。名字跟随界面语言 */
 export function useCast() {
   const cast = useGame().lesson!.cast;
   return useMemo(() => {
-    const map = new Map<string, Character & { color: string }>();
-    map.set('me', { id: 'me', name: '我', emoji: '🙂', pitch: 1, rate: 1, color: 'text-green-600' });
-    map.set('fox', { id: 'fox', name: '狐狐', emoji: '🦊', pitch: 1.3, rate: 1.05, color: 'text-orange-500' });
-    cast.forEach((c, i) => map.set(c.id, { ...c, color: COLORS[i % COLORS.length] }));
-    return (id: string) => map.get(id) ?? { id, name: '', emoji: '💬', pitch: 1, rate: 1, color: 'text-slate-500' };
+    const lang = getLang();
+    return (id: string): Who => {
+      const def = charById(id);
+      const i = cast.findIndex((c) => c.id === id);
+      const as = cast[i]?.as;
+      return {
+        id,
+        name: def ? def.name[lang] : '',
+        as,
+        color: id === 'me' ? 'text-green-600' : id === GUIDE ? 'text-orange-500' : COLORS[Math.max(0, i) % COLORS.length],
+        pitch: def?.voice.pitch ?? 1,
+        rate: def?.voice.rate ?? 1,
+      };
+    };
   }, [cast]);
 }
 
-// ---------------- 对话脚本 → 逐条显示的台词 ----------------
+const label = (w: Who) => (w.as ? `${w.as} · ${w.name}` : w.name);
 
-type Item = { key: string; kind: 'line'; who: string; say: string } | { key: string; kind: 'ask'; beat: AskBeat };
+// ---------------- 对话脚本 → 逐条显示的时间线 ----------------
 
-/** 把台词、提问、用户的回答和角色的即时反应摊平成一条时间线 */
+type Item = { key: string; kind: 'line'; who: string; say: string; mood?: Mood } | { key: string; kind: 'ask'; beat: AskBeat };
+
 function transcript(beats: Beat[], replies: Replies, baseFlags: Set<string>): Item[] {
   const out: Item[] = [];
   const { visible } = walkBeats(beats, replies, baseFlags);
-  const push = (key: string, l: Line) => out.push({ key, kind: 'line', who: l.who, say: l.say });
+  const push = (key: string, l: Line) => out.push({ key, kind: 'line', who: l.who, say: l.say, mood: l.mood });
   visible.forEach((b, i) => {
     if (b.type === 'line') return push(`l${i}`, b);
     out.push({ key: `a${b.id}`, kind: 'ask', beat: b });
@@ -41,7 +65,7 @@ function transcript(beats: Beat[], replies: Replies, baseFlags: Set<string>): It
       const o = b.options.find((x) => x.id === r.option);
       if (!o) return;
       push(`m${b.id}`, { who: 'me', say: `${o.emoji} ${o.label}` });
-      o.reply.forEach((l, j) => push(`r${b.id}${j}`, l));
+      o.reply.forEach((l, j) => push(`r${b.id}${j}`, { ...l, mood: l.mood ?? o.mood }));
     } else {
       push(`m${b.id}`, { who: 'me', say: r.text });
       const hits = b.free ? matchFree(b.free, r.text) : [];
@@ -50,6 +74,52 @@ function transcript(beats: Beat[], replies: Replies, baseFlags: Set<string>): It
     }
   });
   return out;
+}
+
+/** 这段对话里出场的角色（不含用户和旁白），按出场顺序 */
+function speakersOf(beats: Beat[]): string[] {
+  const ids: string[] = [];
+  const add = (w: string) => w !== 'me' && w !== 'narrator' && !ids.includes(w) && ids.push(w);
+  for (const b of beats) {
+    add(b.who);
+    if (b.type === 'ask') b.options.forEach((o) => o.reply.forEach((l) => add(l.who)));
+  }
+  return ids;
+}
+
+// ---------------- 舞台：角色站成一排，说话的人动起来 ----------------
+
+function Stage({ ids, speaker, mood, talking }: { ids: string[]; speaker: string | null; mood: Mood; talking: boolean }) {
+  const who = useCast();
+  const idx = speaker ? ids.indexOf(speaker) : -1;
+  return (
+    <div className="relative mb-2 h-[150px] shrink-0 overflow-hidden rounded-3xl bg-gradient-to-b from-sky-100 to-amber-50">
+      <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-b from-lime-200 to-lime-300" />
+      <div className="absolute inset-x-0 bottom-3 flex items-end justify-center gap-1">
+        {ids.map((id, i) => {
+          const active = id === speaker;
+          return (
+            <motion.div
+              key={id}
+              className="flex flex-col items-center"
+              animate={{ scale: active ? 1.08 : 0.94, y: active ? -2 : 0, opacity: speaker && !active ? 0.85 : 1 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+            >
+              <Character
+                id={id}
+                size={ids.length > 3 ? 62 : 76}
+                mood={active ? mood : 'neutral'}
+                talking={active && talking}
+                facing={idx >= 0 && i > idx ? 'left' : 'right'}
+                gaze={idx < 0 || active ? 0 : i < idx ? 1 : -1}
+              />
+              <span className={`-mt-1 rounded-full bg-white/90 px-1.5 text-[10px] font-black ${who(id).color}`}>{who(id).as ?? who(id).name}</span>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 // ---------------- 对话播放器 ----------------
@@ -71,39 +141,47 @@ export function Dialogue({
   const [replies, setReplies] = useState<Replies>({});
   const [shown, setShown] = useState(1);
   const [typing, setTyping] = useState(false);
+  const [talking, setTalking] = useState(false);
   const items = useMemo(() => transcript(beats, replies, baseFlags), [beats, replies, baseFlags]);
+  const speakers = useMemo(() => speakersOf(beats), [beats]);
   const scroller = useRef<HTMLDivElement>(null);
   const last = items[Math.min(shown, items.length) - 1];
   const waitingAsk = last?.kind === 'ask' && !replies[last.beat.id] ? last.beat : null;
   const finished = shown >= items.length && !waitingAsk;
+  const lastSpeaker = last ? (last.kind === 'line' ? last.who : last.beat.who) : null;
+  const npcSpeaker = lastSpeaker && lastSpeaker !== 'me' && lastSpeaker !== 'narrator' ? lastSpeaker : null;
+  const mood: Mood = last?.kind === 'line' && last.mood ? last.mood : waitingAsk ? 'thinking' : 'neutral';
 
-  // 新台词出现：朗读 + 滚动到底
+  // 新台词：朗读，嘴巴跟着动，滚动到底
   useEffect(() => {
     scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: 'smooth' });
-    if (!last) return;
+    if (!last || !npcSpeaker) return;
     const text = last.kind === 'line' ? last.say : last.beat.q;
-    const speaker = last.kind === 'line' ? last.who : last.beat.who;
-    if (speaker !== 'me') {
-      const c = who(speaker);
-      void speak(text, { pitch: c.pitch, rate: c.rate });
-    }
+    const c = who(npcSpeaker);
+    setTalking(true);
+    let alive = true;
+    const minTalk = new Promise((r) => setTimeout(r, 400 + [...text].length * 110));
+    void Promise.all([speak(text, { pitch: c.pitch, rate: c.rate }), minTalk]).then(() => alive && setTalking(false));
+    return () => {
+      alive = false;
+    };
   }, [shown, last?.key]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => hush, []);
 
-  // 聊天模式自动往下走，带「对方正在输入」
+  // 聊天模式自动往下走，带「正在输入」
   useEffect(() => {
     if (style !== 'chat' || waitingAsk || shown >= items.length) return;
     const next = items[shown];
     const isMe = next.kind === 'line' && next.who === 'me';
     setTyping(!isMe);
     const len = next.kind === 'line' ? next.say.length : next.beat.q.length;
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       setTyping(false);
       sfx.tap();
       setShown((n) => n + 1);
     }, isMe ? 250 : 500 + len * 45);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [style, shown, items, waitingAsk]);
 
   const answer = (beatId: string, r: Replies[string]) => {
@@ -112,27 +190,23 @@ export function Dialogue({
     setShown((n) => n + 1);
   };
 
-  const advance = () => {
-    sfx.tap();
-    setShown((n) => Math.min(items.length, n + 1));
-  };
-
   const visible = items.slice(0, shown);
   const p = partner ? who(partner) : null;
 
   return (
     <div className="flex h-full flex-col">
+      {style === 'story' && speakers.length > 0 && <Stage ids={speakers} speaker={npcSpeaker} mood={mood} talking={talking} />}
       {style === 'chat' && p && (
-        <div className="mb-2 flex items-center gap-3 rounded-2xl bg-slate-50 p-2">
-          <Emoji e={p.emoji} size={48} loop />
-          <div>
-            <div className="font-black text-slate-700">{p.name}</div>
-            <div className="text-xs font-bold text-green-500">● {typing ? '正在输入…' : '在线'}</div>
+        <div className="relative mb-2 flex h-[132px] shrink-0 items-end gap-3 overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-100 via-sky-50 to-emerald-50 px-3">
+          <Character id={p.id} size={96} bust mood={typing ? 'thinking' : npcSpeaker === p.id ? mood : 'neutral'} talking={npcSpeaker === p.id && talking} />
+          <div className="mb-4">
+            <div className="text-lg font-black text-slate-700">{label(p)}</div>
+            <div className="text-xs font-bold text-green-500">● {typing ? t('typing') : t('online')}</div>
           </div>
         </div>
       )}
 
-      <div ref={scroller} className="flex-1 space-y-3 overflow-y-auto pb-2 pr-1">
+      <div ref={scroller} className="min-h-0 flex-1 space-y-3 overflow-y-auto pb-2 pr-1">
         <AnimatePresence initial={false}>
           {visible.map((it, i) =>
             it.kind === 'ask' ? (
@@ -147,8 +221,7 @@ export function Dialogue({
           )}
         </AnimatePresence>
         {typing && p && (
-          <div className="flex items-center gap-2">
-            <Emoji e={p.emoji} size={32} />
+          <div className="flex gap-1 pl-1">
             <div className="flex gap-1 rounded-2xl bg-slate-100 px-3 py-3">
               {[0, 1, 2].map((d) => (
                 <motion.span key={d} className="h-2 w-2 rounded-full bg-slate-400" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: d * 0.15 }} />
@@ -162,51 +235,40 @@ export function Dialogue({
         {waitingAsk ? (
           <AnswerPanel key={waitingAsk.id} ask={waitingAsk} onAnswer={(r) => answer(waitingAsk.id, r)} />
         ) : finished ? (
-          <Btn onClick={() => onDone(replies)}>完成 ✓</Btn>
+          <Btn onClick={() => onDone(replies)}>{t('done')}</Btn>
         ) : style === 'story' ? (
-          <Btn onClick={advance}>继续</Btn>
+          <Btn
+            onClick={() => {
+              sfx.tap();
+              setShown((n) => Math.min(items.length, n + 1));
+            }}
+          >
+            {t('next')}
+          </Btn>
         ) : null}
       </div>
     </div>
   );
 }
 
-function Bubble({
-  who,
-  text,
-  mine,
-  ask,
-  current,
-  chat,
-}: {
-  who: { name: string; emoji: string; color: string; pitch: number; rate: number };
-  text: string;
-  mine?: boolean;
-  ask?: boolean;
-  current?: boolean;
-  chat?: boolean;
-}) {
+function Bubble({ who, text, mine, ask, current, chat }: { who: Who; text: string; mine?: boolean; ask?: boolean; current?: boolean; chat?: boolean }) {
   return (
     <motion.div
       layout
       initial={{ opacity: 0, y: 16, scale: 0.96 }}
-      animate={{ opacity: !chat && !current && !mine ? 0.7 : 1, y: 0, scale: 1 }}
+      animate={{ opacity: !chat && !current && !mine ? 0.75 : 1, y: 0, scale: 1 }}
       className={`flex items-end gap-2 ${mine ? 'flex-row-reverse' : ''}`}
     >
-      {!(chat && mine) && (
-        <button onClick={() => !mine && speak(text, { pitch: who.pitch, rate: who.rate })} className="shrink-0">
-          <Emoji e={who.emoji} size={chat ? 34 : 46} loop={!!current && !mine} />
+      {!chat && (
+        <button onClick={() => !mine && speak(text, { pitch: who.pitch, rate: who.rate })} className="shrink-0 overflow-hidden rounded-full bg-slate-100">
+          <Character id={who.id} size={40} bust />
         </button>
       )}
       <div className={`max-w-[78%] ${mine ? 'text-right' : ''}`}>
-        {!chat && !mine && <div className={`mb-0.5 text-xs font-black ${who.color}`}>{who.name}</div>}
+        {!chat && !mine && <div className={`mb-0.5 text-xs font-black ${who.color}`}>{label(who)}</div>}
         <div
           className={`inline-block rounded-2xl border-2 px-3 py-2 text-left text-[17px] font-bold leading-snug ${
-            mine
-              ? 'border-green-500 bg-green-500 text-white'
-              : ask
-                ? 'border-sky-300 bg-sky-50 text-slate-700'
-                : 'border-slate-200 bg-white text-slate-700'
+            mine ? 'border-green-500 bg-green-500 text-white' : ask ? 'border-sky-300 bg-sky-50 text-slate-700' : 'border-slate-200 bg-white text-slate-700'
           }`}
         >
           {ask && <span className="mr-1">❓</span>}
@@ -217,7 +279,7 @@ function Bubble({
   );
 }
 
-/** 回答面板：点一个现成的回答，或者用自己的话（打字 / 语音） */
+/** 回答面板：点一个现成回答，或用自己的话（打字 / 语音） */
 function AnswerPanel({ ask, onAnswer }: { ask: AskBeat; onAnswer: (r: { option: string } | { text: string }) => void }) {
   const [writing, setWriting] = useState(ask.options.length === 0);
   const [text, setText] = useState('');
@@ -245,7 +307,7 @@ function AnswerPanel({ ask, onAnswer }: { ask: AskBeat; onAnswer: (r: { option: 
             }}
             className="w-full rounded-2xl border-2 border-dashed border-sky-300 py-2.5 text-[16px] font-extrabold text-sky-600"
           >
-            ✍️ 都不是，我自己说
+            {t('sayOwn')}
           </button>
         )}
       </motion.div>
@@ -259,7 +321,7 @@ function AnswerPanel({ ask, onAnswer }: { ask: AskBeat; onAnswer: (r: { option: 
       {free.chips.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {free.chips.map((c) => (
-            <button key={c} onClick={() => setText((t) => (t ? `${t}，${c}` : c))} className="rounded-full border-2 border-slate-200 bg-white px-3 py-1 text-sm font-extrabold text-slate-600">
+            <button key={c} onClick={() => setText((x) => (x ? `${x}, ${c}` : c))} className="rounded-full border-2 border-slate-200 bg-white px-3 py-1 text-sm font-extrabold text-slate-600">
               {c}
             </button>
           ))}
@@ -271,7 +333,7 @@ function AnswerPanel({ ask, onAnswer }: { ask: AskBeat; onAnswer: (r: { option: 
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && send()}
-          placeholder={free.placeholder}
+          placeholder={free.placeholder || t('ownPh')}
           className="min-w-0 flex-1 rounded-2xl border-2 border-slate-200 px-4 py-3 text-[17px] font-bold outline-none focus:border-sky-400"
         />
         {canListen() && (
@@ -284,7 +346,7 @@ function AnswerPanel({ ask, onAnswer }: { ask: AskBeat; onAnswer: (r: { option: 
               setMic(() => listen(setText, () => setMic(null)));
             }}
             className={`flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-b-4 ${mic ? 'border-rose-500 bg-rose-500' : 'border-slate-200 bg-white'}`}
-            aria-label="语音输入"
+            aria-label="mic"
           >
             <Emoji e="🎙️" size={28} />
           </motion.button>
@@ -293,11 +355,11 @@ function AnswerPanel({ ask, onAnswer }: { ask: AskBeat; onAnswer: (r: { option: 
       <div className="flex gap-2">
         {ask.options.length > 0 && (
           <Btn tone="white" className="w-1/3" onClick={() => setWriting(false)}>
-            返回
+            {t('back')}
           </Btn>
         )}
         <Btn disabled={!text.trim()} onClick={send}>
-          说完了
+          {t('saidIt')}
         </Btn>
       </div>
     </motion.div>
@@ -311,9 +373,10 @@ export function Talk({ round }: { round: TalkRound }) {
   return (
     <div className="flex h-full flex-col">
       {round.style === 'story' && (
-        <div className="mb-3 flex items-center gap-2">
-          <Emoji e={round.emoji} size={40} loop />
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-black text-amber-700">📖 {round.title}</span>
+        <div className="mb-2 flex items-center gap-2">
+          <span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-black text-amber-700">
+            {round.emoji} {round.title}
+          </span>
         </div>
       )}
       <div className="min-h-0 flex-1">

@@ -4,222 +4,1060 @@
   "title": "农场自动浇水",
   "emoji": "🌽",
   "domain": "农业灌溉",
+  "lang": "zh",
+  "currency": "CNY",
   "cast": [
-    { "id": "lao", "name": "老王", "emoji": "👨‍🌾", "pitch": 0.8, "rate": 0.95 },
-    { "id": "li", "name": "李老板", "emoji": "🧔", "pitch": 1, "rate": 1.15 },
-    { "id": "wife", "name": "媳妇", "emoji": "👩", "pitch": 1.35, "rate": 1.05 }
+    {
+      "id": "wang"
+    },
+    {
+      "id": "qian",
+      "as": "农资店老板"
+    },
+    {
+      "id": "mei",
+      "as": "媳妇"
+    }
   ],
   "guess": {
     "line": "我猜：30亩平地，抽河水，装喷头",
     "items": [
-      { "id": "pump", "emoji": "⚙️", "name": "水泵", "price": 2500, "spec": "3kW 潜水泵" },
-      { "id": "pipe", "emoji": "🧵", "name": "主管网", "price": 6000, "spec": "DN50 PE 管" },
-      { "id": "head", "emoji": "🚿", "name": "摇臂喷头", "price": 5500, "spec": "摇臂式喷头约 60 个" },
-      { "id": "valve", "emoji": "🔧", "name": "手动阀门", "price": 1500 },
-      { "id": "labor", "emoji": "👷", "name": "安装人工", "price": 2500 }
+      {
+        "id": "pump",
+        "emoji": "⚙️",
+        "name": "水泵",
+        "price": 2500,
+        "spec": "3kW 潜水泵"
+      },
+      {
+        "id": "pipe",
+        "emoji": "🧵",
+        "name": "主管网",
+        "price": 6000,
+        "spec": "DN50 PE 管"
+      },
+      {
+        "id": "head",
+        "emoji": "🚿",
+        "name": "摇臂喷头",
+        "price": 5500,
+        "spec": "摇臂式喷头约 60 个"
+      },
+      {
+        "id": "valve",
+        "emoji": "🔧",
+        "name": "手动阀门",
+        "price": 1500
+      },
+      {
+        "id": "labor",
+        "emoji": "👷",
+        "name": "安装人工",
+        "price": 2500
+      }
     ]
   },
   "rounds": [
     {
-      "type": "talk", "id": "why", "style": "chat", "title": "狐狐来了", "emoji": "🦊", "with": "fox",
+      "type": "talk",
+      "id": "why",
+      "style": "chat",
+      "title": "乐乐来了",
+      "emoji": "👋",
+      "with": "lele",
       "beats": [
-        { "who": "fox", "say": "嗨！我是狐狐，陪你把浇地这事理清楚～" },
         {
-          "id": "why", "who": "fox", "q": "先说说，为啥想装自动浇水？",
+          "who": "lele",
+          "say": "嗨！我是乐乐，陪你把浇地这事理清楚～"
+        },
+        {
+          "id": "why",
+          "who": "lele",
+          "q": "先说说，为啥想装自动浇水？",
           "options": [
-            { "id": "tired", "emoji": "😩", "label": "天天浇地太累了", "fact": "动机：人工浇地太累，想省人力", "set": ["want_easy"], "reply": [{ "who": "fox", "say": "懂！那「省心」排第一。" }] },
-            { "id": "yield", "emoji": "📈", "label": "想让收成更好", "fact": "动机：希望浇水更均匀、提高产量", "set": ["want_yield"], "reply": [{ "who": "fox", "say": "好，那浇得匀最重要。" }] },
-            { "id": "away", "emoji": "🏙️", "label": "人常不在地里", "fact": "动机：人经常不在农场，需要远程或自动控制", "set": ["want_remote"], "reply": [{ "who": "fox", "say": "那得能用手机远程控制才行。" }] }
+            {
+              "id": "tired",
+              "emoji": "😩",
+              "label": "天天浇地太累了",
+              "fact": "动机：人工浇地太累，想省人力",
+              "set": [
+                "want_easy"
+              ],
+              "reply": [
+                {
+                  "who": "lele",
+                  "say": "懂！那「省心」排第一。",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "yield",
+              "emoji": "📈",
+              "label": "想让收成更好",
+              "fact": "动机：希望浇水更均匀、提高产量",
+              "set": [
+                "want_yield"
+              ],
+              "reply": [
+                {
+                  "who": "lele",
+                  "say": "好，那浇得匀最重要。"
+                }
+              ]
+            },
+            {
+              "id": "away",
+              "emoji": "🏙️",
+              "label": "人常不在地里",
+              "fact": "动机：人经常不在农场，需要远程或自动控制",
+              "set": [
+                "want_remote"
+              ],
+              "reply": [
+                {
+                  "who": "lele",
+                  "say": "那得能用手机远程控制才行。"
+                }
+              ]
+            }
           ],
           "free": {
             "placeholder": "说说你的真实原因…",
-            "chips": ["太累了", "想省水", "人不在家", "收成不好"],
+            "chips": [
+              "太累了",
+              "想省水",
+              "人不在家",
+              "收成不好"
+            ],
             "fact": "用户自述想装的原因：{v}",
             "match": [
-              { "words": ["累", "辛苦", "人手", "人工", "腰"], "set": ["want_easy"], "reply": [{ "who": "fox", "say": "省力是第一目标，记下了！" }] },
-              { "words": ["不在", "出门", "外地", "远程", "手机", "打工"], "set": ["want_remote"], "reply": [{ "who": "fox", "say": "人不在也能浇，记下了！" }] },
-              { "words": ["省水", "缺水", "水费", "干旱"], "set": ["save_water"], "fact": "用户关注节水", "reply": [{ "who": "fox", "say": "要省水的话，滴灌是重点。" }] }
+              {
+                "words": [
+                  "累",
+                  "辛苦",
+                  "人手",
+                  "人工",
+                  "腰"
+                ],
+                "set": [
+                  "want_easy"
+                ],
+                "reply": [
+                  {
+                    "who": "lele",
+                    "say": "省力是第一目标，记下了！"
+                  }
+                ]
+              },
+              {
+                "words": [
+                  "不在",
+                  "出门",
+                  "外地",
+                  "远程",
+                  "手机",
+                  "打工"
+                ],
+                "set": [
+                  "want_remote"
+                ],
+                "reply": [
+                  {
+                    "who": "lele",
+                    "say": "人不在也能浇，记下了！"
+                  }
+                ]
+              },
+              {
+                "words": [
+                  "省水",
+                  "缺水",
+                  "水费",
+                  "干旱"
+                ],
+                "set": [
+                  "save_water"
+                ],
+                "fact": "用户关注节水",
+                "reply": [
+                  {
+                    "who": "lele",
+                    "say": "要省水的话，滴灌是重点。"
+                  }
+                ]
+              }
             ],
-            "reply": [{ "who": "fox", "say": "收到，这个很重要！" }]
-          }
-        },
-        { "who": "fox", "say": "我先猜了一套，咱们边玩边改。" }
-      ]
-    },
-    {
-      "type": "pick", "id": "scale", "q": "地有多大？", "emoji": "📏",
-      "options": [
-        { "id": "small", "emoji": "🏡", "label": "后院菜地", "fact": "场地约 2 亩（自家菜地）", "price": -13000, "set": ["small"], "tip": "小地块，小水泵就够", "score": { "easy": 20 } },
-        { "id": "mid", "emoji": "🌳", "label": "30亩果园", "fact": "场地约 30 亩", "set": ["mid"], "tip": "跟我猜的一样！" },
-        { "id": "big", "emoji": "🚜", "label": "上百亩", "fact": "场地约 120 亩连片", "price": 24000, "set": ["big"], "tip": "大场地，水压要算清楚", "score": { "easy": -10 } }
-      ]
-    },
-    {
-      "type": "talk", "id": "story", "style": "story", "title": "老王的教训", "emoji": "👨‍🌾",
-      "beats": [
-        { "who": "narrator", "say": "村口小卖部，老王和李老板在唠嗑。" },
-        { "who": "lao", "say": "我去年也装了喷头，花了一万八！" },
-        { "who": "li", "say": "那套是我卖的，质量杠杠的！" },
-        { "who": "lao", "say": "质量没毛病……可我那是坡地啊。" },
-        { "who": "lao", "say": "坡顶一滴水都喷不上去，白花钱。" },
-        {
-          "id": "land", "who": "lao", "q": "你家地是平的，还是有坡？",
-          "options": [
-            { "id": "flat", "emoji": "🟩", "label": "平的", "fact": "地形平坦", "set": ["flat"], "reply": [{ "who": "lao", "say": "平地好办，你比我省心。" }] },
-            { "id": "slope", "emoji": "⛰️", "label": "有坡", "fact": "山地斜坡，有明显高差", "set": ["slope"], "reply": [{ "who": "lao", "say": "那你可得注意，别学我！" }] },
-            { "id": "unsure", "emoji": "🤷", "label": "有点起伏，说不准", "fact": "地形有起伏，高差未知，需要实测", "set": ["slope"], "reply": [{ "who": "li", "say": "有起伏就按坡地算，稳妥。" }] }
-          ]
-        },
-        { "who": "li", "say": "后来我还给他加了过滤器，你猜为啥？" },
-        { "who": "lao", "say": "抽的河水，泥沙三天就把喷头堵死了。" },
-        {
-          "id": "water", "who": "li", "q": "你家浇地用的什么水？",
-          "options": [
-            { "id": "tap", "emoji": "🚰", "label": "自来水", "fact": "水源为自来水", "remove": ["pump"], "set": ["clean"], "score": { "easy": 15 }, "reply": [{ "who": "li", "say": "自来水不用水泵，省一笔！" }] },
-            { "id": "well", "emoji": "🪣", "label": "井水", "fact": "水源为清澈井水", "set": ["clean"], "reply": [{ "who": "lao", "say": "井水干净，羡慕。" }] },
-            { "id": "river", "emoji": "🏞️", "label": "河水塘水", "fact": "水源为河水/塘水，含泥沙和水藻", "set": ["muddy"], "reply": [{ "who": "lao", "say": "跟我一样，过滤器少不了。" }] }
-          ],
-          "free": {
-            "placeholder": "比如：山泉水、雨水…",
-            "fact": "水源：{v}",
-            "match": [
-              { "words": ["河", "塘", "沟", "渠", "泉", "雨", "水库"], "set": ["muddy"], "fact": "水源可能含泥沙杂质", "reply": [{ "who": "li", "say": "这种水得过滤，记下了。" }] },
-              { "words": ["自来水", "井"], "set": ["clean"], "reply": [{ "who": "lao", "say": "水干净就好办。" }] }
+            "reply": [
+              {
+                "who": "lele",
+                "say": "收到，这个很重要！"
+              }
             ]
           }
         },
-        { "who": "lao", "say": "总之啊，买之前多问问，别光听老板的。" },
-        { "who": "li", "say": "嘿！我可是实在人！" }
-      ]
-    },
-    {
-      "type": "fix", "id": "fix_slope", "q": "坡顶没水了！", "emoji": "⛰️", "problem": "坡顶水压不够",
-      "if": { "all": ["slope"] },
-      "options": [
-        { "id": "pc_drip", "emoji": "💧", "label": "补偿滴灌", "fact": "改用压力补偿式滴灌带，坡上坡下出水均匀", "add": [{ "id": "head", "emoji": "💧", "name": "补偿滴灌带", "price": 2400, "spec": "压力补偿式内镶滴灌带" }], "set": ["drip"], "tip": "高低出水一样多", "score": { "good": 25, "safe": 10 } },
-        { "id": "booster", "emoji": "🚀", "label": "加压泵", "fact": "加装管道加压泵", "add": [{ "id": "booster", "emoji": "🚀", "name": "管道加压泵", "price": 1600 }], "tip": "能上去，但电费更高", "score": { "good": 15, "easy": -5 } }
-      ],
-      "gamble": { "label": "坡顶少种点", "fact": "坡顶区域接受浇不到", "crash_if": [], "ok": "坡顶长差点，你能接受" }
-    },
-    {
-      "type": "fix", "id": "fix_mud", "q": "管子堵了！", "emoji": "🚿", "problem": "泥沙把喷头堵死",
-      "if": { "all": ["muddy"] },
-      "options": [
-        { "id": "filter", "emoji": "🌀", "label": "双级过滤", "fact": "首部加装离心+叠片双级过滤", "add": [{ "id": "filter", "emoji": "🌀", "name": "双级过滤站", "price": 1800, "spec": "离心过滤器 + 120 目叠片" }], "tip": "沙子甩掉，水藻拦住", "score": { "safe": 25, "easy": 10 } }
-      ],
-      "gamble": { "label": "定期手洗", "fact": "不装过滤，人工定期清洗喷头", "crash_if": ["mid", "big"], "crash": "地太大，洗不过来，全堵了", "loss": 2000, "ok": "菜地小，手洗也行" }
-    },
-    {
-      "type": "pick", "id": "crop", "q": "种的什么？", "emoji": "🌱",
-      "options": [
-        { "id": "corn", "emoji": "🌽", "label": "玉米小麦", "fact": "种植大田作物（玉米/小麦）", "set": ["field"] },
-        { "id": "berry", "emoji": "🍓", "label": "草莓蔬菜", "fact": "种植草莓等娇贵果蔬", "set": ["delicate"] },
-        { "id": "tree", "emoji": "🍊", "label": "果树", "fact": "种植果树", "set": ["tree"] }
-      ]
-    },
-    {
-      "type": "fix", "id": "fix_rot", "q": "草莓要烂了！", "emoji": "🍓", "problem": "叶子淋湿会烂果",
-      "if": { "all": ["delicate"], "none": ["drip"] },
-      "options": [
-        { "id": "root_drip", "emoji": "💧", "label": "根部滴灌", "fact": "改用根部滴灌，不湿叶面", "add": [{ "id": "head", "emoji": "💧", "name": "滴灌带", "price": 2000, "spec": "内镶式滴灌带" }], "set": ["drip"], "tip": "水直接到根，叶子干干的", "score": { "good": 25 } }
-      ],
-      "gamble": { "label": "早上浇", "fact": "坚持用喷头，只在早上浇", "crash_if": "always", "crash": "灰霉病，烂了一大片", "loss": 3000 }
-    },
-    {
-      "type": "fix", "id": "fix_far", "q": "远处浇不到！", "emoji": "📉", "problem": "末端水压衰竭",
-      "if": { "all": ["big"] },
-      "options": [
-        { "id": "zones", "emoji": "📱", "label": "分区轮灌", "fact": "分区轮灌 + 无线电磁阀，手机控制", "add": [{ "id": "valve", "emoji": "📱", "name": "无线电磁阀", "price": 2200, "spec": "4 路无线电磁阀 + 网关" }], "set": ["smart"], "tip": "一次浇一块，水压够", "score": { "easy": 30, "good": 15 } }
-      ],
-      "gamble": { "label": "换大泵", "fact": "只换更大的水泵", "crash_if": "always", "crash": "电费翻倍，末端还是不喷", "loss": 3000 }
-    },
-    {
-      "type": "map", "id": "town", "title": "去镇上打听打听", "emoji": "🏘️",
-      "spots": [
         {
-          "id": "shop", "emoji": "🏪", "label": "农资店", "who": "li", "x": 24, "y": 26,
-          "beats": [
-            { "who": "li", "say": "哟，又来了！今天想问点啥？" },
+          "who": "lele",
+          "say": "我先猜了一套，咱们边玩边改。"
+        }
+      ]
+    },
+    {
+      "type": "pick",
+      "id": "scale",
+      "q": "地有多大？",
+      "emoji": "📏",
+      "options": [
+        {
+          "id": "small",
+          "emoji": "🏡",
+          "label": "后院菜地",
+          "fact": "场地约 2 亩（自家菜地）",
+          "price": -13000,
+          "set": [
+            "small"
+          ],
+          "tip": "小地块，小水泵就够",
+          "score": {
+            "easy": 20
+          }
+        },
+        {
+          "id": "mid",
+          "emoji": "🌳",
+          "label": "30亩果园",
+          "fact": "场地约 30 亩",
+          "set": [
+            "mid"
+          ],
+          "tip": "跟我猜的一样！"
+        },
+        {
+          "id": "big",
+          "emoji": "🚜",
+          "label": "上百亩",
+          "fact": "场地约 120 亩连片",
+          "price": 24000,
+          "set": [
+            "big"
+          ],
+          "tip": "大场地，水压要算清楚",
+          "score": {
+            "easy": -10
+          }
+        }
+      ]
+    },
+    {
+      "type": "talk",
+      "id": "story",
+      "style": "story",
+      "title": "老王的教训",
+      "emoji": "👨‍🌾",
+      "beats": [
+        {
+          "who": "narrator",
+          "say": "村口小卖部，老王和李老板在唠嗑。"
+        },
+        {
+          "who": "wang",
+          "say": "我去年也装了喷头，花了一万八！",
+          "mood": "smug"
+        },
+        {
+          "who": "qian",
+          "say": "那套是我卖的，质量杠杠的！",
+          "mood": "happy"
+        },
+        {
+          "who": "wang",
+          "say": "质量没毛病……可我那是坡地啊。",
+          "mood": "sad"
+        },
+        {
+          "who": "wang",
+          "say": "坡顶一滴水都喷不上去，白花钱。",
+          "mood": "angry"
+        },
+        {
+          "id": "land",
+          "who": "wang",
+          "q": "你家地是平的，还是有坡？",
+          "options": [
             {
-              "id": "ctrl", "who": "li", "q": "想手机遥控，还是手动开关？", "if": { "none": ["smart"] },
-              "options": [
-                { "id": "ctrl_smart", "emoji": "📱", "label": "手机遥控", "fact": "希望手机远程控制浇水", "add": [{ "id": "valve", "emoji": "📱", "name": "智能控制器", "price": 1200 }], "set": ["smart"], "score": { "easy": 25 }, "reply": [{ "who": "li", "say": "好嘞，给你配个智能控制器。" }] },
-                { "id": "ctrl_manual", "emoji": "✋", "label": "手动就行", "fact": "手动开关即可" }
+              "id": "flat",
+              "emoji": "🟩",
+              "label": "平的",
+              "fact": "地形平坦",
+              "set": [
+                "flat"
+              ],
+              "reply": [
+                {
+                  "who": "wang",
+                  "say": "平地好办，你比我省心。"
+                }
               ]
             },
-            { "who": "li", "say": "你不是说人常不在家？手动可不行哦。", "if": { "all": ["want_remote"], "none": ["smart"] } },
             {
-              "id": "who_runs", "who": "li", "q": "装好以后，平时谁来管？",
-              "options": [
-                { "id": "run_me", "emoji": "🙋", "label": "我自己", "fact": "日常由用户本人管理" },
-                { "id": "run_elder", "emoji": "👴", "label": "家里老人", "fact": "日常由家中老人管理，操作必须简单", "set": ["elder_op"], "reply": [{ "who": "li", "say": "那得选按钮大、操作简单的。" }] },
-                { "id": "run_worker", "emoji": "👷", "label": "雇的工人", "fact": "日常由雇工管理" }
+              "id": "slope",
+              "emoji": "⛰️",
+              "label": "有坡",
+              "fact": "山地斜坡，有明显高差",
+              "set": [
+                "slope"
+              ],
+              "reply": [
+                {
+                  "who": "wang",
+                  "say": "那你可得注意，别学我！",
+                  "mood": "worried"
+                }
+              ]
+            },
+            {
+              "id": "unsure",
+              "emoji": "🤷",
+              "label": "有点起伏，说不准",
+              "fact": "地形有起伏，高差未知，需要实测",
+              "set": [
+                "slope"
+              ],
+              "reply": [
+                {
+                  "who": "qian",
+                  "say": "有起伏就按坡地算，稳妥。"
+                }
               ]
             }
           ]
         },
         {
-          "id": "neighbor", "emoji": "🏠", "label": "老王家", "who": "lao", "x": 76, "y": 30,
-          "beats": [
-            { "who": "lao", "say": "来来来，坐！喝口茶。" },
-            {
-              "id": "fear", "who": "lao", "q": "你最怕装完出啥问题？",
-              "options": [
-                { "id": "f_clog", "emoji": "🚿", "label": "怕堵", "fact": "最担心管道堵塞", "reply": [{ "who": "lao", "say": "那过滤一定得上。" }] },
-                { "id": "f_repair", "emoji": "🔧", "label": "坏了没人修", "fact": "最担心坏了没人维修，需要本地售后", "set": ["need_service"], "reply": [{ "who": "lao", "say": "找镇上有店的，坏了能上门。" }] }
-              ],
-              "free": {
-                "placeholder": "说说你最担心的…",
-                "chips": ["怕费电", "怕被坑", "怕冬天冻裂"],
-                "fact": "用户最担心：{v}",
-                "match": [
-                  { "words": ["冻", "冬", "结冰"], "set": ["frost"], "fact": "冬季有冰冻风险，需考虑管道防冻排空", "reply": [{ "who": "lao", "say": "对！冬天管子得排空，不然冻裂。" }] },
-                  { "words": ["电", "费"], "fact": "用户关注运行电费", "reply": [{ "who": "lao", "say": "那水泵别买太大，分区浇。" }] },
-                  { "words": ["骗", "坑", "贵"], "reply": [{ "who": "lao", "say": "所以你来问我嘛，哈哈。" }] }
-                ],
-                "reply": [{ "who": "lao", "say": "嗯，这个我记下了，帮你问问。" }]
-              }
-            },
-            { "who": "lao", "say": "有啥不懂的，随时来问我。" }
-          ]
+          "who": "qian",
+          "say": "后来我还给他加了过滤器，你猜为啥？",
+          "mood": "smug"
         },
         {
-          "id": "home", "emoji": "🏡", "label": "家里", "who": "wife", "x": 50, "y": 74,
-          "beats": [
-            { "who": "wife", "say": "听说你要装自动浇水？" },
+          "who": "wang",
+          "say": "抽的河水，泥沙三天就把喷头堵死了。",
+          "mood": "angry"
+        },
+        {
+          "id": "water",
+          "who": "qian",
+          "q": "你家浇地用的什么水？",
+          "options": [
             {
-              "id": "time", "who": "wife", "q": "你现在每天浇地要花多久？",
-              "options": [
-                { "id": "t1", "emoji": "⏰", "label": "1小时以内", "fact": "目前每天人工浇地约 1 小时" },
-                { "id": "t3", "emoji": "🕑", "label": "两三个小时", "fact": "目前每天人工浇地约 2~3 小时", "reply": [{ "who": "wife", "say": "确实挺耗人的。" }] },
-                { "id": "tday", "emoji": "🌞", "label": "差不多一整天", "fact": "目前人工浇地几乎占满一整天", "reply": [{ "who": "wife", "say": "天天这么累，是该装了。" }] }
+              "id": "tap",
+              "emoji": "🚰",
+              "label": "自来水",
+              "fact": "水源为自来水",
+              "remove": [
+                "pump"
+              ],
+              "set": [
+                "clean"
+              ],
+              "score": {
+                "easy": 15
+              },
+              "reply": [
+                {
+                  "who": "qian",
+                  "say": "自来水不用水泵，省一笔！"
+                }
               ]
             },
             {
-              "id": "wish", "who": "wife", "q": "省下的时间，你最想干嘛？",
-              "free": {
-                "placeholder": "说说你的愿望…",
-                "chips": ["陪孩子", "多种一块地", "歇一歇"],
-                "fact": "用户希望把省下的时间用来：{v}",
-                "reply": [{ "who": "wife", "say": "那这钱花得值！" }]
-              }
+              "id": "well",
+              "emoji": "🪣",
+              "label": "井水",
+              "fact": "水源为清澈井水",
+              "set": [
+                "clean"
+              ],
+              "reply": [
+                {
+                  "who": "wang",
+                  "say": "井水干净，羡慕。"
+                }
+              ]
             },
-            { "who": "wife", "say": "行，钱的事一会儿咱俩算算。" }
+            {
+              "id": "river",
+              "emoji": "🏞️",
+              "label": "河水塘水",
+              "fact": "水源为河水/塘水，含泥沙和水藻",
+              "set": [
+                "muddy"
+              ],
+              "reply": [
+                {
+                  "who": "wang",
+                  "say": "跟我一样，过滤器少不了。"
+                }
+              ]
+            }
+          ],
+          "free": {
+            "placeholder": "比如：山泉水、雨水…",
+            "fact": "水源：{v}",
+            "match": [
+              {
+                "words": [
+                  "河",
+                  "塘",
+                  "沟",
+                  "渠",
+                  "泉",
+                  "雨",
+                  "水库"
+                ],
+                "set": [
+                  "muddy"
+                ],
+                "fact": "水源可能含泥沙杂质",
+                "reply": [
+                  {
+                    "who": "qian",
+                    "say": "这种水得过滤，记下了。"
+                  }
+                ]
+              },
+              {
+                "words": [
+                  "自来水",
+                  "井"
+                ],
+                "set": [
+                  "clean"
+                ],
+                "reply": [
+                  {
+                    "who": "wang",
+                    "say": "水干净就好办。"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "who": "wang",
+          "say": "总之啊，买之前多问问，别光听老板的。",
+          "mood": "thinking"
+        },
+        {
+          "who": "qian",
+          "say": "嘿！我可是实在人！",
+          "mood": "surprised"
+        }
+      ]
+    },
+    {
+      "type": "fix",
+      "id": "fix_slope",
+      "q": "坡顶没水了！",
+      "emoji": "⛰️",
+      "problem": "坡顶水压不够",
+      "if": {
+        "all": [
+          "slope"
+        ]
+      },
+      "options": [
+        {
+          "id": "pc_drip",
+          "emoji": "💧",
+          "label": "补偿滴灌",
+          "fact": "改用压力补偿式滴灌带，坡上坡下出水均匀",
+          "add": [
+            {
+              "id": "head",
+              "emoji": "💧",
+              "name": "补偿滴灌带",
+              "price": 2400,
+              "spec": "压力补偿式内镶滴灌带"
+            }
+          ],
+          "set": [
+            "drip"
+          ],
+          "tip": "高低出水一样多",
+          "score": {
+            "good": 25,
+            "safe": 10
+          }
+        },
+        {
+          "id": "booster",
+          "emoji": "🚀",
+          "label": "加压泵",
+          "fact": "加装管道加压泵",
+          "add": [
+            {
+              "id": "booster",
+              "emoji": "🚀",
+              "name": "管道加压泵",
+              "price": 1600
+            }
+          ],
+          "tip": "能上去，但电费更高",
+          "score": {
+            "good": 15,
+            "easy": -5
+          }
+        }
+      ],
+      "gamble": {
+        "label": "坡顶少种点",
+        "fact": "坡顶区域接受浇不到",
+        "crash_if": [],
+        "ok": "坡顶长差点，你能接受"
+      }
+    },
+    {
+      "type": "fix",
+      "id": "fix_mud",
+      "q": "管子堵了！",
+      "emoji": "🚿",
+      "problem": "泥沙把喷头堵死",
+      "if": {
+        "all": [
+          "muddy"
+        ]
+      },
+      "options": [
+        {
+          "id": "filter",
+          "emoji": "🌀",
+          "label": "双级过滤",
+          "fact": "首部加装离心+叠片双级过滤",
+          "add": [
+            {
+              "id": "filter",
+              "emoji": "🌀",
+              "name": "双级过滤站",
+              "price": 1800,
+              "spec": "离心过滤器 + 120 目叠片"
+            }
+          ],
+          "tip": "沙子甩掉，水藻拦住",
+          "score": {
+            "safe": 25,
+            "easy": 10
+          }
+        }
+      ],
+      "gamble": {
+        "label": "定期手洗",
+        "fact": "不装过滤，人工定期清洗喷头",
+        "crash_if": [
+          "mid",
+          "big"
+        ],
+        "crash": "地太大，洗不过来，全堵了",
+        "loss": 2000,
+        "ok": "菜地小，手洗也行"
+      }
+    },
+    {
+      "type": "pick",
+      "id": "crop",
+      "q": "种的什么？",
+      "emoji": "🌱",
+      "options": [
+        {
+          "id": "corn",
+          "emoji": "🌽",
+          "label": "玉米小麦",
+          "fact": "种植大田作物（玉米/小麦）",
+          "set": [
+            "field"
+          ]
+        },
+        {
+          "id": "berry",
+          "emoji": "🍓",
+          "label": "草莓蔬菜",
+          "fact": "种植草莓等娇贵果蔬",
+          "set": [
+            "delicate"
+          ]
+        },
+        {
+          "id": "tree",
+          "emoji": "🍊",
+          "label": "果树",
+          "fact": "种植果树",
+          "set": [
+            "tree"
           ]
         }
       ]
     },
     {
-      "type": "slider", "id": "budget", "q": "媳妇批多少钱？", "emoji": "💰", "kind": "budget",
-      "min": 1000, "max": 60000, "step": 1000, "unit": "元", "fact": "预算上限 {v} 元"
+      "type": "fix",
+      "id": "fix_rot",
+      "q": "草莓要烂了！",
+      "emoji": "🍓",
+      "problem": "叶子淋湿会烂果",
+      "if": {
+        "all": [
+          "delicate"
+        ],
+        "none": [
+          "drip"
+        ]
+      },
+      "options": [
+        {
+          "id": "root_drip",
+          "emoji": "💧",
+          "label": "根部滴灌",
+          "fact": "改用根部滴灌，不湿叶面",
+          "add": [
+            {
+              "id": "head",
+              "emoji": "💧",
+              "name": "滴灌带",
+              "price": 2000,
+              "spec": "内镶式滴灌带"
+            }
+          ],
+          "set": [
+            "drip"
+          ],
+          "tip": "水直接到根，叶子干干的",
+          "score": {
+            "good": 25
+          }
+        }
+      ],
+      "gamble": {
+        "label": "早上浇",
+        "fact": "坚持用喷头，只在早上浇",
+        "crash_if": "always",
+        "crash": "灰霉病，烂了一大片",
+        "loss": 3000
+      }
     },
     {
-      "type": "boss", "id": "boss", "q": "水锤来了！", "emoji": "💥", "problem": "关阀瞬间冲击管道",
+      "type": "fix",
+      "id": "fix_far",
+      "q": "远处浇不到！",
+      "emoji": "📉",
+      "problem": "末端水压衰竭",
+      "if": {
+        "all": [
+          "big"
+        ]
+      },
       "options": [
-        { "id": "relief", "emoji": "🛡️", "label": "泄压阀", "fact": "安装泄压阀 + 高点排气阀防水锤", "add": [{ "id": "relief", "emoji": "🛡️", "name": "泄压排气阀", "price": 280 }], "tip": "便宜又管用", "score": { "safe": 25 } },
-        { "id": "vfd", "emoji": "⚡", "label": "变频恒压", "fact": "水泵改变频恒压控制", "add": [{ "id": "vfd", "emoji": "⚡", "name": "变频控制柜", "price": 1850 }], "tip": "又稳又省电", "score": { "safe": 35, "easy": 15 } }
+        {
+          "id": "zones",
+          "emoji": "📱",
+          "label": "分区轮灌",
+          "fact": "分区轮灌 + 无线电磁阀，手机控制",
+          "add": [
+            {
+              "id": "valve",
+              "emoji": "📱",
+              "name": "无线电磁阀",
+              "price": 2200,
+              "spec": "4 路无线电磁阀 + 网关"
+            }
+          ],
+          "set": [
+            "smart"
+          ],
+          "tip": "一次浇一块，水压够",
+          "score": {
+            "easy": 30,
+            "good": 15
+          }
+        }
       ],
-      "gamble": { "label": "不装", "fact": "不装水锤保护", "crash_if": ["mid", "big"], "crash": "主管接头被冲爆，淹了苗", "loss": 8000, "ok": "管子短水流小，没事" }
+      "gamble": {
+        "label": "换大泵",
+        "fact": "只换更大的水泵",
+        "crash_if": "always",
+        "crash": "电费翻倍，末端还是不喷",
+        "loss": 3000
+      }
+    },
+    {
+      "type": "map",
+      "id": "town",
+      "title": "去镇上打听打听",
+      "emoji": "🏘️",
+      "spots": [
+        {
+          "id": "shop",
+          "emoji": "🏪",
+          "label": "农资店",
+          "who": "qian",
+          "x": 24,
+          "y": 26,
+          "beats": [
+            {
+              "who": "qian",
+              "say": "哟，又来了！今天想问点啥？"
+            },
+            {
+              "id": "ctrl",
+              "who": "qian",
+              "q": "想手机遥控，还是手动开关？",
+              "if": {
+                "none": [
+                  "smart"
+                ]
+              },
+              "options": [
+                {
+                  "id": "ctrl_smart",
+                  "emoji": "📱",
+                  "label": "手机遥控",
+                  "fact": "希望手机远程控制浇水",
+                  "add": [
+                    {
+                      "id": "valve",
+                      "emoji": "📱",
+                      "name": "智能控制器",
+                      "price": 1200
+                    }
+                  ],
+                  "set": [
+                    "smart"
+                  ],
+                  "score": {
+                    "easy": 25
+                  },
+                  "reply": [
+                    {
+                      "who": "qian",
+                      "say": "好嘞，给你配个智能控制器。"
+                    }
+                  ]
+                },
+                {
+                  "id": "ctrl_manual",
+                  "emoji": "✋",
+                  "label": "手动就行",
+                  "fact": "手动开关即可"
+                }
+              ]
+            },
+            {
+              "who": "qian",
+              "say": "你不是说人常不在家？手动可不行哦。",
+              "if": {
+                "all": [
+                  "want_remote"
+                ],
+                "none": [
+                  "smart"
+                ]
+              },
+              "mood": "worried"
+            },
+            {
+              "id": "who_runs",
+              "who": "qian",
+              "q": "装好以后，平时谁来管？",
+              "options": [
+                {
+                  "id": "run_me",
+                  "emoji": "🙋",
+                  "label": "我自己",
+                  "fact": "日常由用户本人管理"
+                },
+                {
+                  "id": "run_elder",
+                  "emoji": "👴",
+                  "label": "家里老人",
+                  "fact": "日常由家中老人管理，操作必须简单",
+                  "set": [
+                    "elder_op"
+                  ],
+                  "reply": [
+                    {
+                      "who": "qian",
+                      "say": "那得选按钮大、操作简单的。"
+                    }
+                  ]
+                },
+                {
+                  "id": "run_worker",
+                  "emoji": "👷",
+                  "label": "雇的工人",
+                  "fact": "日常由雇工管理"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "neighbor",
+          "emoji": "🏠",
+          "label": "老王家",
+          "who": "wang",
+          "x": 76,
+          "y": 30,
+          "beats": [
+            {
+              "who": "wang",
+              "say": "来来来，坐！喝口茶。"
+            },
+            {
+              "id": "fear",
+              "who": "wang",
+              "q": "你最怕装完出啥问题？",
+              "options": [
+                {
+                  "id": "f_clog",
+                  "emoji": "🚿",
+                  "label": "怕堵",
+                  "fact": "最担心管道堵塞",
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "那过滤一定得上。"
+                    }
+                  ]
+                },
+                {
+                  "id": "f_repair",
+                  "emoji": "🔧",
+                  "label": "坏了没人修",
+                  "fact": "最担心坏了没人维修，需要本地售后",
+                  "set": [
+                    "need_service"
+                  ],
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "找镇上有店的，坏了能上门。"
+                    }
+                  ]
+                }
+              ],
+              "free": {
+                "placeholder": "说说你最担心的…",
+                "chips": [
+                  "怕费电",
+                  "怕被坑",
+                  "怕冬天冻裂"
+                ],
+                "fact": "用户最担心：{v}",
+                "match": [
+                  {
+                    "words": [
+                      "冻",
+                      "冬",
+                      "结冰"
+                    ],
+                    "set": [
+                      "frost"
+                    ],
+                    "fact": "冬季有冰冻风险，需考虑管道防冻排空",
+                    "reply": [
+                      {
+                        "who": "wang",
+                        "say": "对！冬天管子得排空，不然冻裂。",
+                        "mood": "surprised"
+                      }
+                    ]
+                  },
+                  {
+                    "words": [
+                      "电",
+                      "费"
+                    ],
+                    "fact": "用户关注运行电费",
+                    "reply": [
+                      {
+                        "who": "wang",
+                        "say": "那水泵别买太大，分区浇。"
+                      }
+                    ]
+                  },
+                  {
+                    "words": [
+                      "骗",
+                      "坑",
+                      "贵"
+                    ],
+                    "reply": [
+                      {
+                        "who": "wang",
+                        "say": "所以你来问我嘛，哈哈。"
+                      }
+                    ]
+                  }
+                ],
+                "reply": [
+                  {
+                    "who": "wang",
+                    "say": "嗯，这个我记下了，帮你问问。"
+                  }
+                ]
+              }
+            },
+            {
+              "who": "wang",
+              "say": "有啥不懂的，随时来问我。"
+            }
+          ]
+        },
+        {
+          "id": "home",
+          "emoji": "🏡",
+          "label": "家里",
+          "who": "mei",
+          "x": 50,
+          "y": 74,
+          "beats": [
+            {
+              "who": "mei",
+              "say": "听说你要装自动浇水？"
+            },
+            {
+              "id": "time",
+              "who": "mei",
+              "q": "你现在每天浇地要花多久？",
+              "options": [
+                {
+                  "id": "t1",
+                  "emoji": "⏰",
+                  "label": "1小时以内",
+                  "fact": "目前每天人工浇地约 1 小时"
+                },
+                {
+                  "id": "t3",
+                  "emoji": "🕑",
+                  "label": "两三个小时",
+                  "fact": "目前每天人工浇地约 2~3 小时",
+                  "reply": [
+                    {
+                      "who": "mei",
+                      "say": "确实挺耗人的。"
+                    }
+                  ]
+                },
+                {
+                  "id": "tday",
+                  "emoji": "🌞",
+                  "label": "差不多一整天",
+                  "fact": "目前人工浇地几乎占满一整天",
+                  "reply": [
+                    {
+                      "who": "mei",
+                      "say": "天天这么累，是该装了。",
+                      "mood": "sad"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "wish",
+              "who": "mei",
+              "q": "省下的时间，你最想干嘛？",
+              "free": {
+                "placeholder": "说说你的愿望…",
+                "chips": [
+                  "陪孩子",
+                  "多种一块地",
+                  "歇一歇"
+                ],
+                "fact": "用户希望把省下的时间用来：{v}",
+                "reply": [
+                  {
+                    "who": "mei",
+                    "say": "那这钱花得值！",
+                    "mood": "happy"
+                  }
+                ]
+              }
+            },
+            {
+              "who": "mei",
+              "say": "行，钱的事一会儿咱俩算算。",
+              "mood": "smug"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "slider",
+      "id": "budget",
+      "q": "媳妇批多少钱？",
+      "emoji": "💰",
+      "kind": "budget",
+      "min": 1000,
+      "max": 60000,
+      "step": 1000,
+      "unit": "元",
+      "fact": "预算上限 {v} 元"
+    },
+    {
+      "type": "boss",
+      "id": "boss",
+      "q": "水锤来了！",
+      "emoji": "💥",
+      "problem": "关阀瞬间冲击管道",
+      "options": [
+        {
+          "id": "relief",
+          "emoji": "🛡️",
+          "label": "泄压阀",
+          "fact": "安装泄压阀 + 高点排气阀防水锤",
+          "add": [
+            {
+              "id": "relief",
+              "emoji": "🛡️",
+              "name": "泄压排气阀",
+              "price": 280
+            }
+          ],
+          "tip": "便宜又管用",
+          "score": {
+            "safe": 25
+          }
+        },
+        {
+          "id": "vfd",
+          "emoji": "⚡",
+          "label": "变频恒压",
+          "fact": "水泵改变频恒压控制",
+          "add": [
+            {
+              "id": "vfd",
+              "emoji": "⚡",
+              "name": "变频控制柜",
+              "price": 1850
+            }
+          ],
+          "tip": "又稳又省电",
+          "score": {
+            "safe": 35,
+            "easy": 15
+          }
+        }
+      ],
+      "gamble": {
+        "label": "不装",
+        "fact": "不装水锤保护",
+        "crash_if": [
+          "mid",
+          "big"
+        ],
+        "crash": "主管接头被冲爆，淹了苗",
+        "loss": 8000,
+        "ok": "管子短水流小，没事"
+      }
     }
   ],
   "secret": "买管认准『全新料 PE100 国标管』，回料管晒一年就脆"
