@@ -110,27 +110,34 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   } catch {
     return void json(res, 400, { error: 'bad_request' }), true;
   }
-  if (cfg.accessCode && body?.code !== cfg.accessCode) return void json(res, 403, { error: 'code' }), true;
+  if (cfg.accessCode && body?.code !== cfg.accessCode) return void (console.error('generate: wrong access code'), json(res, 403, { error: 'code' })), true;
   const need = typeof body?.need === 'string' ? body.need.trim() : '';
   const lang = body?.lang === 'en' ? 'en' : 'zh';
   if (!need || [...need].length > MAX_NEED_CHARS) return void json(res, 400, { error: 'need' }), true;
 
   const context = typeof body?.context === 'string' ? body.context.slice(0, MAX_PLAN_CHARS) : '';
   const key = `${lang}:${need}:${context}`;
-  if (cache.has(key)) return void json(res, 200, { lesson: cache.get(key) }), true;
+  if (cache.has(key)) return void (console.error(`generate: cache hit (${lang}) ${need.slice(0, 40)}`), json(res, 200, { lesson: cache.get(key) })), true;
 
   const verdict = allow(clientIp(req), cfg.perIpPerHour, cfg.perDay);
-  if (verdict !== 'ok') return void json(res, 429, { error: verdict === 'ip' ? 'rate_ip' : 'rate_day' }), true;
+  if (verdict !== 'ok') return void (console.error(`generate: rate limited (${verdict})`), json(res, 429, { error: verdict === 'ip' ? 'rate_ip' : 'rate_day' })), true;
   if (running >= cfg.concurrency) return void json(res, 429, { error: 'busy' }), true;
 
   running++;
+  const t0 = Date.now();
+  const secs = () => `${Math.round((Date.now() - t0) / 1000)}s`;
+  console.error(`generate: start (${lang}${context ? ', follow-up' : ''}) ${need.slice(0, 40)}`);
+  // 用户关掉页面/断网：记下来，方便区分「接口慢」和「前端放弃了」
+  req.socket.once('close', () => Date.now() - t0 > 1000 && !res.writableEnded && console.error(`generate: client went away after ${secs()}`));
   try {
     const r = await generateLesson(client, need, lang, context);
+    console.error(`generate: ${r.ok ? 'ok' : r.error} after ${secs()}`);
     if (!r.ok) return void json(res, 422, { error: r.error }), true;
     cache.set(key, r.lesson);
     if (cache.size > 200) cache.delete(cache.keys().next().value!);
     json(res, 200, { lesson: r.lesson });
   } catch (e) {
+    console.error(`generate: failed after ${secs()}`);
     upstreamFailed(res, 'generate', e);
   } finally {
     running--;

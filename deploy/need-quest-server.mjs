@@ -4079,7 +4079,7 @@ const ZodCustom = /* @__PURE__ */ $constructor("ZodCustom", (inst, def2) => {
   $ZodCustom.init(inst, def2);
   ZodType$1.init(inst, def2);
 });
-function check(fn) {
+function check$1(fn) {
   const ch = new $ZodCheck({
     check: "custom"
     // ...util.normalizeParams(params),
@@ -4094,7 +4094,7 @@ function refine(fn, _params = {}) {
   return _refine(ZodCustom, fn, _params);
 }
 function superRefine(fn) {
-  const ch = check((payload) => {
+  const ch = check$1((payload) => {
     payload.addIssue = (issue$1) => {
       if (typeof issue$1 === "string") {
         payload.issues.push(issue(issue$1, payload.value, ch._zod.def));
@@ -35714,24 +35714,30 @@ async function handleApi(req, res, path2) {
   } catch {
     return void json2(res, 400, { error: "bad_request" }), true;
   }
-  if (cfg.accessCode && body?.code !== cfg.accessCode) return void json2(res, 403, { error: "code" }), true;
+  if (cfg.accessCode && body?.code !== cfg.accessCode) return void (console.error("generate: wrong access code"), json2(res, 403, { error: "code" })), true;
   const need2 = typeof body?.need === "string" ? body.need.trim() : "";
   const lang2 = body?.lang === "en" ? "en" : "zh";
   if (!need2 || [...need2].length > MAX_NEED_CHARS) return void json2(res, 400, { error: "need" }), true;
   const context2 = typeof body?.context === "string" ? body.context.slice(0, MAX_PLAN_CHARS) : "";
   const key = `${lang2}:${need2}:${context2}`;
-  if (cache.has(key)) return void json2(res, 200, { lesson: cache.get(key) }), true;
+  if (cache.has(key)) return void (console.error(`generate: cache hit (${lang2}) ${need2.slice(0, 40)}`), json2(res, 200, { lesson: cache.get(key) })), true;
   const verdict = allow(clientIp(req), cfg.perIpPerHour, cfg.perDay);
-  if (verdict !== "ok") return void json2(res, 429, { error: verdict === "ip" ? "rate_ip" : "rate_day" }), true;
+  if (verdict !== "ok") return void (console.error(`generate: rate limited (${verdict})`), json2(res, 429, { error: verdict === "ip" ? "rate_ip" : "rate_day" })), true;
   if (running >= cfg.concurrency) return void json2(res, 429, { error: "busy" }), true;
   running++;
+  const t0 = Date.now();
+  const secs = () => `${Math.round((Date.now() - t0) / 1e3)}s`;
+  console.error(`generate: start (${lang2}${context2 ? ", follow-up" : ""}) ${need2.slice(0, 40)}`);
+  req.socket.once("close", () => Date.now() - t0 > 1e3 && !res.writableEnded && console.error(`generate: client went away after ${secs()}`));
   try {
     const r = await generateLesson(client, need2, lang2, context2);
+    console.error(`generate: ${r.ok ? "ok" : r.error} after ${secs()}`);
     if (!r.ok) return void json2(res, 422, { error: r.error }), true;
     cache.set(key, r.lesson);
     if (cache.size > 200) cache.delete(cache.keys().next().value);
     json2(res, 200, { lesson: r.lesson });
   } catch (e) {
+    console.error(`generate: failed after ${secs()}`);
     upstreamFailed(res, "generate", e);
   } finally {
     running--;
@@ -35836,6 +35842,47 @@ async function speech(req, res, cfg) {
     upstreamFailed(res, "tts", e);
   }
   return true;
+}
+async function check(need2) {
+  const { config: config2, error: error2, fromFile } = loadConfig();
+  console.log(`配置：${fromFile ? "配置文件" : "环境变量"}${error2 ? `（${error2}）` : ""}`);
+  const model = chatFromConfig(config2);
+  if (!model) return fail("没有可用的模型配置（key / model 没填？）");
+  console.log(`模型：${model.label}`);
+  let t = Date.now();
+  try {
+    const r = await model.start("Reply with exactly: OK").send("ping");
+    if ("refused" in r) return fail("模型拒绝回答");
+    console.log(`✅ 接口通了，${((Date.now() - t) / 1e3).toFixed(1)} 秒，回复：${JSON.stringify(r.text.slice(0, 80))}`);
+    if (!r.text.trim()) console.log("⚠️ 回复是空的：这个接口可能不支持流式输出，或者模型把内容放在别的字段里");
+  } catch (e) {
+    return fail(e instanceof UpstreamError ? `接口报错 ${e.message}` : `连不上：${e.message}`);
+  }
+  const tts = ttsFromConfig(config2);
+  if (tts) {
+    t = Date.now();
+    try {
+      const mp3 = await tts("你好", "f");
+      console.log(`✅ 服务器朗读可用，${((Date.now() - t) / 1e3).toFixed(1)} 秒，${mp3.length} 字节`);
+    } catch (e) {
+      console.log(`❌ 服务器朗读失败：${e.message}`);
+    }
+  }
+  if (!need2) return console.log("想测完整生成：在 --check 后面加一句需求");
+  t = Date.now();
+  console.log(`开始生成：${need2}（一般 30~120 秒）`);
+  try {
+    const r = await generateLesson(model.start, need2, /[\u4e00-\u9fff]/.test(need2) ? "zh" : "en");
+    const s = ((Date.now() - t) / 1e3).toFixed(0);
+    if (r.ok) console.log(`✅ 生成成功，${s} 秒：「${r.lesson.title}」，${r.lesson.rounds.length} 关`);
+    else fail(`生成失败（${r.error}），${s} 秒；上面有每一轮的校验错误`);
+  } catch (e) {
+    fail(e instanceof UpstreamError ? `生成时接口报错 ${e.message}` : `生成时出错：${e.message}`);
+  }
+}
+function fail(msg) {
+  console.log(`❌ ${msg}`);
+  process.exitCode = 1;
 }
 const ZodMiniType = /* @__PURE__ */ $constructor("ZodMiniType", (inst, def2) => {
   if (!inst._zod)
@@ -46828,7 +46875,9 @@ function http(port, host) {
   });
   srv.listen(port, host, () => console.error(`need-quest MCP ${VERSION} listening on http://${host}:${port}/mcp`));
 }
-if (process.argv.includes("--http")) http(Number(process.env.PORT) || 8787, process.env.HOST || "127.0.0.1");
+const argv = process.argv;
+if (argv.includes("--check")) void check(argv.slice(argv.indexOf("--check") + 1).join(" ").trim());
+else if (argv.includes("--http")) http(Number(process.env.PORT) || 8787, process.env.HOST || "127.0.0.1");
 else void stdio();
 const node = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,

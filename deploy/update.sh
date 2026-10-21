@@ -45,4 +45,5 @@ for _ in $(seq 1 20); do
 done
 curl -fsS http://127.0.0.1:8787/health && echo
 curl -fsS http://127.0.0.1:8787/api/config && echo
+echo "==> 测试 AI 接口：sudo bash deploy/check.sh（加一句需求可完整生成一关）"
 echo "==> 完成（generate:true 表示网页上可以在线生成；needCode:true 表示需要访问码；configError 表示配置文件写错了）"

@@ -3,6 +3,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import widgetHtml from '../dist-widget/index.html?raw';
 import { handleApi } from './api';
+import { check } from './check';
 import { createNeedQuestServer, VERSION } from './create';
 
 /**
@@ -57,5 +58,7 @@ function http(port: number, host: string) {
   srv.listen(port, host, () => console.error(`need-quest MCP ${VERSION} listening on http://${host}:${port}/mcp`));
 }
 
-if (process.argv.includes('--http')) http(Number(process.env.PORT) || 8787, process.env.HOST || '127.0.0.1');
+const argv = process.argv;
+if (argv.includes('--check')) void check(argv.slice(argv.indexOf('--check') + 1).join(' ').trim());
+else if (argv.includes('--http')) http(Number(process.env.PORT) || 8787, process.env.HOST || '127.0.0.1');
 else void stdio();
