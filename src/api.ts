@@ -1,13 +1,25 @@
 import { useEffect, useState } from 'react';
+import { getLang, t, type MsgKey } from './i18n';
+import { parseLesson, type Lesson } from './lesson/schema';
 
-/** 服务端有没有配 API key（网页版能不能在线生成） */
+export type ServerConfig = { generate: boolean; needCode: boolean };
+
+/** 服务端有没有配 API key（网页版能不能在线生成）。整页只问一次 */
+let configOnce: Promise<ServerConfig> | null = null;
+export const serverConfig = () =>
+  (configOnce ??= fetch('/api/config')
+    .then((r) => (r.ok ? r.json() : {}))
+    .then((d: { generate?: boolean; needCode?: boolean }) => ({ generate: !!d.generate, needCode: !!d.needCode }))
+    .catch(() => ({ generate: false, needCode: false })));
+
 export function useCanGenerate() {
-  const [cfg, setCfg] = useState<{ generate: boolean; needCode: boolean } | null>(null);
+  const [cfg, setCfg] = useState<ServerConfig | null>(null);
   useEffect(() => {
-    fetch('/api/config')
-      .then((r) => (r.ok ? r.json() : {}))
-      .then((d: { generate?: boolean; needCode?: boolean }) => setCfg({ generate: !!d.generate, needCode: !!d.needCode }))
-      .catch(() => setCfg({ generate: false, needCode: false }));
+    let alive = true;
+    void serverConfig().then((c) => alive && setCfg(c));
+    return () => {
+      alive = false;
+    };
   }, []);
   return cfg;
 }
@@ -27,3 +39,54 @@ export const saveCode = (c: string) => {
     /* 隐私模式下存不了，下次重新输入 */
   }
 };
+
+const ERRORS: Record<string, MsgKey> = { code: 'genCode', rate_ip: 'genRate', rate_day: 'genRate', busy: 'genBusy' };
+
+/** 在线生成关卡；context = 上一关的结果（再玩一轮时） */
+export async function requestLesson(
+  need: string,
+  opts: { context?: string; signal?: AbortSignal } = {},
+): Promise<{ lesson: Lesson } | { error: string }> {
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ need, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode(), context: opts.context }),
+      signal: opts.signal,
+    });
+    const data = (await res.json().catch(() => ({}))) as { lesson?: unknown; error?: string };
+    const r = data.lesson ? parseLesson(data.lesson) : null;
+    if (r?.ok) return { lesson: r.lesson };
+    return { error: t(ERRORS[data.error ?? ''] ?? 'genFail') };
+  } catch {
+    return { error: opts.signal?.aborted ? '' : t('genFail') };
+  }
+}
+
+/** 角色对用户自己打的字做出回应；失败或超时返回 null（调用方退回预设台词） */
+export async function requestReact(input: {
+  need: string;
+  who: string;
+  as?: string;
+  q: string;
+  options: string[];
+  text: string;
+  recent: string[];
+}): Promise<{ say: string; mood?: string } | null> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 12_000);
+  try {
+    const res = await fetch('/api/react', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ...input, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode() }),
+      signal: ctrl.signal,
+    });
+    const d = (await res.json().catch(() => ({}))) as { say?: string; mood?: string };
+    return res.ok && d.say ? { say: d.say, mood: d.mood } : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}

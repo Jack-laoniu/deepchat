@@ -60,7 +60,7 @@ sudo bash deploy/install.sh quest.example.com
 
 - 脚本按需安装 Node 20 和 Caddy（自动 HTTPS），注册 systemd 服务
 - **不会覆盖已有网站**：站点写在 `/etc/caddy/need-quest.caddy`，原 Caddyfile 只追加一行 `import`，改之前先备份为 `Caddyfile.bak-时间`
-- 在线生成的配置都在 `/etc/need-quest/config.json`（模板见 `deploy/config.example.json`，root 可改、服务只读）：`provider`、`openai`（OpenAI 兼容接口的 `apiKey` / `baseUrl` / `model`）、`anthropic`（Claude 的 `apiKey` / `baseUrl` / `model`，默认 `claude-opus-5-5`）、`accessCode`（测试访问码）、`limits`（每 IP 每小时生成次数、每天总数、并发、每 IP 每小时「继续聊需求」消息数，默认 5 / 200 / 3 / 30）。用 `sudo nano` 改完保存**立即生效，不用重启**；写错了会保留上次能用的配置，`curl 127.0.0.1:8787/api/config` 会返回 `configError`。旧的 `/etc/need-quest.env` 环境变量仍兼容，配置文件里填了的项优先
+- 在线生成的配置都在 `/etc/need-quest/config.json`（模板见 `deploy/config.example.json`，root 可改、服务只读）：`provider`、`openai`（OpenAI 兼容接口的 `apiKey` / `baseUrl` / `model`）、`anthropic`（Claude 的 `apiKey` / `baseUrl` / `model`，默认 `claude-opus-5-5`）、`accessCode`（测试访问码）、`limits`（每 IP 每小时生成次数、每天总数、并发、每 IP 每小时「继续聊需求」和角色即时回应的次数，默认 5 / 200 / 3 / 30）。用 `sudo nano` 改完保存**立即生效，不用重启**；写错了会保留上次能用的配置，`curl 127.0.0.1:8787/api/config` 会返回 `configError`。旧的 `/etc/need-quest.env` 环境变量仍兼容，配置文件里填了的项优先
 - 完成后：`https://<域名>/` 是游戏网页，`https://<域名>/mcp` 是 MCP 接口
 
 更新：`git pull && sudo bash deploy/update.sh`（只换程序、不碰 Caddy，也不会覆盖已有的配置文件）。关闭并移除：`sudo bash deploy/uninstall.sh`（不动其它站点）。修改代码后用 `npm run build:deploy` 重新生成打包文件再提交。

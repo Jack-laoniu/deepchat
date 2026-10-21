@@ -8,7 +8,8 @@ import { Emoji } from '../ui/Emoji';
 import { Btn, Mascot } from '../ui/kit';
 import { copyText } from '../ui/copy';
 import { getLang, t } from '../i18n';
-import { Discuss, type Turn } from './Discuss';
+import { type Turn } from './Discuss';
+import { NextStep } from './NextStep';
 
 function Ring({ value, emoji, label, delay }: { value: number; emoji: string; label: string; delay: number }) {
   const r = 30;
@@ -130,7 +131,7 @@ export function Win() {
         </div>
       )}
 
-      <Discuss plan={plan} turns={turns} setTurns={setTurns} />
+      <NextStep plan={plan} text={text} turns={turns} setTurns={setTurns} />
 
       <div className="mt-auto space-y-3 pt-5">
         <Btn onClick={handoff}>{inHost() ? t('handoffHost') : copied ? t('handoffCopied') : t('handoffCopy')}</Btn>

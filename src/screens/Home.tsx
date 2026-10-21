@@ -1,7 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Character } from '../chars/Character';
-import { GUIDE } from '../chars/library';
+import { useMemo, useRef, useState } from 'react';
 import { useGame } from '../game';
 import { SAMPLES } from '../lessons';
 import { generatorPrompt } from '../lesson/prompt';
@@ -9,8 +7,9 @@ import { parseLesson, type Lesson } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
 import { Btn, Mascot } from '../ui/kit';
 import { copyText } from '../ui/copy';
+import { Generating } from './Generating';
 import { detectLang, t } from '../i18n';
-import { loadCode, saveCode, useCanGenerate } from '../api';
+import { loadCode, requestLesson, saveCode, useCanGenerate } from '../api';
 
 type GenState = { phase: 'idle' } | { phase: 'loading'; started: number } | { phase: 'error'; msg: string };
 
@@ -37,24 +36,9 @@ export function Home() {
     const ctrl = new AbortController();
     abort.current = ctrl;
     setGen({ phase: 'loading', started: Date.now() });
-    try {
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ need: text, lang, code }),
-        signal: ctrl.signal,
-      });
-      const data = (await res.json().catch(() => ({}))) as { lesson?: unknown; error?: string };
-      const r = data.lesson ? parseLesson(data.lesson) : null;
-      if (r?.ok) return g.open(r.lesson);
-      const msg =
-        data.error === 'code' ? t('genCode') :
-        data.error === 'rate_ip' || data.error === 'rate_day' ? t('genRate') :
-        data.error === 'busy' ? t('genBusy') : t('genFail');
-      setGen({ phase: 'error', msg });
-    } catch {
-      if (!ctrl.signal.aborted) setGen({ phase: 'error', msg: t('genFail') });
-    }
+    const r = await requestLesson(text, { signal: ctrl.signal });
+    if ('lesson' in r) return g.open(r.lesson);
+    if (!ctrl.signal.aborted) setGen({ phase: 'error', msg: r.error });
   };
 
   if (gen.phase === 'loading') return <Generating started={gen.started} onCancel={() => (abort.current?.abort(), setGen({ phase: 'idle' }))} />;
@@ -123,39 +107,6 @@ export function Home() {
   );
 }
 
-/** 等待生成：乐乐在想，提示轮换，显示已等待时间 */
-function Generating({ started, onCancel }: { started: number; onCancel: () => void }) {
-  const tips = t('genTips').split('|');
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  const sec = Math.floor((now - started) / 1000);
-  const tip = tips[Math.min(tips.length - 1, Math.floor(sec / 12))];
-  return (
-    <div className="flex h-full flex-col items-center justify-center px-6 text-center">
-      <Character id={GUIDE} size={130} mood="thinking" act={sec % 8 < 4 ? 'idle' : 'walk'} />
-      <div className="mt-4 text-2xl font-black text-slate-700">{t('genWait')}</div>
-      <AnimatePresence mode="wait">
-        <motion.div key={tip} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-2 text-base font-bold text-slate-500">
-          {tip}
-        </motion.div>
-      </AnimatePresence>
-      <div className="mt-6 h-3 w-56 overflow-hidden rounded-full bg-slate-200">
-        <motion.div className="h-full rounded-full bg-green-500" animate={{ width: `${Math.min(95, (sec / 90) * 100)}%` }} transition={{ duration: 1 }} />
-      </div>
-      <div className="mt-2 text-xs font-bold text-slate-400">
-        {t('genSlow')} · {sec}s
-      </div>
-      <button onClick={onCancel} className="mt-8 text-sm font-extrabold text-slate-400 hover:text-slate-600">
-        {t('cancel')}
-      </button>
-    </div>
-  );
-}
-
-/** 独立网页版用：把提示词复制给任意大模型，再把它返回的 JSON 粘回来 */
 function Studio({ initialNeed, onClose, onLoad }: { initialNeed: string; onClose: () => void; onLoad: (l: Lesson) => void }) {
   const [need, setNeed] = useState(initialNeed);
   const [json, setJson] = useState('');

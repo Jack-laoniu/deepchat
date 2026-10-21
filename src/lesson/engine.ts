@@ -1,4 +1,4 @@
-import type { Beat, Cond, FixRound, Free, Gamble, Item, Lesson, Option, Round } from './schema';
+import type { Beat, Cond, FixRound, Free, Gamble, Item, Lesson, Option, Round, Line } from './schema';
 
 /**
  * 闯关规则：全部由 play(lesson, answers) 从答案列表重新推导，
@@ -6,7 +6,8 @@ import type { Beat, Cond, FixRound, Free, Gamble, Item, Lesson, Option, Round } 
  */
 
 /** 对话里每个提问的回答：选了某个选项，或者用户自己说的话 */
-export type Replies = Record<string, { option: string } | { text: string }>;
+/** react：用户自己打字时，角色针对原话的即时回应（在线生成；没有就用关卡里预设的台词） */
+export type Replies = Record<string, { option: string } | { text: string; react?: { say: string; mood?: Line['mood'] } }>;
 
 export type Answer =
   | { round: string; option: string }

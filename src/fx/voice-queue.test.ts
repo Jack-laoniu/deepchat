@@ -10,6 +10,9 @@ const voices = [
 vi.stubGlobal('window', {
   speechSynthesis: { getVoices: () => voices, addEventListener: () => {}, speak: (u: U) => spoken.push(u), cancel: () => {}, resume: () => {} },
 });
+// 记下页面的点击监听，测试里模拟「用户点了一下」
+const taps: (() => void)[] = [];
+vi.stubGlobal('document', { addEventListener: (_: string, fn: () => void) => taps.push(fn) });
 vi.stubGlobal(
   'SpeechSynthesisUtterance',
   class {
@@ -47,6 +50,8 @@ describe('speech queue', async () => {
   });
 
   it('switches away from a voice that never makes a sound', async () => {
+    taps.forEach((f) => f()); // 用户点过屏幕，朗读已解锁
+    spoken.length = 0;
     void speak('hello there');
     spoken[0].onstart?.(); // 先证明这个浏览器会报 onstart
     spoken[0].onend?.();

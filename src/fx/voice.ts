@@ -24,9 +24,25 @@ const PREFERRED: Record<string, Record<Gender, RegExp>> = {
 let cache = new Map<string, SpeechSynthesisVoice | null>();
 /** 列表里有、但实际念不出声的语音（iPhone 上部分「增强/Siri」语音在网页里是哑的） */
 const mute = new Set<string>();
+/** 已经在用户点击里「解锁」过朗读 */
+let unlocked = false;
 if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   // iOS / Chrome 的语音列表是异步加载的，加载完要重新挑
   window.speechSynthesis.addEventListener?.('voiceschanged', () => (cache = new Map()));
+  // iPhone 只允许在用户点击里发出第一声；之后程序自动念才有声音。
+  // 有的关卡一开场就自动念台词（不是点出来的），所以在第一次点击时先念一句空白把它解锁
+  const unlock = () => {
+    if (unlocked) return;
+    unlocked = true;
+    try {
+      const u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0;
+      window.speechSynthesis.speak(u);
+    } catch {
+      /* ignore */
+    }
+  };
+  for (const ev of ['touchend', 'click', 'keydown']) if (typeof document !== 'undefined') document.addEventListener(ev, unlock, { capture: true, passive: true });
 }
 
 export function pickVoice(locale: string, gender: Gender): SpeechSynthesisVoice | null {
@@ -150,7 +166,7 @@ function utter(job: Job, withVoice: boolean) {
   };
   // 1.5 秒还没开口：这个嗓音多半是哑的，换一个
   const watchdog = setTimeout(() => {
-    if (!started && !finished && v && startEvents !== false) retry();
+    if (!started && !finished && v && unlocked && startEvents !== false) retry();
   }, 1500);
   // 某些环境不触发 onend，兜底
   const fallback = setTimeout(finish, 1500 + job.text.length * (getLang() === 'zh' || getLang() === 'ja' ? 300 : 120));

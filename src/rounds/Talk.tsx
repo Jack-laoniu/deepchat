@@ -7,6 +7,8 @@ import { canListen, hush, listen, speak, speakNow } from '../fx/voice';
 import { useGame } from '../game';
 import { getLang, t } from '../i18n';
 import { matchFree, walkBeats, type Replies } from '../lesson/engine';
+import { requestReact, useCanGenerate } from '../api';
+import { inHost } from '../host';
 import type { AskBeat, Beat, Line, TalkRound } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
 import { Btn } from '../ui/kit';
@@ -70,6 +72,7 @@ function transcript(beats: Beat[], replies: Replies, baseFlags: Set<string>): It
       o.reply.forEach((l, j) => push(`r${b.id}${j}`, { ...l, mood: l.mood ?? o.mood }));
     } else {
       push(`m${b.id}`, { who: 'me', say: r.text });
+      if (r.react) return push(`r${b.id}0`, { who: b.who, say: r.react.say, mood: r.react.mood });
       const hits = b.free ? matchFree(b.free, r.text) : [];
       const reacts = hits.flatMap((m) => m.reply);
       (reacts.length ? reacts : b.free?.reply ?? []).forEach((l, j) => push(`r${b.id}${j}`, l));
@@ -189,9 +192,32 @@ export function Dialogue({
     return () => clearTimeout(timer);
   }, [style, shown, items, waitingAsk, talking]);
 
-  const answer = (beatId: string, r: Replies[string]) => {
+  // 网页版服务器有 key 时，用户自己打的字由提问的角色现场回应；否则用关卡里预设的台词
+  const g = useGame();
+  const cfg = useCanGenerate();
+  const live = !!cfg?.generate && !inHost();
+  const [pending, setPending] = useState<string | null>(null);
+
+  const answer = async (beat: AskBeat, r: Replies[string]) => {
     sfx.good();
-    setReplies((x) => ({ ...x, [beatId]: r }));
+    if ('text' in r && live) {
+      setPending(r.text);
+      const c = who(beat.who);
+      const react = await requestReact({
+        need: g.lesson?.need ?? '',
+        who: beat.who,
+        as: c.as,
+        q: beat.q,
+        options: beat.options.map((o) => o.label),
+        text: r.text,
+        recent: items
+          .slice(Math.max(0, shown - 6), shown)
+          .map((it) => (it.kind === 'ask' ? `${who(it.beat.who).name}: ${it.beat.q}` : `${it.who === 'me' ? 'Player' : who(it.who).name || 'Narrator'}: ${it.say}`)),
+      });
+      setPending(null);
+      if (react) r = { ...r, react: { say: react.say, mood: react.mood as Line['mood'] } };
+    }
+    setReplies((x) => ({ ...x, [beat.id]: r }));
     setShown((n) => n + 1);
   };
 
@@ -225,7 +251,8 @@ export function Dialogue({
             ),
           )}
         </AnimatePresence>
-        {typing && p && (
+        {pending !== null && <Bubble who={who('me')} text={pending} mine current chat={style === 'chat'} />}
+        {(pending !== null || (typing && p)) && (
           <div className="flex gap-1 pl-1">
             <div className="flex gap-1 rounded-2xl bg-slate-100 px-3 py-3">
               {[0, 1, 2].map((d) => (
@@ -237,8 +264,8 @@ export function Dialogue({
       </div>
 
       <div className="pt-3">
-        {waitingAsk ? (
-          <AnswerPanel key={waitingAsk.id} ask={waitingAsk} onAnswer={(r) => answer(waitingAsk.id, r)} />
+        {pending !== null ? null : waitingAsk ? (
+          <AnswerPanel key={waitingAsk.id} ask={waitingAsk} onAnswer={(r) => void answer(waitingAsk, r)} />
         ) : finished ? (
           <Btn onClick={() => onDone(replies)}>{t('done')}</Btn>
         ) : style === 'story' ? (

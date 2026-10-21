@@ -2,7 +2,7 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import farm from '../src/lessons/farm.json';
 import { fromEnv } from './config';
-import { chatFromConfig, claudeChat, discussNeed, extractJson, generateLesson, openAiChat } from './generate';
+import { chatFromConfig, claudeChat, discussNeed, extractJson, generateLesson, openAiChat, reactLine } from './generate';
 
 /** 假的 Claude 客户端：按顺序返回给定的回复，记录每次请求 */
 function fakeClient(replies: string[]) {
@@ -110,6 +110,32 @@ describe('OpenAI-compatible provider', () => {
     expect(reply).toBe('Try a used one first. What size is your balcony?');
     expect(sent.messages.map((m: any) => m.role)).toEqual(['system', 'user', 'assistant', 'user']);
     expect(sent.messages[0].content).toContain('# PLAN');
+  });
+
+  it('passes the previous round to a follow-up level', async () => {
+    let prompt = '';
+    vi.stubGlobal('fetch', async (_u: string, init: RequestInit) => {
+      prompt = JSON.parse(init.body as string).messages[1].content;
+      return sse(JSON.stringify(farm));
+    });
+    const start = openAiChat({ baseUrl: 'https://agy.example/v1', apiKey: 'k', model: 'm' });
+    const r = await generateLesson(start, '农场浇水', 'zh', '## 方案\n预算 3000\n## 还没说清楚\n水源在哪');
+    expect(r.ok).toBe(true);
+    expect(prompt).toContain('FOLLOW-UP');
+    expect(prompt).toContain('水源在哪');
+  });
+
+  it('lets the asking character react to free text in persona', async () => {
+    let sys = '';
+    vi.stubGlobal('fetch', async (_u: string, init: RequestInit) => {
+      sys = JSON.parse(init.body as string).messages[0].content;
+      return sse('```json\n{"say": "A husky in a studio? Brave. Who walks it at 7am?", "mood": "worried"}\n```');
+    });
+    const start = openAiChat({ baseUrl: 'https://agy.example/v1', apiKey: 'k', model: 'm' });
+    const r = await reactLine(start, { need: 'get a dog', who: 'wang', q: 'Why a dog?', options: ['I live alone'], text: 'I want a husky in my studio', recent: [], lang: 'en' });
+    expect(r).toEqual({ say: 'A husky in a studio? Brave. Who walks it at 7am?', mood: 'worried' });
+    expect(sys).toContain('Why a dog?');
+    expect(sys).toMatch(/Personality: .+/);
   });
 
   it('surfaces upstream HTTP errors', async () => {

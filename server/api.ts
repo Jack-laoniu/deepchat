@@ -1,12 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { loadConfig, type Config } from './config';
-import { chatFromConfig, discussNeed, generateLesson, UpstreamError, type StartChat, type Turn } from './generate';
+import { chatFromConfig, discussNeed, generateLesson, reactLine, UpstreamError, type StartChat, type Turn } from './generate';
 
 /**
  * 网页版的生成接口：
  *   GET  /api/config    → { generate, needCode, configError? }（服务器配了 API key 才能在线生成）
- *   POST /api/generate  { need, lang } → { lesson } | { error }
+ *   POST /api/generate  { need, lang, context? } → { lesson } | { error }（context：再玩一轮时带上上一关的结果）
+ *   POST /api/react     { need, who, as, q, options, text, recent, lang } → { say, mood }（角色回应用户自己打的字）
  *   POST /api/discuss   { plan, history, message, lang } → { reply } | { error }（结算后继续聊需求）
  *
  * 公开网站 + 按量计费，所以有几道保护：按 IP 限频、每日总量上限、并发上限、相同需求缓存。
@@ -91,13 +92,14 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
     return true;
   }
   if (path === '/api/discuss') return discuss(req, res, cfg);
+  if (path === '/api/react') return react(req, res, cfg);
   if (path !== '/api/generate') return false;
   if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
   if (!client) return void json(res, 503, { error: 'disabled' }), true;
 
-  let body: { need?: unknown; lang?: unknown; code?: unknown };
+  let body: { need?: unknown; lang?: unknown; code?: unknown; context?: unknown };
   try {
-    body = (await readBody(req)) as typeof body;
+    body = (await readBody(req, 32_000)) as typeof body;
   } catch {
     return void json(res, 400, { error: 'bad_request' }), true;
   }
@@ -106,7 +108,8 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   const lang = body?.lang === 'en' ? 'en' : 'zh';
   if (!need || [...need].length > MAX_NEED_CHARS) return void json(res, 400, { error: 'need' }), true;
 
-  const key = `${lang}:${need}`;
+  const context = typeof body?.context === 'string' ? body.context.slice(0, MAX_PLAN_CHARS) : '';
+  const key = `${lang}:${need}:${context}`;
   if (cache.has(key)) return void json(res, 200, { lesson: cache.get(key) }), true;
 
   const verdict = allow(clientIp(req), cfg.perIpPerHour, cfg.perDay);
@@ -115,7 +118,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
 
   running++;
   try {
-    const r = await generateLesson(client, need, lang);
+    const r = await generateLesson(client, need, lang, context);
     if (!r.ok) return void json(res, 422, { error: r.error }), true;
     cache.set(key, r.lesson);
     if (cache.size > 200) cache.delete(cache.keys().next().value!);
@@ -171,6 +174,50 @@ async function discuss(req: IncomingMessage, res: ServerResponse, cfg: ReturnTyp
     json(res, 200, { reply });
   } catch (e) {
     upstreamFailed(res, 'discuss', e);
+  } finally {
+    running--;
+  }
+  return true;
+}
+
+const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+
+async function react(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<typeof settings>): Promise<boolean> {
+  if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
+  if (!cfg.client) return void json(res, 503, { error: 'disabled' }), true;
+  let body: Record<string, unknown>;
+  try {
+    body = (await readBody(req, 16_000)) as typeof body;
+  } catch {
+    return void json(res, 400, { error: 'bad_request' }), true;
+  }
+  if (cfg.accessCode && body?.code !== cfg.accessCode) return void json(res, 403, { error: 'code' }), true;
+  const text = str(body?.text, MAX_MESSAGE_CHARS);
+  const who = str(body?.who, 40);
+  if (!text || !who) return void json(res, 400, { error: 'need' }), true;
+  const list = (v: unknown, n: number, max: number) => (Array.isArray(v) ? v.slice(-n).map((x) => str(x, max)).filter(Boolean) : []);
+
+  // 和「继续聊」共用每 IP 的聊天额度
+  const verdict = allow(clientIp(req), cfg.discussPerIpPerHour, cfg.perDay, talkHits);
+  if (verdict !== 'ok') return void json(res, 429, { error: verdict === 'ip' ? 'rate_ip' : 'rate_day' }), true;
+  if (running >= cfg.concurrency) return void json(res, 429, { error: 'busy' }), true;
+
+  running++;
+  try {
+    const r = await reactLine(cfg.client, {
+      need: str(body?.need, MAX_NEED_CHARS),
+      who,
+      as: str(body?.as, 40) || undefined,
+      q: str(body?.q, 200),
+      options: list(body?.options, 4, 60),
+      text,
+      recent: list(body?.recent, 8, 200),
+      lang: body?.lang === 'en' ? 'en' : 'zh',
+    });
+    if (!r) return void json(res, 422, { error: 'refused' }), true;
+    json(res, 200, r);
+  } catch (e) {
+    upstreamFailed(res, 'react', e);
   } finally {
     running--;
   }

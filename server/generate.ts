@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { Config } from './config';
+import { charById, MOODS } from '../src/chars/library';
 import { GENERATOR_RULES } from '../src/lesson/prompt';
 import { parseLesson, type Lesson } from '../src/lesson/schema';
 import dog from '../src/lessons/dog.json';
@@ -144,10 +145,19 @@ export function extractJson(text: string): string {
   return start >= 0 && end > start ? body.slice(start, end + 1) : body;
 }
 
-export async function generateLesson(startChat: StartChat, need: string, lang: 'zh' | 'en'): Promise<GenerateResult> {
+/**
+ * context：「再玩一轮」时带上上一关的结果（方案、用户原话、结算后聊的内容、用户觉得没说清的地方），
+ * 让新关卡去挖还不清楚的部分，而不是把问过的再问一遍。
+ */
+export async function generateLesson(startChat: StartChat, need: string, lang: 'zh' | 'en', context = ''): Promise<GenerateResult> {
   const example = lang === 'zh' ? farm : dog;
   const chat = startChat(GENERATOR_RULES);
-  let prompt = `Example level (a different need):\n${JSON.stringify(example)}\n\nWrite ALL text in ${LANG_NAME[lang]}.\n\nThe user's need:\n${need}`;
+  const followUp = context
+    ? `\n\nThis is a FOLLOW-UP level. The user already played one level for this need. What we learned so far:\n${context}\n\n` +
+      `Design a NEW level that digs into what is still unclear or was never covered (especially anything the user says is still unclear). ` +
+      `Do not re-ask questions that are already answered; build on the settled facts, budget and items instead of contradicting them. Use different scenes and, where it fits, different characters.`
+    : '';
+  let prompt = `Example level (a different need):\n${JSON.stringify(example)}\n\nWrite ALL text in ${LANG_NAME[lang]}.\n\nThe user's need:\n${need}${followUp}`;
 
   for (let attempt = 0; attempt <= MAX_FIX; attempt++) {
     const reply = await chat.send(prompt);
@@ -157,6 +167,36 @@ export async function generateLesson(startChat: StartChat, need: string, lang: '
     prompt = `The level is invalid:\n${r.errors.slice(0, 30).map((e) => `- ${e}`).join('\n')}\n\nFix exactly these problems and output the complete corrected JSON only.`;
   }
   return { ok: false, error: 'invalid' };
+}
+
+// ---------------- 角色对「自己的话」的即时反应 ----------------
+
+export type ReactInput = { need: string; who: string; as?: string; q: string; options: string[]; text: string; recent: string[]; lang: 'zh' | 'en' };
+
+/** 用户没点选项而是自己打字：让提问的角色用一句符合人设的话，针对用户说的内容回应 */
+export async function reactLine(startChat: StartChat, input: ReactInput): Promise<{ say: string; mood?: string } | null> {
+  const c = charById(input.who);
+  const name = c ? c.name[input.lang] : input.who;
+  const system = `You voice ONE character in a short, Duolingo-style story game that helps a player pin down a real need.
+Character: ${name}${input.as ? ` (role in this scene: ${input.as})` : ''}. Personality: ${c?.persona ?? 'friendly'}.
+The player's need: ${input.need}
+Recent dialogue:\n${input.recent.join('\n')}
+${name} just asked: "${input.q}"${input.options.length ? `\nThe preset answers were: ${input.options.join(' / ')}` : ''}
+The player answered in their own words instead. React IN CHARACTER to exactly what they said: acknowledge the specific detail,
+and if it reveals a constraint, risk or cost, say so briefly. One short spoken line only: at most 40 Chinese characters or 18 English words.
+Language: ${input.lang === 'zh' ? 'Simplified Chinese' : 'English'}.
+Output JSON only: {"say": "...", "mood": one of ${MOODS.join('|')}}`;
+  const reply = await startChat(system).send(input.text);
+  if ('refused' in reply) return null;
+  try {
+    const j = JSON.parse(extractJson(reply.text)) as { say?: unknown; mood?: unknown };
+    const say = typeof j.say === 'string' ? j.say.trim().slice(0, 120) : '';
+    if (!say) return null;
+    return { say, mood: typeof j.mood === 'string' && (MOODS as readonly string[]).includes(j.mood) ? j.mood : undefined };
+  } catch {
+    const say = reply.text.trim().split('\n')[0].slice(0, 120);
+    return say ? { say } : null;
+  }
 }
 
 // ---------------- 结算后继续聊需求 ----------------
