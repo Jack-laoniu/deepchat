@@ -1,0 +1,84 @@
+{
+  "v": 1,
+  "need": "五一想带爸妈去云南玩5天",
+  "title": "带爸妈游云南",
+  "emoji": "🏔️",
+  "domain": "家庭旅行规划",
+  "guess": {
+    "line": "我猜：三个人，跟团跑大理丽江",
+    "items": [
+      { "id": "flight", "emoji": "✈️", "name": "往返机票", "price": 4500, "spec": "3 人往返经济舱" },
+      { "id": "hotel", "emoji": "🏨", "name": "酒店4晚", "price": 2400, "spec": "舒适型双床房" },
+      { "id": "tour", "emoji": "🚌", "name": "跟团一日游", "price": 1800, "spec": "3 天一日游团" },
+      { "id": "food", "emoji": "🍜", "name": "吃饭", "price": 1500 },
+      { "id": "ticket", "emoji": "🎟️", "name": "门票", "price": 800 }
+    ]
+  },
+  "rounds": [
+    {
+      "type": "pick", "id": "age", "q": "爸妈多大了？", "emoji": "👴",
+      "options": [
+        { "id": "a60", "emoji": "🙂", "label": "60 以下", "fact": "父母 60 岁以下" },
+        { "id": "a70", "emoji": "👴", "label": "60~70", "fact": "父母 60~70 岁", "set": ["senior"] },
+        { "id": "a75", "emoji": "🧓", "label": "70 以上", "fact": "父母 70 岁以上", "set": ["senior", "elder"] }
+      ]
+    },
+    {
+      "type": "swipe", "id": "legs", "q": "能走一整天吗？", "emoji": "🦵",
+      "yes": { "id": "walk_ok", "emoji": "🏃", "label": "能", "fact": "父母体力好，能走一整天" },
+      "no": { "id": "walk_no", "emoji": "🪑", "label": "走不动", "fact": "父母走不远，需要常休息", "set": ["weak"] }
+    },
+    {
+      "type": "fix", "id": "fix_tour", "q": "第二天就累垮了！", "emoji": "🚌", "problem": "跟团暴走太累",
+      "if": { "any": ["weak", "elder"] },
+      "options": [
+        { "id": "car", "emoji": "🚗", "label": "包车", "fact": "改为包车 + 司机，行程自己定", "add": [{ "id": "tour", "emoji": "🚗", "name": "包车司机", "price": 2400, "spec": "3 天包车含司机" }], "tip": "累了就回酒店", "score": { "easy": 30, "safe": 15 } },
+        { "id": "slow", "emoji": "🐢", "label": "少排景点", "fact": "每天只排 1~2 个景点", "remove": ["tour"], "price": 600, "tip": "慢慢逛，打车走", "score": { "easy": 20, "good": -10 } }
+      ],
+      "gamble": { "label": "坚持跟团", "fact": "仍然跟团", "crash_if": ["elder"], "crash": "老人走不动，后面全取消", "loss": 1800, "ok": "辛苦点，能撑住" }
+    },
+    {
+      "type": "pick", "id": "where", "q": "最想去哪？", "emoji": "🗺️",
+      "options": [
+        { "id": "dali", "emoji": "🏯", "label": "大理丽江", "fact": "目的地大理、丽江" },
+        { "id": "shangri", "emoji": "🏔️", "label": "香格里拉", "fact": "目的地包含香格里拉（海拔 3000 米以上）", "price": 800, "set": ["high"] },
+        { "id": "xsbn", "emoji": "🐘", "label": "西双版纳", "fact": "目的地西双版纳" }
+      ]
+    },
+    {
+      "type": "fix", "id": "fix_alt", "q": "高原反应！", "emoji": "🏔️", "problem": "头疼喘不上气",
+      "if": { "all": ["high", "senior"] },
+      "options": [
+        { "id": "acclim", "emoji": "🫁", "label": "先低后高", "fact": "先在丽江适应 2 天再上高原，备便携氧气", "add": [{ "id": "oxygen", "emoji": "🫁", "name": "便携氧气", "price": 300 }], "tip": "慢慢上去，身体适应", "score": { "safe": 30 } },
+        { "id": "skip", "emoji": "🏯", "label": "不去高原", "fact": "取消香格里拉，改在大理丽江", "price": -800, "tip": "安全第一", "score": { "safe": 25, "good": -10 } }
+      ],
+      "gamble": { "label": "直接上", "fact": "直接上高原", "crash_if": ["elder"], "crash": "老人高反严重，连夜下山", "loss": 3000, "ok": "注意休息，问题不大" }
+    },
+    {
+      "type": "pick", "id": "stay", "q": "住哪种？", "emoji": "🛏️",
+      "options": [
+        { "id": "cheap", "emoji": "💰", "label": "经济型", "fact": "住经济型酒店", "add": [{ "id": "hotel", "emoji": "🏨", "name": "经济酒店", "price": 1600 }] },
+        { "id": "comfy", "emoji": "🛏️", "label": "舒适型", "fact": "住舒适型酒店" },
+        { "id": "view", "emoji": "🌄", "label": "景观民宿", "fact": "住景观民宿", "add": [{ "id": "hotel", "emoji": "🌄", "name": "景观民宿", "price": 3600 }], "score": { "good": 20 } }
+      ]
+    },
+    {
+      "type": "swipe", "id": "photo", "q": "给爸妈拍美照？", "emoji": "📸",
+      "yes": { "id": "photo_yes", "emoji": "📸", "label": "要", "fact": "想安排一次旅拍", "add": [{ "id": "photo", "emoji": "📸", "name": "半天旅拍", "price": 1200 }], "tip": "爸妈会很开心", "score": { "good": 20 } },
+      "no": { "id": "photo_no", "emoji": "🤳", "label": "自己拍", "fact": "不需要旅拍，自己拍" }
+    },
+    {
+      "type": "slider", "id": "budget", "q": "最多花多少？", "emoji": "💰", "kind": "budget",
+      "min": 5000, "max": 30000, "step": 500, "unit": "元", "fact": "预算上限 {v} 元"
+    },
+    {
+      "type": "boss", "id": "boss", "q": "暴雨，山路塌方！", "emoji": "🌧️", "problem": "行程被打乱",
+      "options": [
+        { "id": "buffer", "emoji": "🔄", "label": "留一天机动", "fact": "行程留一天机动", "price": 600, "tip": "乱了也来得及", "score": { "safe": 25 } },
+        { "id": "insure", "emoji": "🛡️", "label": "买保险", "fact": "购买含行程延误的旅游保险", "add": [{ "id": "insure", "emoji": "🛡️", "name": "旅游保险", "price": 150 }], "tip": "延误能赔钱", "score": { "safe": 20 } }
+      ],
+      "gamble": { "label": "排满", "fact": "行程排满，不留余地", "crash_if": "always", "crash": "后面全乱了，返程机票作废", "loss": 2000, "ok": "" }
+    }
+  ],
+  "secret": "带老人出行：直飞+包车，比省机票钱重要"
+}

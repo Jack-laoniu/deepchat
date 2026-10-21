@@ -1,0 +1,90 @@
+{
+  "v": 1,
+  "need": "我想配一台既能打黑神话又能本地跑AI大模型的电脑",
+  "title": "游戏+AI 电脑",
+  "emoji": "🎮",
+  "domain": "电脑配装",
+  "guess": {
+    "line": "我猜：整机店那台『i9 水冷炫光机』",
+    "items": [
+      { "id": "cpu", "emoji": "🧠", "name": "i9 处理器", "price": 3800, "spec": "旗舰 i9" },
+      { "id": "gpu", "emoji": "🎮", "name": "4060 8G", "price": 2400, "spec": "RTX 4060 8GB" },
+      { "id": "ram", "emoji": "🧬", "name": "16G 内存", "price": 400, "spec": "DDR5 16GB 单条" },
+      { "id": "psu", "emoji": "🔋", "name": "杂牌电源", "price": 250, "spec": "无品牌标称 600W" },
+      { "id": "cooler", "emoji": "❄️", "name": "360 水冷", "price": 900 },
+      { "id": "base", "emoji": "📦", "name": "主板机箱等", "price": 3750, "spec": "主板、1TB 固态、机箱" }
+    ]
+  },
+  "rounds": [
+    {
+      "type": "pick", "id": "use", "q": "主要拿来干嘛？", "emoji": "🎯",
+      "options": [
+        { "id": "game", "emoji": "🎮", "label": "打游戏", "fact": "主要用途是打 3A 游戏", "set": ["game"] },
+        { "id": "ai", "emoji": "🤖", "label": "跑 AI", "fact": "主要用途是本地运行 AI 模型", "set": ["ai"] },
+        { "id": "both", "emoji": "🔥", "label": "都要", "fact": "游戏和本地 AI 都要", "set": ["game", "ai"] }
+      ]
+    },
+    {
+      "type": "pick", "id": "model", "q": "跑多大的模型？", "emoji": "🧠", "if": { "all": ["ai"] },
+      "options": [
+        { "id": "small_m", "emoji": "🐣", "label": "7B 小模型", "fact": "只跑 7B 左右小模型或 SD 画图", "tip": "8G 显存勉强够" },
+        { "id": "big_m", "emoji": "🦖", "label": "32B 以上", "fact": "需要跑 32B~70B 量化大模型", "set": ["big_model"] }
+      ]
+    },
+    {
+      "type": "fix", "id": "fix_vram", "q": "显存爆了！", "emoji": "🎮", "problem": "8G 装不下大模型",
+      "if": { "all": ["big_model"] },
+      "options": [
+        { "id": "g3090", "emoji": "🦖", "label": "二手3090", "fact": "换二手 RTX 3090 24GB", "add": [{ "id": "gpu", "emoji": "🦖", "name": "二手 3090", "price": 5500, "spec": "RTX 3090 24GB，验卡后买" }], "set": ["hot_gpu"], "tip": "24G 显存，性价比之王", "score": { "good": 35, "safe": -5 } },
+        { "id": "g4090", "emoji": "👑", "label": "4090", "fact": "换 RTX 4090 24GB", "add": [{ "id": "gpu", "emoji": "👑", "name": "RTX 4090", "price": 13000, "spec": "RTX 4090 24GB" }], "set": ["hot_gpu"], "tip": "最强，也最贵", "score": { "good": 45 } }
+      ],
+      "gamble": { "label": "换小模型", "fact": "放弃大模型，只跑小模型", "crash_if": [], "crash": "", "ok": "小模型也能玩，先这样" }
+    },
+    {
+      "type": "pick", "id": "screen", "q": "显示器多清楚？", "emoji": "🖥️",
+      "options": [
+        { "id": "r1080", "emoji": "🖥️", "label": "1080p", "fact": "1080p 高刷显示器" },
+        { "id": "r2k", "emoji": "🖥️", "label": "2K", "fact": "2K 高刷显示器" },
+        { "id": "r4k", "emoji": "📺", "label": "4K", "fact": "4K 显示器，光追拉满", "set": ["heavy"] }
+      ]
+    },
+    {
+      "type": "pick", "id": "place", "q": "电脑放哪？", "emoji": "🏠",
+      "options": [
+        { "id": "floor", "emoji": "🗄️", "label": "桌子底下", "fact": "放桌下，普通中塔机箱" },
+        { "id": "desk", "emoji": "🤫", "label": "桌上要静音", "fact": "放桌面，要求小体积和静音", "add": [{ "id": "case", "emoji": "🤫", "name": "静音小机箱", "price": 800 }], "set": ["small_case"], "score": { "easy": -10 } }
+      ]
+    },
+    {
+      "type": "fix", "id": "fix_psu", "q": "电源冒烟了！", "emoji": "🔋", "problem": "杂牌电源扛不住",
+      "if": { "any": ["hot_gpu", "heavy", "small_case"] },
+      "options": [
+        { "id": "psu850", "emoji": "🔋", "label": "850W金牌", "fact": "换 850W 金牌 ATX 3.0 电源", "add": [{ "id": "psu", "emoji": "🔋", "name": "850W 金牌", "price": 780, "spec": "850W 80Plus 金牌 ATX 3.0" }], "set": ["good_psu"], "tip": "扛得住显卡功耗尖峰", "score": { "safe": 35 } }
+      ],
+      "gamble": { "label": "先用着", "fact": "继续用杂牌电源", "crash_if": "always", "crash": "满载黑屏，显卡供电烧了", "loss": 2400, "ok": "" }
+    },
+    {
+      "type": "swipe", "id": "cpu_swap", "q": "CPU 降级省钱？", "emoji": "🧠",
+      "yes": { "id": "cpu_mid", "emoji": "💸", "label": "换中端", "fact": "CPU 换中端散片，省下的钱给显卡", "add": [{ "id": "cpu", "emoji": "🧠", "name": "中端散片", "price": 1300, "spec": "当代 6~8 核中端 CPU 散片" }], "tip": "游戏和 AI 主要吃显卡", "score": { "good": 0 } },
+      "no": { "id": "cpu_keep", "emoji": "🧠", "label": "保留 i9", "fact": "保留旗舰 CPU" }
+    },
+    {
+      "type": "swipe", "id": "cooler_swap", "q": "水冷换风冷？", "emoji": "❄️",
+      "yes": { "id": "air", "emoji": "🌀", "label": "换风冷", "fact": "散热改用塔式风冷", "add": [{ "id": "cooler", "emoji": "🌀", "name": "塔式风冷", "price": 200 }], "tip": "便宜，还不怕漏液", "score": { "safe": 5, "easy": 5 } },
+      "no": { "id": "water", "emoji": "❄️", "label": "留水冷", "fact": "保留 360 水冷", "tip": "好看，也好用" }
+    },
+    {
+      "type": "slider", "id": "budget", "q": "最多花多少？", "emoji": "💰", "kind": "budget",
+      "min": 5000, "max": 30000, "step": 500, "unit": "元", "fact": "预算上限 {v} 元"
+    },
+    {
+      "type": "boss", "id": "boss", "q": "夏天满载 8 小时！", "emoji": "🥵", "problem": "机箱里热成蒸笼",
+      "options": [
+        { "id": "fans", "emoji": "🌀", "label": "加风扇", "fact": "加装机箱风扇，优化风道", "add": [{ "id": "fans", "emoji": "🌀", "name": "机箱风扇×3", "price": 150 }], "tip": "风道顺了，温度降 10℃", "score": { "safe": 20 } },
+        { "id": "curve", "emoji": "📉", "label": "调温控", "fact": "设置显卡降压和风扇曲线", "tip": "不花钱，掉一点性能", "score": { "safe": 15, "good": -5 } }
+      ],
+      "gamble": { "label": "不管它", "fact": "不做散热优化", "crash_if": ["small_case", "heavy", "hot_gpu"], "crash": "过热降频，接着黑屏", "loss": 0, "ok": "负载不高，问题不大" }
+    }
+  ],
+  "secret": "CPU 买散片就行，把钱砸在显存和一线电源上"
+}
