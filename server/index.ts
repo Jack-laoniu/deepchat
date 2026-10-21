@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import widgetHtml from '../dist-widget/index.html?raw';
+import { handleApi } from './api';
 import { createNeedQuestServer, VERSION } from './create';
 
 /**
@@ -25,6 +26,7 @@ function http(port: number, host: string) {
     if ((path === '/' || path === '/play') && req.method === 'GET')
       return void res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=300' }).end(widgetHtml);
     if (path === '/health') return void res.writeHead(200, { 'content-type': 'text/plain' }).end(`need-quest MCP ${VERSION}`);
+    if (path.startsWith('/api/') && (await handleApi(req, res, path))) return;
     if (path !== '/mcp') return void res.writeHead(404).end();
     if (req.method !== 'POST') return void res.writeHead(405, { allow: 'POST' }).end();
 

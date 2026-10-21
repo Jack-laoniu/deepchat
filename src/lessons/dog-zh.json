@@ -1,0 +1,851 @@
+{
+  "v": 1,
+  "need": "我想养一只狗",
+  "title": "养一只狗",
+  "emoji": "🐶",
+  "domain": "宠物领养",
+  "lang": "zh",
+  "currency": "CNY",
+  "cast": [
+    {
+      "id": "qian",
+      "as": "宠物店老板"
+    },
+    {
+      "id": "nana",
+      "as": "遛狗奶奶"
+    },
+    {
+      "id": "zack",
+      "as": "室友"
+    },
+    {
+      "id": "gong",
+      "as": "兽医"
+    }
+  ],
+  "guess": {
+    "line": "我猜：去宠物店买只哈士奇幼犬",
+    "items": [
+      {
+        "id": "dog",
+        "emoji": "🐕",
+        "name": "哈士奇幼犬",
+        "price": 8400,
+        "spec": "宠物店幼犬，10 周大"
+      },
+      {
+        "id": "food",
+        "emoji": "🦴",
+        "name": "一年狗粮",
+        "price": 4200
+      },
+      {
+        "id": "crate",
+        "emoji": "🏠",
+        "name": "狗笼和狗窝",
+        "price": 1050
+      },
+      {
+        "id": "vet",
+        "emoji": "💉",
+        "name": "疫苗",
+        "price": 2800,
+        "spec": "核心疫苗 + 首次体检"
+      },
+      {
+        "id": "toys",
+        "emoji": "🎾",
+        "name": "玩具和牵引绳",
+        "price": 560
+      }
+    ]
+  },
+  "rounds": [
+    {
+      "type": "talk",
+      "id": "why",
+      "style": "chat",
+      "title": "乐乐来了",
+      "emoji": "👋",
+      "with": "lele",
+      "beats": [
+        {
+          "who": "lele",
+          "say": "嗨！我是乐乐，帮你找到最合适的狗狗！",
+          "mood": "happy"
+        },
+        {
+          "id": "why",
+          "who": "lele",
+          "q": "先说说，为啥想养狗？",
+          "options": [
+            {
+              "id": "alone",
+              "emoji": "🫂",
+              "label": "一个人住，想有个伴",
+              "fact": "动机：一个人住，想要陪伴",
+              "set": [
+                "lonely"
+              ],
+              "reply": [
+                {
+                  "who": "lele",
+                  "say": "懂！回家有个摇尾巴的伙伴。",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "kids",
+              "emoji": "🧒",
+              "label": "孩子一直吵着要",
+              "fact": "动机：孩子想养狗",
+              "set": [
+                "kids"
+              ],
+              "reply": [
+                {
+                  "who": "lele",
+                  "say": "那得选对小孩友好的狗。",
+                  "mood": "thinking"
+                }
+              ]
+            },
+            {
+              "id": "run",
+              "emoji": "🏃",
+              "label": "想要个跑步搭子",
+              "fact": "动机：想要能一起跑步、爬山的活泼狗",
+              "set": [
+                "active"
+              ],
+              "reply": [
+                {
+                  "who": "lele",
+                  "say": "那就选精力旺盛的！",
+                  "mood": "happy"
+                }
+              ]
+            }
+          ],
+          "free": {
+            "placeholder": "说说真实原因…",
+            "chips": [
+              "想有个伴",
+              "为了孩子",
+              "跑步搭子",
+              "看家护院"
+            ],
+            "fact": "用户自述养狗原因：{v}",
+            "match": [
+              {
+                "words": [
+                  "一个人",
+                  "孤单",
+                  "陪伴",
+                  "单身"
+                ],
+                "set": [
+                  "lonely"
+                ],
+                "reply": [
+                  {
+                    "who": "lele",
+                    "say": "记下了，一个忠实的伙伴。",
+                    "mood": "happy"
+                  }
+                ]
+              },
+              {
+                "words": [
+                  "孩子",
+                  "小孩",
+                  "儿子",
+                  "女儿",
+                  "家里"
+                ],
+                "set": [
+                  "kids"
+                ],
+                "reply": [
+                  {
+                    "who": "lele",
+                    "say": "必须对小孩友好，记下了！"
+                  }
+                ]
+              },
+              {
+                "words": [
+                  "跑步",
+                  "爬山",
+                  "慢跑",
+                  "运动",
+                  "户外"
+                ],
+                "set": [
+                  "active"
+                ],
+                "reply": [
+                  {
+                    "who": "lele",
+                    "say": "要爱运动的狗，记下了！"
+                  }
+                ]
+              },
+              {
+                "words": [
+                  "安全",
+                  "看家",
+                  "保护"
+                ],
+                "fact": "希望狗能带来安全感",
+                "reply": [
+                  {
+                    "who": "lele",
+                    "say": "要警觉的狗，记下了。"
+                  }
+                ]
+              }
+            ],
+            "reply": [
+              {
+                "who": "lele",
+                "say": "这个很重要，记下了！"
+              }
+            ]
+          }
+        },
+        {
+          "who": "lele",
+          "say": "我先猜了一套，看看哪里不对。"
+        }
+      ]
+    },
+    {
+      "type": "pick",
+      "id": "home",
+      "q": "你住哪种房子？",
+      "emoji": "🏠",
+      "options": [
+        {
+          "id": "apt",
+          "emoji": "🏢",
+          "label": "公寓楼房",
+          "fact": "住在小户型公寓",
+          "set": [
+            "apartment"
+          ]
+        },
+        {
+          "id": "yard",
+          "emoji": "🏡",
+          "label": "带院子",
+          "fact": "住带院子的房子",
+          "set": [
+            "yard"
+          ],
+          "score": {
+            "easy": 10
+          }
+        }
+      ]
+    },
+    {
+      "type": "talk",
+      "id": "park",
+      "style": "story",
+      "title": "遛狗公园",
+      "emoji": "🌳",
+      "beats": [
+        {
+          "who": "narrator",
+          "say": "周六早上，遛狗公园里。"
+        },
+        {
+          "who": "qian",
+          "say": "哈士奇！谁养都合适，信我。",
+          "mood": "smug"
+        },
+        {
+          "who": "nana",
+          "say": "合适？我家哈士奇把沙发都啃了！",
+          "mood": "angry"
+        },
+        {
+          "who": "nana",
+          "say": "它们每天要运动两小时，天天！",
+          "mood": "worried"
+        },
+        {
+          "id": "hours",
+          "who": "nana",
+          "q": "你每天出门多久？",
+          "options": [
+            {
+              "id": "h_short",
+              "emoji": "🏡",
+              "label": "4 小时以内",
+              "fact": "每天离家不到 4 小时",
+              "reply": [
+                {
+                  "who": "nana",
+                  "say": "那好，狗狗不会孤单。",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "h_work",
+              "emoji": "💼",
+              "label": "8 小时左右",
+              "fact": "上班每天离家约 8 小时",
+              "set": [
+                "away"
+              ]
+            },
+            {
+              "id": "h_long",
+              "emoji": "🌙",
+              "label": "10 小时以上",
+              "fact": "每天离家 10 小时以上",
+              "set": [
+                "away",
+                "long_away"
+              ],
+              "reply": [
+                {
+                  "who": "nana",
+                  "say": "哎呀，那可太久了…",
+                  "mood": "sad"
+                }
+              ]
+            }
+          ],
+          "free": {
+            "placeholder": "比如：一周坐班三天",
+            "fact": "离家时间：{v}",
+            "match": [
+              {
+                "words": [
+                  "坐班",
+                  "上班",
+                  "8",
+                  "9",
+                  "通勤"
+                ],
+                "set": [
+                  "away"
+                ]
+              },
+              {
+                "words": [
+                  "10",
+                  "11",
+                  "12",
+                  "出差",
+                  "夜班"
+                ],
+                "set": [
+                  "away",
+                  "long_away"
+                ]
+              },
+              {
+                "words": [
+                  "在家",
+                  "远程",
+                  "居家办公"
+                ],
+                "fact": "每周至少部分时间居家办公",
+                "reply": [
+                  {
+                    "who": "nana",
+                    "say": "在家上班？这狗有福了！",
+                    "mood": "happy"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "who": "zack",
+          "say": "一整天没人？它会嚎，邻居要投诉的。",
+          "mood": "worried",
+          "if": {
+            "any": [
+              "away"
+            ]
+          }
+        },
+        {
+          "who": "qian",
+          "say": "那再买一只作伴！两只打折！",
+          "mood": "smug",
+          "if": {
+            "any": [
+              "away"
+            ]
+          }
+        },
+        {
+          "who": "nana",
+          "say": "孩子，别听他的。",
+          "mood": "angry",
+          "if": {
+            "any": [
+              "away"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "fix",
+      "id": "fix_alone",
+      "q": "一整天没人陪！",
+      "emoji": "🐕",
+      "problem": "每天独处 8 小时以上",
+      "if": {
+        "any": [
+          "away"
+        ]
+      },
+      "options": [
+        {
+          "id": "walker",
+          "emoji": "🚶",
+          "label": "请人遛狗",
+          "fact": "工作日中午请人上门遛狗",
+          "add": [
+            {
+              "id": "walker",
+              "emoji": "🚶",
+              "name": "请人遛狗",
+              "price": 16800,
+              "spec": "中午遛狗，每月约 20 次"
+            }
+          ],
+          "tip": "中午出去一趟，就不闷了",
+          "score": {
+            "safe": 20,
+            "easy": 15
+          }
+        },
+        {
+          "id": "daycare",
+          "emoji": "🏫",
+          "label": "每周托管两天",
+          "fact": "每周两天送去狗狗托管",
+          "add": [
+            {
+              "id": "daycare",
+              "emoji": "🏫",
+              "name": "狗狗托管",
+              "price": 14000,
+              "spec": "每周两天"
+            }
+          ],
+          "tip": "白天和朋友玩，晚上睡得香",
+          "score": {
+            "safe": 15,
+            "good": 10
+          }
+        }
+      ],
+      "gamble": {
+        "label": "关家里",
+        "fact": "留狗狗自己在家，给些玩具",
+        "crash_if": [
+          "long_away"
+        ],
+        "crash": "嚎叫、啃门，邻居上门投诉",
+        "loss": 5600,
+        "ok": "有玩具的话，8 小时勉强能行"
+      }
+    },
+    {
+      "type": "pick",
+      "id": "size",
+      "q": "想要多大的狗？",
+      "emoji": "📏",
+      "options": [
+        {
+          "id": "s_small",
+          "emoji": "🐩",
+          "label": "小型犬",
+          "fact": "偏好小型犬",
+          "price": -1050
+        },
+        {
+          "id": "s_med",
+          "emoji": "🐕",
+          "label": "中型犬",
+          "fact": "偏好中型犬"
+        },
+        {
+          "id": "s_big",
+          "emoji": "🐕‍🦺",
+          "label": "大型犬",
+          "fact": "偏好大型犬",
+          "price": 2100,
+          "set": [
+            "big"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "fix",
+      "id": "fix_space",
+      "q": "跑不开！",
+      "emoji": "🏢",
+      "problem": "大狗住小房子",
+      "if": {
+        "all": [
+          "apartment",
+          "big"
+        ]
+      },
+      "options": [
+        {
+          "id": "medium",
+          "emoji": "🐕",
+          "label": "换中型犬",
+          "fact": "改选性格安静的中型犬",
+          "price": -2100,
+          "tip": "安静的狗最爱趴沙发",
+          "score": {
+            "easy": 15
+          }
+        },
+        {
+          "id": "parkruns",
+          "emoji": "🌳",
+          "label": "天天去公园",
+          "fact": "承诺每天带去公园跑一小时",
+          "set": [
+            "active"
+          ],
+          "tip": "真能坚持就太好了！",
+          "score": {
+            "good": 10,
+            "easy": -10
+          }
+        }
+      ],
+      "gamble": {
+        "label": "它会适应的",
+        "fact": "大型犬养在小公寓里，不额外运动",
+        "crash_if": "always",
+        "crash": "大狗憋坏了，家具全被拆了",
+        "loss": 7000
+      }
+    },
+    {
+      "type": "map",
+      "id": "town",
+      "title": "出门问一圈",
+      "emoji": "🏘️",
+      "spots": [
+        {
+          "id": "shop",
+          "emoji": "🏪",
+          "label": "宠物店",
+          "who": "qian",
+          "x": 24,
+          "y": 26,
+          "beats": [
+            {
+              "who": "qian",
+              "say": "欢迎光临！今天幼犬打折！",
+              "mood": "happy"
+            },
+            {
+              "id": "source",
+              "who": "qian",
+              "q": "要幼犬，还是成年狗？",
+              "options": [
+                {
+                  "id": "puppy",
+                  "emoji": "🐶",
+                  "label": "可爱的幼犬",
+                  "fact": "想要幼犬",
+                  "set": [
+                    "puppy"
+                  ],
+                  "reply": [
+                    {
+                      "who": "qian",
+                      "say": "好眼光！",
+                      "mood": "smug"
+                    }
+                  ]
+                },
+                {
+                  "id": "rescue",
+                  "emoji": "🏠",
+                  "label": "去救助站领养",
+                  "fact": "想从救助站领养成年犬",
+                  "add": [
+                    {
+                      "id": "dog",
+                      "emoji": "🐕",
+                      "name": "领养费",
+                      "price": 1050,
+                      "spec": "救助站领养，已打疫苗、已绝育"
+                    }
+                  ],
+                  "remove": [
+                    "vet"
+                  ],
+                  "score": {
+                    "easy": 15
+                  },
+                  "reply": [
+                    {
+                      "who": "qian",
+                      "say": "呃……救助站，也、也挺好。",
+                      "mood": "worried"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "who": "qian",
+              "say": "不过幼犬要训练哦，训练课另算！",
+              "mood": "smug",
+              "if": {
+                "all": [
+                  "puppy"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "vet",
+          "emoji": "🏥",
+          "label": "宠物医院",
+          "who": "gong",
+          "x": 76,
+          "y": 28,
+          "beats": [
+            {
+              "who": "gong",
+              "say": "有两个问题大家常忘了问。",
+              "mood": "thinking"
+            },
+            {
+              "id": "allergy",
+              "who": "gong",
+              "q": "家里有人过敏吗？",
+              "options": [
+                {
+                  "id": "no_allergy",
+                  "emoji": "🙂",
+                  "label": "没人过敏",
+                  "fact": "家里无人对宠物过敏"
+                },
+                {
+                  "id": "allergy",
+                  "emoji": "🤧",
+                  "label": "有人会打喷嚏",
+                  "fact": "家里有人对宠物过敏，需要少掉毛的品种",
+                  "reply": [
+                    {
+                      "who": "gong",
+                      "say": "那就选少掉毛的品种。",
+                      "mood": "worried"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "bills",
+              "who": "gong",
+              "q": "准备好应付看病开销了吗？",
+              "options": [
+                {
+                  "id": "insure",
+                  "emoji": "🛡️",
+                  "label": "买宠物保险",
+                  "fact": "会买宠物保险",
+                  "add": [
+                    {
+                      "id": "insurance",
+                      "emoji": "🛡️",
+                      "name": "宠物保险",
+                      "price": 3500,
+                      "spec": "意外和疾病险，一年"
+                    }
+                  ],
+                  "set": [
+                    "insured"
+                  ],
+                  "score": {
+                    "safe": 25
+                  }
+                },
+                {
+                  "id": "savings",
+                  "emoji": "🐷",
+                  "label": "我有存款",
+                  "fact": "用存款自留应急金"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "home",
+          "emoji": "🛋️",
+          "label": "家里",
+          "who": "zack",
+          "x": 50,
+          "y": 72,
+          "beats": [
+            {
+              "who": "zack",
+              "say": "兄弟，你看过租房合同了吗？",
+              "mood": "surprised"
+            },
+            {
+              "id": "lease",
+              "who": "zack",
+              "q": "合同允许养狗吗？",
+              "options": [
+                {
+                  "id": "lease_ok",
+                  "emoji": "✅",
+                  "label": "允许",
+                  "fact": "租房合同允许养狗"
+                },
+                {
+                  "id": "lease_unknown",
+                  "emoji": "🤷",
+                  "label": "不确定…",
+                  "fact": "不确定合同是否允许养狗，领养前必须先问房东",
+                  "reply": [
+                    {
+                      "who": "zack",
+                      "say": "狗来之前先问清楚！",
+                      "mood": "angry"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "travel",
+              "who": "zack",
+              "q": "你出门时谁照顾狗？",
+              "free": {
+                "placeholder": "比如：寄养在宠物店",
+                "chips": [
+                  "家人",
+                  "宠物寄养",
+                  "室友"
+                ],
+                "fact": "出门时狗狗的安排：{v}",
+                "match": [
+                  {
+                    "words": [
+                      "你",
+                      "室友",
+                      "阿哲"
+                    ],
+                    "reply": [
+                      {
+                        "who": "zack",
+                        "say": "我？！…行吧，你欠我顿火锅。",
+                        "mood": "smug"
+                      }
+                    ]
+                  },
+                  {
+                    "words": [
+                      "酒店",
+                      "寄养",
+                      "狗舍"
+                    ],
+                    "fact": "出门时送去寄养（需计入预算）"
+                  }
+                ],
+                "reply": [
+                  {
+                    "who": "zack",
+                    "say": "行，只要不是我就好。",
+                    "mood": "happy"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "slider",
+      "id": "budget",
+      "q": "第一年预算？",
+      "emoji": "💰",
+      "kind": "budget",
+      "min": 3000,
+      "max": 50000,
+      "step": 500,
+      "unit": "元",
+      "fact": "第一年预算上限 {v} 元"
+    },
+    {
+      "type": "boss",
+      "id": "boss",
+      "q": "半夜急诊！",
+      "emoji": "🚑",
+      "problem": "狗吞了一只袜子",
+      "options": [
+        {
+          "id": "ins",
+          "emoji": "🛡️",
+          "label": "宠物保险",
+          "fact": "急诊由宠物保险覆盖",
+          "add": [
+            {
+              "id": "insurance",
+              "emoji": "🛡️",
+              "name": "宠物保险",
+              "price": 3500,
+              "spec": "意外和疾病险，一年"
+            }
+          ],
+          "tip": "大部分费用能报销",
+          "score": {
+            "safe": 30
+          }
+        },
+        {
+          "id": "fund",
+          "emoji": "🐷",
+          "label": "备应急金",
+          "fact": "给狗狗备 7000 元应急金",
+          "price": 7000,
+          "tip": "出事时钱是现成的",
+          "score": {
+            "safe": 20
+          }
+        }
+      ],
+      "gamble": {
+        "label": "应该没事吧",
+        "fact": "没有应急准备",
+        "crash_if": "always",
+        "crash": "手术费两万，一下拿不出来",
+        "loss": 21000
+      }
+    }
+  ],
+  "secret": "救助站的成年犬常已打疫苗、会定点，先去问问"
+}

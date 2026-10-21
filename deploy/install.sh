@@ -84,6 +84,7 @@ After=network.target
 [Service]
 User=needquest
 Environment=PORT=$PORT HOST=127.0.0.1 NODE_ENV=production
+EnvironmentFile=-/etc/need-quest.env
 ExecStart=$NODE_BIN --max-old-space-size=128 $APP_DIR/server.mjs --http
 Restart=always
 RestartSec=3
@@ -97,14 +98,46 @@ PrivateTmp=true
 WantedBy=multi-user.target
 EOF
 
-# ---------- Caddy 配置 ----------
+# ---------- Caddy 配置（不覆盖已有站点）----------
+# 我们的站点单独放在 need-quest.caddy，主 Caddyfile 里只加一行 import；改动前先备份。
 mkdir -p /etc/caddy
-cat > /etc/caddy/Caddyfile <<EOF
-$DOMAIN, www.$DOMAIN {
+SITES="$DOMAIN"
+case "$DOMAIN" in *.*.*) ;; *) SITES="$DOMAIN, www.$DOMAIN" ;; esac   # 只有根域名才顺带 www
+cat > /etc/caddy/need-quest.caddy <<EOF
+# 由 need-quest 的 deploy/install.sh 生成，卸载：sudo bash deploy/uninstall.sh
+$SITES {
 	encode gzip
 	reverse_proxy 127.0.0.1:$PORT
 }
 EOF
+IMPORT_LINE="import /etc/caddy/need-quest.caddy"
+if [ -f /etc/caddy/Caddyfile ]; then
+  if ! grep -qF "$IMPORT_LINE" /etc/caddy/Caddyfile; then
+    backup="/etc/caddy/Caddyfile.bak-$(date +%Y%m%d-%H%M%S)"
+    cp /etc/caddy/Caddyfile "$backup"
+    # 旧版本脚本生成的整份配置（只有我们自己的站点）直接换成 import；否则在末尾追加
+    if grep -q "reverse_proxy 127.0.0.1:$PORT" /etc/caddy/Caddyfile && [ "$(grep -c . /etc/caddy/Caddyfile)" -le 4 ]; then
+      echo "$IMPORT_LINE" > /etc/caddy/Caddyfile
+    else
+      printf '\n%s\n' "$IMPORT_LINE" >> /etc/caddy/Caddyfile
+    fi
+    log "已备份原 Caddyfile 到 $backup"
+  fi
+else
+  echo "$IMPORT_LINE" > /etc/caddy/Caddyfile
+fi
+if ! "$CADDY_BIN" validate --config /etc/caddy/Caddyfile >/dev/null 2>&1; then
+  warn "Caddy 配置校验没通过（可能和已有站点的域名冲突），运行 caddy validate --config /etc/caddy/Caddyfile 看详情"
+fi
+
+# ---------- 在线生成用的 API key（可选）----------
+if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
+  (umask 077 && echo "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" > /etc/need-quest.env)
+  log "已写入 API key 到 /etc/need-quest.env（仅 root 可读）"
+fi
+if [ ! -f /etc/need-quest.env ]; then
+  warn "没有配置 ANTHROPIC_API_KEY：网页上「生成我的关卡」不可用（示例和 MCP 不受影响）。配置：ANTHROPIC_API_KEY=sk-ant-... sudo -E bash $0 $DOMAIN"
+fi
 
 cat > /etc/systemd/system/caddy.service <<EOF
 [Unit]

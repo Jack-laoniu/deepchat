@@ -1,5 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Character } from '../chars/Character';
+import { GUIDE } from '../chars/library';
 import { useGame } from '../game';
 import { SAMPLES } from '../lessons';
 import { generatorPrompt } from '../lesson/prompt';
@@ -7,59 +9,150 @@ import { parseLesson, type Lesson } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
 import { Btn, Mascot } from '../ui/kit';
 import { copyText } from '../ui/copy';
-import { t } from '../i18n';
+import { detectLang, t } from '../i18n';
+
+type GenState = { phase: 'idle' } | { phase: 'loading'; started: number } | { phase: 'error'; msg: string };
+
+/** 服务端有没有配 API key（网页版能不能在线生成） */
+function useCanGenerate() {
+  const [ok, setOk] = useState<boolean | null>(null);
+  useEffect(() => {
+    fetch('/api/config')
+      .then((r) => (r.ok ? r.json() : { generate: false }))
+      .then((d: { generate?: boolean }) => setOk(!!d.generate))
+      .catch(() => setOk(false));
+  }, []);
+  return ok;
+}
 
 export function Home() {
   const g = useGame();
+  const lang = detectLang();
+  const canGenerate = useCanGenerate();
   const [studio, setStudio] = useState(false);
-  const samples = useMemo(() => SAMPLES.map((s) => parseLesson(s)).flatMap((r) => (r.ok ? [r.lesson] : [])), []);
+  const [need, setNeed] = useState('');
+  const [gen, setGen] = useState<GenState>({ phase: 'idle' });
+  const abort = useRef<AbortController | null>(null);
+  // 只展示和界面同一种语言的示例
+  const samples = useMemo(
+    () => SAMPLES.map((s) => parseLesson(s)).flatMap((r) => (r.ok && r.lesson.lang === lang ? [r.lesson] : [])),
+    [lang],
+  );
+
+  const generate = async () => {
+    const text = need.trim();
+    if (!text) return;
+    if (!canGenerate) return setStudio(true);
+    const ctrl = new AbortController();
+    abort.current = ctrl;
+    setGen({ phase: 'loading', started: Date.now() });
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ need: text, lang }),
+        signal: ctrl.signal,
+      });
+      const data = (await res.json().catch(() => ({}))) as { lesson?: unknown; error?: string };
+      const r = data.lesson ? parseLesson(data.lesson) : null;
+      if (r?.ok) return g.open(r.lesson);
+      const msg = data.error === 'rate_ip' || data.error === 'rate_day' ? t('genRate') : data.error === 'busy' ? t('genBusy') : t('genFail');
+      setGen({ phase: 'error', msg });
+    } catch {
+      if (!ctrl.signal.aborted) setGen({ phase: 'error', msg: t('genFail') });
+    }
+  };
+
+  if (gen.phase === 'loading') return <Generating started={gen.started} onCancel={() => (abort.current?.abort(), setGen({ phase: 'idle' }))} />;
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto px-5 pb-6 pt-8">
-      <div className="flex flex-col items-center">
-        <Mascot mood="idle" size={84} />
-        <h1 className="mt-3 text-center text-3xl font-black text-slate-700">{t('homeTitle')}</h1>
-        <p className="mt-1 text-center text-base font-bold text-slate-400">{t('homeSub')}</p>
+    <div className="flex h-full flex-col overflow-y-auto px-5 pb-6 pt-6">
+      <div className="flex items-end gap-3">
+        <Mascot mood={gen.phase === 'error' ? 'worried' : 'idle'} size={70} />
+        <h1 className="mb-3 text-2xl font-black leading-tight text-slate-700">{t('genTitle')}</h1>
       </div>
 
-      <div className="mt-5 space-y-3">
+      <div className="mt-3 rounded-3xl border-2 border-b-[5px] border-slate-200 bg-white p-3">
+        <textarea
+          value={need}
+          onChange={(e) => setNeed(e.target.value.slice(0, 200))}
+          onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), generate())}
+          rows={2}
+          placeholder={t('genPh')}
+          className="w-full resize-none text-lg font-bold text-slate-700 outline-none placeholder:text-slate-300"
+        />
+        {gen.phase === 'error' && <div className="mb-2 text-sm font-extrabold text-rose-500">{gen.msg}</div>}
+        <Btn disabled={!need.trim() || canGenerate === null} onClick={generate}>
+          {t('genGo')}
+        </Btn>
+      </div>
+
+      {samples.length > 0 && <div className="mt-6 text-sm font-black text-slate-400">{t('orTry')}</div>}
+      <div className="mt-2 space-y-3">
         {samples.map((l, i) => (
           <motion.button
             key={l.title}
             initial={{ x: -40, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.1 + i * 0.1 }}
+            transition={{ delay: 0.1 + i * 0.08 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => g.open(l)}
-            className="flex w-full items-center gap-4 rounded-3xl border-2 border-b-[5px] border-slate-200 bg-white p-3 text-left hover:bg-slate-50"
+            className="flex w-full items-center gap-3 rounded-3xl border-2 border-b-[5px] border-slate-200 bg-white p-2.5 text-left hover:bg-slate-50"
           >
-            <Emoji e={l.emoji} size={56} />
+            <Emoji e={l.emoji} size={46} />
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 text-lg font-black text-slate-700">
-                {l.title}
-                <span className="rounded-md bg-slate-100 px-1.5 text-[11px] font-black text-slate-400">{l.lang.toUpperCase()}</span>
-              </div>
-              <div className="truncate text-sm font-bold text-slate-400">「{l.need}」</div>
+              <div className="text-base font-black text-slate-700">{l.title}</div>
+              <div className="truncate text-sm font-bold text-slate-400">{l.need}</div>
             </div>
             <span className="text-2xl text-slate-300">›</span>
           </motion.button>
         ))}
       </div>
 
-      <div className="mt-auto pt-6">
-        <Btn tone="blue" onClick={() => setStudio(true)}>
-          {t('newQuest')}
-        </Btn>
-      </div>
+      <button onClick={() => setStudio(true)} className="mt-5 text-center text-xs font-extrabold text-slate-300 hover:text-slate-500">
+        {t('advanced')}
+      </button>
 
-      <AnimatePresence>{studio && <Studio onClose={() => setStudio(false)} onLoad={(l) => g.open(l)} />}</AnimatePresence>
+      <AnimatePresence>{studio && <Studio initialNeed={need} onClose={() => setStudio(false)} onLoad={(l) => g.open(l)} />}</AnimatePresence>
+    </div>
+  );
+}
+
+/** 等待生成：乐乐在想，提示轮换，显示已等待时间 */
+function Generating({ started, onCancel }: { started: number; onCancel: () => void }) {
+  const tips = t('genTips').split('|');
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const sec = Math.floor((now - started) / 1000);
+  const tip = tips[Math.min(tips.length - 1, Math.floor(sec / 12))];
+  return (
+    <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+      <Character id={GUIDE} size={130} mood="thinking" act={sec % 8 < 4 ? 'idle' : 'walk'} />
+      <div className="mt-4 text-2xl font-black text-slate-700">{t('genWait')}</div>
+      <AnimatePresence mode="wait">
+        <motion.div key={tip} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-2 text-base font-bold text-slate-500">
+          {tip}
+        </motion.div>
+      </AnimatePresence>
+      <div className="mt-6 h-3 w-56 overflow-hidden rounded-full bg-slate-200">
+        <motion.div className="h-full rounded-full bg-green-500" animate={{ width: `${Math.min(95, (sec / 90) * 100)}%` }} transition={{ duration: 1 }} />
+      </div>
+      <div className="mt-2 text-xs font-bold text-slate-400">
+        {t('genSlow')} · {sec}s
+      </div>
+      <button onClick={onCancel} className="mt-8 text-sm font-extrabold text-slate-400 hover:text-slate-600">
+        {t('cancel')}
+      </button>
     </div>
   );
 }
 
 /** 独立网页版用：把提示词复制给任意大模型，再把它返回的 JSON 粘回来 */
-function Studio({ onClose, onLoad }: { onClose: () => void; onLoad: (l: Lesson) => void }) {
-  const [need, setNeed] = useState('');
+function Studio({ initialNeed, onClose, onLoad }: { initialNeed: string; onClose: () => void; onLoad: (l: Lesson) => void }) {
+  const [need, setNeed] = useState(initialNeed);
   const [json, setJson] = useState('');
   const [errors, setErrors] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
@@ -85,7 +178,7 @@ function Studio({ onClose, onLoad }: { onClose: () => void; onLoad: (l: Lesson) 
           tone="blue"
           disabled={!need.trim()}
           onClick={async () => {
-            if (await copyText(generatorPrompt(need.trim()))) {
+            if (await copyText(generatorPrompt(need.trim(), detectLang()))) {
               setCopied(true);
               setTimeout(() => setCopied(false), 1600);
             }

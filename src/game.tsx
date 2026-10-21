@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import { sfx } from './fx/fx';
-import { money, pickCheer, setLocale, t } from './i18n';
+import { detectLang, money, pickCheer, setLocale, t } from './i18n';
 import { gambleCrashes, optionsOf, play, revealsProblem, type Answer, type Crash, type Played, type Replies } from './lesson/engine';
 import type { FixRound, Lesson, Round } from './lesson/schema';
 
@@ -158,6 +158,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       setPhase('play');
     },
     home() {
+      setLocale(detectLang(), 'CNY');
       setPhase('home');
       setLesson(null);
     },

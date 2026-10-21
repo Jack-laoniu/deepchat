@@ -1,0 +1,705 @@
+{
+  "v": 1,
+  "need": "I want a PC that plays AAA games and runs local AI models",
+  "title": "Gaming + AI PC",
+  "emoji": "🎮",
+  "domain": "PC building",
+  "lang": "en",
+  "currency": "USD",
+  "cast": [
+    {
+      "id": "zack"
+    },
+    {
+      "id": "qian",
+      "as": "PC shop owner"
+    }
+  ],
+  "guess": {
+    "line": "My guess: the shop's flashy 'i9 RGB' PC",
+    "items": [
+      {
+        "id": "cpu",
+        "emoji": "🧠",
+        "name": "i9 CPU",
+        "price": 540,
+        "spec": "Flagship i9"
+      },
+      {
+        "id": "gpu",
+        "emoji": "🎮",
+        "name": "4060 8G",
+        "price": 340,
+        "spec": "RTX 4060 8GB"
+      },
+      {
+        "id": "ram",
+        "emoji": "🧬",
+        "name": "16GB RAM",
+        "price": 60,
+        "spec": "DDR5 16GB single stick"
+      },
+      {
+        "id": "psu",
+        "emoji": "🔋",
+        "name": "No-name PSU",
+        "price": 40,
+        "spec": "No-brand, claims 600W"
+      },
+      {
+        "id": "cooler",
+        "emoji": "❄️",
+        "name": "360 AIO cooler",
+        "price": 130
+      },
+      {
+        "id": "base",
+        "emoji": "📦",
+        "name": "Board, case…",
+        "price": 540,
+        "spec": "Motherboard, 1TB SSD, case"
+      }
+    ]
+  },
+  "rounds": [
+    {
+      "type": "talk",
+      "id": "group",
+      "style": "story",
+      "title": "A PC forum fight",
+      "emoji": "💬",
+      "beats": [
+        {
+          "who": "narrator",
+          "say": "Two people are arguing in a PC builders' chat."
+        },
+        {
+          "who": "zack",
+          "say": "A 4060 is plenty for games. Don't listen to the shop!",
+          "mood": "angry"
+        },
+        {
+          "who": "qian",
+          "say": "Plenty? Run a big AI model and 8GB explodes!",
+          "mood": "smug"
+        },
+        {
+          "who": "zack",
+          "say": "They might not even run AI…",
+          "mood": "thinking"
+        },
+        {
+          "id": "use",
+          "who": "zack",
+          "q": "So what's it really for?",
+          "options": [
+            {
+              "id": "game",
+              "emoji": "🎮",
+              "label": "Mostly gaming",
+              "fact": "Main use is AAA gaming",
+              "set": [
+                "game"
+              ],
+              "reply": [
+                {
+                  "who": "zack",
+                  "say": "See? Told you!",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "ai",
+              "emoji": "🤖",
+              "label": "Local AI",
+              "fact": "Main use is running AI models locally",
+              "set": [
+                "ai"
+              ],
+              "reply": [
+                {
+                  "who": "qian",
+                  "say": "Heh, I was right.",
+                  "mood": "smug"
+                }
+              ]
+            },
+            {
+              "id": "both",
+              "emoji": "🔥",
+              "label": "Both!",
+              "fact": "Wants both gaming and local AI",
+              "set": [
+                "game",
+                "ai"
+              ],
+              "reply": [
+                {
+                  "who": "zack",
+                  "say": "…Fine, then build it properly."
+                }
+              ]
+            }
+          ],
+          "free": {
+            "placeholder": "e.g. AAA games, SD",
+            "chips": [
+              "AAA games",
+              "Big LLMs",
+              "Video editing",
+              "Coding"
+            ],
+            "fact": "User's own description of use: {v}",
+            "match": [
+              {
+                "words": [
+                  "game",
+                  "wukong",
+                  "3a",
+                  "steam",
+                  "gaming"
+                ],
+                "set": [
+                  "game"
+                ]
+              },
+              {
+                "words": [
+                  "ai",
+                  "model",
+                  "llm",
+                  "sd",
+                  "stable diffusion",
+                  "train",
+                  "7b",
+                  "32b",
+                  "70b"
+                ],
+                "set": [
+                  "ai"
+                ],
+                "reply": [
+                  {
+                    "who": "qian",
+                    "say": "For AI, VRAM is what matters."
+                  }
+                ]
+              },
+              {
+                "words": [
+                  "edit",
+                  "video",
+                  "pr",
+                  "davinci"
+                ],
+                "fact": "Also edits video",
+                "reply": [
+                  {
+                    "who": "zack",
+                    "say": "Video editing eats GPU and RAM too."
+                  }
+                ]
+              }
+            ],
+            "reply": [
+              {
+                "who": "zack",
+                "say": "Got it, we'll build for that."
+              }
+            ]
+          }
+        },
+        {
+          "who": "qian",
+          "say": "For AI, it depends on model size.",
+          "if": {
+            "all": [
+              "ai"
+            ]
+          }
+        },
+        {
+          "id": "model",
+          "who": "qian",
+          "q": "How big a model?",
+          "if": {
+            "all": [
+              "ai"
+            ]
+          },
+          "options": [
+            {
+              "id": "small_m",
+              "emoji": "🐣",
+              "label": "7B / image gen",
+              "fact": "Only ~7B models or Stable Diffusion",
+              "reply": [
+                {
+                  "who": "zack",
+                  "say": "Then 8GB VRAM barely works."
+                }
+              ]
+            },
+            {
+              "id": "big_m",
+              "emoji": "🦖",
+              "label": "32B and up",
+              "fact": "Needs to run 32B–70B quantized models",
+              "set": [
+                "big_model"
+              ],
+              "reply": [
+                {
+                  "who": "zack",
+                  "say": "Okay… that needs a new GPU."
+                }
+              ]
+            }
+          ],
+          "free": {
+            "placeholder": "e.g. Qwen 32B",
+            "fact": "Wants to run: {v}",
+            "match": [
+              {
+                "words": [
+                  "32",
+                  "70",
+                  "72",
+                  "llm",
+                  "fine-tune"
+                ],
+                "set": [
+                  "big_model"
+                ],
+                "fact": "Needs large VRAM (24GB+)"
+              }
+            ]
+          }
+        },
+        {
+          "who": "zack",
+          "say": "Hear that? Buy what you need, not what he sells!",
+          "mood": "angry"
+        },
+        {
+          "who": "qian",
+          "say": "I call that expert advice!",
+          "mood": "surprised"
+        }
+      ]
+    },
+    {
+      "type": "fix",
+      "id": "fix_vram",
+      "q": "Out of VRAM!",
+      "emoji": "🎮",
+      "problem": "Model won't fit 8GB",
+      "if": {
+        "all": [
+          "big_model"
+        ]
+      },
+      "options": [
+        {
+          "id": "g3090",
+          "emoji": "🦖",
+          "label": "Used 3090",
+          "fact": "Switch to a used RTX 3090 24GB",
+          "add": [
+            {
+              "id": "gpu",
+              "emoji": "🦖",
+              "name": "Used 3090",
+              "price": 790,
+              "spec": "RTX 3090 24GB, test before buying"
+            }
+          ],
+          "set": [
+            "hot_gpu"
+          ],
+          "tip": "24GB VRAM, best value",
+          "score": {
+            "good": 35,
+            "safe": -5
+          }
+        },
+        {
+          "id": "g4090",
+          "emoji": "👑",
+          "label": "4090",
+          "fact": "Switch to RTX 4090 24GB",
+          "add": [
+            {
+              "id": "gpu",
+              "emoji": "👑",
+              "name": "RTX 4090",
+              "price": 1860,
+              "spec": "RTX 4090 24GB"
+            }
+          ],
+          "set": [
+            "hot_gpu"
+          ],
+          "tip": "The best, and the priciest",
+          "score": {
+            "good": 45
+          }
+        }
+      ],
+      "gamble": {
+        "label": "Smaller model",
+        "fact": "Give up on big models, run small ones",
+        "crash_if": [],
+        "ok": "Small models are fun too"
+      }
+    },
+    {
+      "type": "pick",
+      "id": "screen",
+      "q": "What monitor?",
+      "emoji": "🖥️",
+      "options": [
+        {
+          "id": "r1080",
+          "emoji": "🖥️",
+          "label": "1080p",
+          "fact": "1080p high-refresh monitor"
+        },
+        {
+          "id": "r2k",
+          "emoji": "🖥️",
+          "label": "2K",
+          "fact": "1440p high-refresh monitor"
+        },
+        {
+          "id": "r4k",
+          "emoji": "📺",
+          "label": "4K",
+          "fact": "4K monitor, ray tracing maxed",
+          "set": [
+            "heavy"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "pick",
+      "id": "place",
+      "q": "Where will it sit?",
+      "emoji": "🏠",
+      "options": [
+        {
+          "id": "floor",
+          "emoji": "🗄️",
+          "label": "Under desk",
+          "fact": "Under the desk, normal mid-tower"
+        },
+        {
+          "id": "desk",
+          "emoji": "🤫",
+          "label": "Quiet on desk",
+          "fact": "On the desk, must be small and quiet",
+          "add": [
+            {
+              "id": "case",
+              "emoji": "🤫",
+              "name": "Quiet small case",
+              "price": 110
+            }
+          ],
+          "set": [
+            "small_case",
+            "quiet"
+          ],
+          "score": {
+            "easy": -10
+          }
+        }
+      ]
+    },
+    {
+      "type": "fix",
+      "id": "fix_psu",
+      "q": "PSU is smoking!",
+      "emoji": "🔋",
+      "problem": "Cheap PSU can't cope",
+      "if": {
+        "any": [
+          "hot_gpu",
+          "heavy",
+          "small_case"
+        ]
+      },
+      "options": [
+        {
+          "id": "psu850",
+          "emoji": "🔋",
+          "label": "850W Gold",
+          "fact": "Switch to an 850W Gold ATX 3.0 PSU",
+          "add": [
+            {
+              "id": "psu",
+              "emoji": "🔋",
+              "name": "850W Gold PSU",
+              "price": 110,
+              "spec": "850W 80Plus Gold ATX 3.0"
+            }
+          ],
+          "tip": "Handles GPU power spikes",
+          "score": {
+            "safe": 35
+          }
+        }
+      ],
+      "gamble": {
+        "label": "Keep it",
+        "fact": "Keep the no-name PSU",
+        "crash_if": "always",
+        "crash": "Black screen, GPU power fried",
+        "loss": 340
+      }
+    },
+    {
+      "type": "talk",
+      "id": "haggle",
+      "style": "chat",
+      "title": "Haggling at the PC shop",
+      "emoji": "🧔‍♂️",
+      "with": "qian",
+      "beats": [
+        {
+          "who": "qian",
+          "say": "Buddy, this i9 water-cooled rig is on sale today!",
+          "mood": "smug"
+        },
+        {
+          "id": "cpu",
+          "who": "qian",
+          "q": "Want this awesome CPU?",
+          "options": [
+            {
+              "id": "cpu_mid",
+              "emoji": "💸",
+              "label": "Mid-range CPU instead",
+              "fact": "Switch to a mid-range CPU and spend the savings on the GPU",
+              "add": [
+                {
+                  "id": "cpu",
+                  "emoji": "🧠",
+                  "name": "Mid-range CPU",
+                  "price": 190,
+                  "spec": "Current 6–8 core mid-range CPU"
+                }
+              ],
+              "reply": [
+                {
+                  "who": "qian",
+                  "say": "…You know your stuff.",
+                  "mood": "surprised"
+                }
+              ]
+            },
+            {
+              "id": "cpu_keep",
+              "emoji": "🧠",
+              "label": "Keep the i9",
+              "fact": "Keep the flagship CPU",
+              "reply": [
+                {
+                  "who": "qian",
+                  "say": "Great!"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "care",
+          "who": "qian",
+          "q": "What matters most?",
+          "options": [
+            {
+              "id": "c_quiet",
+              "emoji": "🤫",
+              "label": "Quiet",
+              "fact": "Cares most about low noise",
+              "set": [
+                "quiet"
+              ]
+            },
+            {
+              "id": "c_rgb",
+              "emoji": "🌈",
+              "label": "Looks",
+              "fact": "Wants nice RGB lighting"
+            },
+            {
+              "id": "c_last",
+              "emoji": "🛡️",
+              "label": "Durable",
+              "fact": "Cares most about stability and durability",
+              "score": {
+                "safe": 10
+              }
+            }
+          ],
+          "free": {
+            "placeholder": "What matters most to you…",
+            "fact": "What the user cares about most: {v}",
+            "match": [
+              {
+                "words": [
+                  "quiet",
+                  "noise",
+                  "loud"
+                ],
+                "set": [
+                  "quiet"
+                ]
+              },
+              {
+                "words": [
+                  "rgb",
+                  "rgb",
+                  "Looks",
+                  "look"
+                ],
+                "fact": "Values looks and lighting"
+              },
+              {
+                "words": [
+                  "stable",
+                  "durable",
+                  "lifespan",
+                  "warranty"
+                ],
+                "fact": "Values stability and warranty"
+              }
+            ]
+          }
+        },
+        {
+          "who": "qian",
+          "say": "If noise bugs you, AIO pumps hum too.",
+          "if": {
+            "all": [
+              "quiet"
+            ]
+          },
+          "mood": "thinking"
+        },
+        {
+          "id": "cooler",
+          "who": "qian",
+          "q": "Swap AIO for air?",
+          "options": [
+            {
+              "id": "air",
+              "emoji": "🌀",
+              "label": "Tower air cooler",
+              "fact": "Use a tower air cooler instead",
+              "add": [
+                {
+                  "id": "cooler",
+                  "emoji": "🌀",
+                  "name": "Tower air cooler",
+                  "price": 30
+                }
+              ],
+              "score": {
+                "safe": 5,
+                "easy": 5
+              },
+              "reply": [
+                {
+                  "who": "qian",
+                  "say": "Air is cheap and can't leak."
+                }
+              ]
+            },
+            {
+              "id": "water",
+              "emoji": "❄️",
+              "label": "Keep the AIO",
+              "fact": "Keep the 360 AIO",
+              "reply": [
+                {
+                  "who": "qian",
+                  "say": "Looks are everything!"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "who": "qian",
+          "say": "Deal, writing it up!",
+          "mood": "happy"
+        }
+      ]
+    },
+    {
+      "type": "slider",
+      "id": "budget",
+      "q": "Max budget?",
+      "emoji": "💰",
+      "kind": "budget",
+      "min": 700,
+      "max": 4500,
+      "step": 50,
+      "unit": "",
+      "fact": "Budget cap: ${v}"
+    },
+    {
+      "type": "boss",
+      "id": "boss",
+      "q": "Summer, 8h full load!",
+      "emoji": "🥵",
+      "problem": "The case is an oven",
+      "options": [
+        {
+          "id": "fans",
+          "emoji": "🌀",
+          "label": "More fans",
+          "fact": "Add case fans and fix the airflow",
+          "add": [
+            {
+              "id": "fans",
+              "emoji": "🌀",
+              "name": "Case fans ×3",
+              "price": 20
+            }
+          ],
+          "tip": "Better airflow, 10°C cooler",
+          "score": {
+            "safe": 20
+          }
+        },
+        {
+          "id": "curve",
+          "emoji": "📉",
+          "label": "Tune curves",
+          "fact": "Undervolt the GPU and tune fan curves",
+          "tip": "Free, costs a little speed",
+          "score": {
+            "safe": 15,
+            "good": -5
+          }
+        }
+      ],
+      "gamble": {
+        "label": "Ignore it",
+        "fact": "No cooling changes",
+        "crash_if": [
+          "small_case",
+          "heavy",
+          "hot_gpu"
+        ],
+        "crash": "Throttling, then black screen",
+        "ok": "Light load, you'll be fine"
+      }
+    }
+  ],
+  "secret": "Skip the flagship CPU — spend it on VRAM and a good PSU"
+}

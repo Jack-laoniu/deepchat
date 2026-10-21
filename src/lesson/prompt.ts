@@ -42,13 +42,15 @@ RULES
 7. 8–12 rounds: open with a chat with "${GUIDE}" asking the motivation, include at least one story, one map, one slider(budget), and end with the boss.
 8. ids use lowercase letters, digits, underscores only. Output JSON only, no explanation.`;
 
-export function generatorPrompt(need: string): string {
+export function generatorPrompt(need: string, lang: 'zh' | 'en' = 'zh'): string {
   return `${GENERATOR_RULES}
 
 Example (a different need):
 \`\`\`json
 ${JSON.stringify(dog)}
 \`\`\`
+
+Write ALL text in ${lang === 'zh' ? 'Simplified Chinese (lang "zh")' : 'English (lang "en")'}.
 
 The user's need: ${need || '(write the need here)'}`;
 }

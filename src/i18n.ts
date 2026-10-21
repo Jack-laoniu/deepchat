@@ -1,10 +1,22 @@
-import { LANGS, type Lang } from './chars/library';
+import type { Lang } from './chars/library';
 
 /**
  * 界面文案。关卡内容由大模型按用户语言生成，界面跟随关卡的 lang。
  */
 
 const zh = {
+  genTitle: '说说你想搞定什么',
+  genPh: '比如：想在阳台种菜、给女儿挑钢琴…',
+  genGo: '✨ 生成我的关卡',
+  genWait: '乐乐正在为你编关卡…',
+  genTips: '正在找会踩的坑…|正在请角色来演…|正在写对话…|正在估价…|马上就好…',
+  genSlow: '一般要 30~90 秒',
+  genFail: '生成失败了，再试一次？',
+  genRate: '生成次数太多了，过一会儿再来',
+  genBusy: '现在人有点多，稍后再试',
+  orTry: '或者先玩一个示例',
+  advanced: '高级：用其它 AI 生成',
+  cancel: '取消',
   confirm: '确定',
   next: '继续',
   goFix: '去修！',
@@ -69,6 +81,18 @@ const zh = {
 type Dict = typeof zh;
 
 const en: Dict = {
+  genTitle: 'What do you want to get done?',
+  genPh: 'e.g. grow veggies on my balcony',
+  genGo: '✨ Make my quest',
+  genWait: 'Lele is building your quest…',
+  genTips: 'Finding the traps…|Casting the characters…|Writing the dialogue…|Estimating prices…|Almost there…',
+  genSlow: 'Usually takes 30–90 seconds',
+  genFail: 'That didn’t work. Try again?',
+  genRate: 'Too many quests for now — come back later',
+  genBusy: 'It’s busy right now, try again soon',
+  orTry: 'Or play an example first',
+  advanced: 'Advanced: use another AI',
+  cancel: 'Cancel',
   confirm: 'Check',
   next: 'Continue',
   goFix: 'Fix it!',
@@ -132,6 +156,18 @@ const en: Dict = {
 };
 
 const ja: Dict = {
+  genTitle: '何を片付けたい？',
+  genPh: '例：ベランダで野菜を育てたい',
+  genGo: '✨ クエストを作る',
+  genWait: 'クエストを作っています…',
+  genTips: '落とし穴を探しています…|キャラを集めています…|セリフを書いています…|もうすぐ…',
+  genSlow: '30〜90 秒ほどかかります',
+  genFail: '失敗しました。もう一度？',
+  genRate: '回数が多すぎます。しばらくしてから',
+  genBusy: '混み合っています',
+  orTry: 'まずはサンプルで遊ぶ',
+  advanced: '詳細：他の AI で作る',
+  cancel: 'キャンセル',
   confirm: 'チェック',
   next: 'つづける',
   goFix: '直しに行く！',
@@ -195,6 +231,18 @@ const ja: Dict = {
 };
 
 const es: Dict = {
+  genTitle: '¿Qué quieres resolver?',
+  genPh: 'p. ej. un huerto en el balcón',
+  genGo: '✨ Crear mi misión',
+  genWait: 'Lele está creando tu misión…',
+  genTips: 'Buscando trampas…|Llamando a los personajes…|Escribiendo diálogos…|Casi listo…',
+  genSlow: 'Suele tardar 30–90 segundos',
+  genFail: 'Falló. ¿Otra vez?',
+  genRate: 'Demasiadas misiones, vuelve más tarde',
+  genBusy: 'Hay mucha gente, inténtalo luego',
+  orTry: 'O juega un ejemplo',
+  advanced: 'Avanzado: usar otra IA',
+  cancel: 'Cancelar',
   confirm: 'Comprobar',
   next: 'Continuar',
   goFix: '¡A arreglarlo!',
@@ -280,9 +328,12 @@ export const pickCheer = () => {
 };
 
 /** 浏览器语言 → 支持的语言 */
-export function detectLang(): Lang {
-  const nav = typeof navigator !== 'undefined' && navigator.language ? navigator.language.slice(0, 2) : 'zh';
-  return (LANGS as readonly string[]).includes(nav) ? (nav as Lang) : 'en';
+/** 界面语言跟随设备 / 浏览器：中文系统用中文，其它一律英文（目前只开放这两种） */
+export const UI_LANGS = ['zh', 'en'] as const;
+export type UiLang = (typeof UI_LANGS)[number];
+export function detectLang(): UiLang {
+  const list = typeof navigator !== 'undefined' ? [...(navigator.languages ?? []), navigator.language].filter(Boolean) : [];
+  return list.some((l) => l.toLowerCase().startsWith('zh')) ? 'zh' : list.length ? 'en' : 'zh';
 }
 
 export const LOCALE: Record<Lang, string> = { zh: 'zh-CN', en: 'en-US', ja: 'ja-JP', es: 'es-ES' };

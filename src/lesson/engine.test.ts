@@ -23,7 +23,7 @@ const why = talk('why', { why: { option: 'tired' } });
 const story = (land: string, water: string) => talk('story', { land: { option: land }, water: { option: water } });
 
 describe('samples', () => {
-  it('all samples are valid', () => expect(lessons).toHaveLength(4));
+  it('all samples are valid', () => expect(lessons).toHaveLength(6));
 
   it('rejects walls of text, dangling flags and unknown speakers', () => {
     const bad = structuredClone(SAMPLES[0]) as any;
@@ -163,7 +163,7 @@ describe('play', () => {
 });
 
 describe('characters & languages', () => {
-  const dog = lessons.find((l) => l.lang === 'en')!;
+  const dog = lessons.find((l) => l.title === 'Getting a dog')!;
 
   it('rejects characters that are not in the library', () => {
     const bad = structuredClone(SAMPLES[0]) as any;
