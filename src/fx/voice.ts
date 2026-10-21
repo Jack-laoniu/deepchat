@@ -22,6 +22,8 @@ const PREFERRED: Record<string, Record<Gender, RegExp>> = {
 };
 
 let cache = new Map<string, SpeechSynthesisVoice | null>();
+/** 列表里有、但实际念不出声的语音（iPhone 上部分「增强/Siri」语音在网页里是哑的） */
+const mute = new Set<string>();
 if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   // iOS / Chrome 的语音列表是异步加载的，加载完要重新挑
   window.speechSynthesis.addEventListener?.('voiceschanged', () => (cache = new Map()));
@@ -46,7 +48,7 @@ export function pickVoice(locale: string, gender: Gender): SpeechSynthesisVoice 
     if (v.localService) sc += 2;
     return sc;
   };
-  const candidates = vs.filter((v) => v.lang.toLowerCase().startsWith(lang));
+  const candidates = vs.filter((v) => v.lang.toLowerCase().startsWith(lang) && !mute.has(v.voiceURI));
   const best = candidates.sort((a, b) => score(b) - score(a))[0] ?? null;
   const v = best && score(best) > -50 ? best : null;
   cache.set(key, v);
@@ -58,37 +60,119 @@ export const EN_RATE = 0.88;
 
 export const canSpeak = () => typeof window !== 'undefined' && 'speechSynthesis' in window;
 
-export function speak(text: string, opts: { pitch?: number; rate?: number; gender?: Gender } = {}): Promise<void> {
+type Opts = { pitch?: number; rate?: number; gender?: Gender };
+type Job = { text: string; opts: Opts; done: () => void };
+
+/**
+ * 台词排队念：上一句念完才念下一句，不会互相打断。
+ * speak() 返回的 Promise 在这一句念完（或被 hush 清掉）时结束。
+ */
+const queue: Job[] = [];
+let current: Job | null = null;
+/** 这个浏览器会不会触发 onstart（不会的话就没法判断「哑语音」，只能照常念） */
+let startEvents: boolean | null = null;
+
+export function speak(text: string, opts: Opts = {}): Promise<void> {
   if (!canSpeak() || isMuted()) return Promise.resolve();
-  return new Promise((resolve) => {
-    try {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text.replace(/[\p{Extended_Pictographic}️]/gu, ''));
-      const locale = LOCALE[getLang()];
-      u.lang = locale;
-      const v = pickVoice(locale, opts.gender ?? 'f');
-      if (v) u.voice = v;
-      // 已经按性别选了嗓音，音高只做轻微区分，避免变成「花栗鼠」或「怪兽」声
-      u.pitch = 1 + ((opts.pitch ?? 1) - 1) * 0.45;
-      // 中文语音偏慢，稍微加快；英文语音（尤其 iPhone）本身就快，角色差异减半再整体放慢，免得听不清
-      const r = opts.rate ?? 1;
-      u.rate = getLang() === 'zh' ? r * 1.05 : (1 + (r - 1) * 0.5) * EN_RATE;
-      u.onend = u.onerror = () => resolve();
-      window.speechSynthesis.speak(u);
-      // 某些环境不触发 onend，兜底
-      setTimeout(resolve, 600 + text.length * (getLang() === 'zh' || getLang() === 'ja' ? 260 : 110));
-    } catch {
-      resolve();
-    }
+  const clean = text.replace(/[\p{Extended_Pictographic}️]/gu, '').trim();
+  if (!clean) return Promise.resolve();
+  return new Promise((done) => {
+    queue.push({ text: clean, opts, done });
+    if (!current) next();
   });
 }
 
+/** 用户点头像重听：清掉排队的，马上念这一句 */
+export function speakNow(text: string, opts: Opts = {}): Promise<void> {
+  hush();
+  return speak(text, opts);
+}
+
+function next() {
+  current = queue.shift() ?? null;
+  if (current) utter(current, true);
+}
+
+function utter(job: Job, withVoice: boolean) {
+  const synth = window.speechSynthesis;
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    clearTimeout(watchdog);
+    clearTimeout(fallback);
+    if (current !== job) return; // 已被 hush 清掉
+    job.done();
+    next();
+  };
+  const u = new SpeechSynthesisUtterance(job.text);
+  const locale = LOCALE[getLang()];
+  u.lang = locale;
+  const v = withVoice ? pickVoice(locale, job.opts.gender ?? 'f') : null;
+  if (v) u.voice = v;
+  // 已经按性别选了嗓音，音高只做轻微区分，避免变成「花栗鼠」或「怪兽」声
+  u.pitch = 1 + ((job.opts.pitch ?? 1) - 1) * 0.45;
+  // 中文语音偏慢，稍微加快；英文语音（尤其 iPhone）本身就快，角色差异减半再整体放慢，免得听不清
+  const r = job.opts.rate ?? 1;
+  u.rate = getLang() === 'zh' ? r * 1.05 : (1 + (r - 1) * 0.5) * EN_RATE;
+  let started = false;
+  u.onstart = () => {
+    started = true;
+    startEvents = true;
+  };
+  u.onend = () => {
+    if (finished) return;
+    // 念完了却从没报过 onstart：这个浏览器不报这个事件，之前「哑」的判断不可信，撤销
+    if (!started && startEvents !== true) {
+      startEvents = false;
+      mute.clear();
+      cache = new Map();
+    }
+    finish();
+  };
+  u.onerror = (e) => {
+    if (finished) return;
+    // 被我们自己 cancel 的不算
+    if ((e as SpeechSynthesisErrorEvent).error === 'interrupted' || (e as SpeechSynthesisErrorEvent).error === 'canceled') return finish();
+    if (v && !started) return retry();
+    finish();
+  };
+  const retry = () => {
+    finished = true;
+    clearTimeout(watchdog);
+    clearTimeout(fallback);
+    if (v) {
+      mute.add(v.voiceURI);
+      cache = new Map();
+    }
+    synth.cancel();
+    if (current === job) utter(job, !!v && mute.size < 6); // 换下一个嗓音；试了好几个都哑就交给系统默认
+  };
+  // 1.5 秒还没开口：这个嗓音多半是哑的，换一个
+  const watchdog = setTimeout(() => {
+    if (!started && !finished && v && startEvents !== false) retry();
+  }, 1500);
+  // 某些环境不触发 onend，兜底
+  const fallback = setTimeout(finish, 1500 + job.text.length * (getLang() === 'zh' || getLang() === 'ja' ? 300 : 120));
+  try {
+    synth.resume(); // iOS 有时卡在暂停状态
+    synth.speak(u);
+  } catch {
+    finish();
+  }
+}
+
 export function hush() {
+  const pending = queue.splice(0);
+  const cur = current;
+  current = null;
   try {
     window.speechSynthesis?.cancel();
   } catch {
     /* ignore */
   }
+  cur?.done();
+  pending.forEach((j) => j.done());
 }
 
 // ---- 语音输入（Chrome / Edge / Safari 支持；嵌入环境可能被禁用） ----

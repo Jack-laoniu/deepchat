@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Character, type Mood } from '../chars/Character';
 import { charById, GUIDE } from '../chars/library';
 import { sfx } from '../fx/fx';
-import { canListen, hush, listen, speak } from '../fx/voice';
+import { canListen, hush, listen, speak, speakNow } from '../fx/voice';
 import { useGame } from '../game';
 import { getLang, t } from '../i18n';
 import { matchFree, walkBeats, type Replies } from '../lesson/engine';
@@ -157,7 +157,10 @@ export function Dialogue({
   // 新台词：朗读，嘴巴跟着动，滚动到底
   useEffect(() => {
     scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: 'smooth' });
-    if (!last || !npcSpeaker) return;
+    if (!last || !npcSpeaker) {
+      setTalking(false); // 轮到「我」或旁白：上一句的嘴型别卡住（聊天模式要等它结束才出下一句）
+      return;
+    }
     const text = last.kind === 'line' ? last.say : last.beat.q;
     const c = who(npcSpeaker);
     setTalking(true);
@@ -171,9 +174,9 @@ export function Dialogue({
 
   useEffect(() => hush, []);
 
-  // 聊天模式自动往下走，带「正在输入」
+  // 聊天模式自动往下走，带「正在输入」；等上一句念完再出下一句，免得语音被打断
   useEffect(() => {
-    if (style !== 'chat' || waitingAsk || shown >= items.length) return;
+    if (style !== 'chat' || waitingAsk || talking || shown >= items.length) return;
     const next = items[shown];
     const isMe = next.kind === 'line' && next.who === 'me';
     setTyping(!isMe);
@@ -184,7 +187,7 @@ export function Dialogue({
       setShown((n) => n + 1);
     }, isMe ? 250 : 500 + len * 45);
     return () => clearTimeout(timer);
-  }, [style, shown, items, waitingAsk]);
+  }, [style, shown, items, waitingAsk, talking]);
 
   const answer = (beatId: string, r: Replies[string]) => {
     sfx.good();
@@ -262,7 +265,7 @@ function Bubble({ who, text, mine, ask, current, chat }: { who: Who; text: strin
       className={`flex items-end gap-2 ${mine ? 'flex-row-reverse' : ''}`}
     >
       {!chat && (
-        <button onClick={() => !mine && speak(text, { pitch: who.pitch, rate: who.rate, gender: who.gender })} className="shrink-0 overflow-hidden rounded-full bg-slate-100">
+        <button onClick={() => !mine && speakNow(text, { pitch: who.pitch, rate: who.rate, gender: who.gender })} className="shrink-0 overflow-hidden rounded-full bg-slate-100">
           <Character id={who.id} size={40} bust />
         </button>
       )}

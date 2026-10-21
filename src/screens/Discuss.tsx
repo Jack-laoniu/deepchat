@@ -4,7 +4,7 @@ import { loadCode, useCanGenerate } from '../api';
 import { Character } from '../chars/Character';
 import { charById, GUIDE } from '../chars/library';
 import { sfx } from '../fx/fx';
-import { speak } from '../fx/voice';
+import { speak, speakNow } from '../fx/voice';
 import { hostFollowUp, inHost } from '../host';
 import { getLang, t, type MsgKey } from '../i18n';
 import { copyText } from '../ui/copy';
@@ -123,7 +123,7 @@ function Line({ mine, text, typing }: { mine: boolean; text: string; typing?: bo
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex items-end gap-2 ${mine ? 'flex-row-reverse' : ''}`}>
       {!mine && (
-        <button onClick={() => !typing && speak(text, charById(GUIDE)!.voice)} className="shrink-0 overflow-hidden rounded-full bg-white">
+        <button onClick={() => !typing && speakNow(text, charById(GUIDE)!.voice)} className="shrink-0 overflow-hidden rounded-full bg-white">
           <Character id={GUIDE} size={36} bust talking={typing} mood={typing ? 'thinking' : 'happy'} />
         </button>
       )}

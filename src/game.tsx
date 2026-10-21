@@ -1,5 +1,6 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import { sfx } from './fx/fx';
+import { hush } from './fx/voice';
 import { detectLang, money, pickCheer, setLocale, t } from './i18n';
 import { gambleCrashes, optionsOf, play, revealsProblem, type Answer, type Crash, type Played, type Replies } from './lesson/engine';
 import type { FixRound, Lesson, Round } from './lesson/schema';
@@ -158,9 +159,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
       setPhase('play');
     },
     home() {
+      // 不清空 lesson：切换动画期间旧画面还要再渲染一帧，清空会让它读到 null 而整页空白
+      hush();
+      setFeedback(null);
       setLocale(detectLang(), 'CNY');
       setPhase('home');
-      setLesson(null);
     },
   };
 

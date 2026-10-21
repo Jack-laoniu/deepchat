@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { Component, useEffect, useState, type ReactNode } from 'react';
 import { isMuted, setMuted } from './fx/fx';
 import { GameProvider, useGame } from './game';
 import { onHostLesson } from './host';
@@ -10,6 +10,33 @@ import { Intro } from './screens/Intro';
 import { Play } from './screens/Play';
 import { Win } from './screens/Win';
 import { preload } from './ui/Emoji';
+
+/** 兜底：任何画面出错都回到首页，而不是整页空白 */
+class Boundary extends Component<{ onError: () => void; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  fails = 0;
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch(e: unknown) {
+    console.error(e);
+    if (++this.fails > 3) return; // 回首页也一直出错就别死循环了
+    this.props.onError();
+    this.setState({ failed: false });
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
+
+function SafeScreens() {
+  const g = useGame();
+  return (
+    <Boundary onError={g.home}>
+      <Screens />
+    </Boundary>
+  );
+}
 
 function Screens() {
   const g = useGame();
@@ -58,7 +85,7 @@ export default function App() {
   return (
     <GameProvider>
       <div className="relative mx-auto h-[100dvh] max-w-md overflow-hidden bg-white">
-        <Screens />
+        <SafeScreens />
         <button
           onClick={() => {
             setMuted(!muted);
