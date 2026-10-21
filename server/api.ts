@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { generateLesson } from './generate';
+import { chatFromEnv, generateLesson, UpstreamError } from './generate';
 
 /**
  * 网页版的生成接口：
@@ -15,8 +15,10 @@ const DAILY_LIMIT = Number(process.env.NEED_QUEST_DAILY_LIMIT) || 200;
 const MAX_CONCURRENT = Number(process.env.NEED_QUEST_CONCURRENCY) || 3;
 const MAX_NEED_CHARS = 200;
 
-// ANTHROPIC_BASE_URL 设置时，SDK 会改走那个兼容 Anthropic 接口的地址（比如测试期用的中转服务）
-const client = process.env.ANTHROPIC_API_KEY ? new Anthropic() : null;
+// 用哪个模型由环境变量决定（Claude 或 OpenAI 兼容接口），见 chatFromEnv
+const model = chatFromEnv();
+if (model) console.error(`online generation: ${model.label}`);
+const client = model?.start ?? null;
 /** 测试期访问码：设置后，只有带对访问码的请求才能用服务器上的 key 生成 */
 const ACCESS_CODE = process.env.NEED_QUEST_ACCESS_CODE || '';
 
@@ -98,8 +100,8 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
     if (cache.size > 200) cache.delete(cache.keys().next().value!);
     json(res, 200, { lesson: r.lesson });
   } catch (e) {
-    console.error('generate failed:', e instanceof Anthropic.APIError ? `${e.status} ${e.message}` : e);
-    const status = e instanceof Anthropic.RateLimitError ? 429 : 502;
+    console.error('generate failed:', e instanceof Anthropic.APIError || e instanceof UpstreamError ? `${e.status} ${e.message}` : e);
+    const status = e instanceof Anthropic.RateLimitError || (e instanceof UpstreamError && e.status === 429) ? 429 : 502;
     json(res, status, { error: status === 429 ? 'busy' : 'upstream' });
   } finally {
     running--;

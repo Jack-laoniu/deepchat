@@ -1,7 +1,7 @@
 import type Anthropic from '@anthropic-ai/sdk';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import farm from '../src/lessons/farm.json';
-import { generateLesson } from './generate';
+import { chatFromEnv, claudeChat, extractJson, generateLesson, openAiChat } from './generate';
 
 /** 假的 Claude 客户端：按顺序返回给定的回复，记录每次请求 */
 function fakeClient(replies: string[]) {
@@ -17,7 +17,7 @@ function fakeClient(replies: string[]) {
       },
     },
   } as unknown as Anthropic;
-  return { client, calls };
+  return { client: claudeChat(client), calls };
 }
 
 describe('generateLesson', () => {
@@ -45,5 +45,54 @@ describe('generateLesson', () => {
     const { client, calls } = fakeClient([JSON.stringify(farm)]);
     await generateLesson(client, 'grow veggies', 'en');
     expect(calls[0].messages[0].content).toContain('English');
+  });
+});
+
+/** 把文字切成 SSE 片段，模拟 OpenAI 兼容接口的流式回复 */
+function sse(text: string) {
+  const chunks = text.match(/[\s\S]{1,50}/g) ?? [];
+  const body = chunks.map((c) => `data: ${JSON.stringify({ choices: [{ delta: { content: c } }] })}\n\n`).join('') + 'data: [DONE]\n\n';
+  return new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream' } });
+}
+
+describe('OpenAI-compatible provider', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('streams the reply, keeps history and retries with errors', async () => {
+    const broken = structuredClone(farm) as any;
+    broken.rounds[0].beats[0].who = 'ghost';
+    const bodies: any[] = [];
+    const replies = [JSON.stringify(broken), JSON.stringify(farm)];
+    vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
+      bodies.push({ url, auth: (init.headers as Record<string, string>).authorization, body: JSON.parse(init.body as string) });
+      return sse(replies[bodies.length - 1]);
+    });
+    const start = openAiChat({ baseUrl: 'https://agy.example/v1/', apiKey: 'k', model: 'some-model' });
+    const r = await generateLesson(start, '农场浇水', 'zh');
+    expect(r.ok).toBe(true);
+    expect(bodies[0].url).toBe('https://agy.example/v1/chat/completions');
+    expect(bodies[0].auth).toBe('Bearer k');
+    expect(bodies[0].body).toMatchObject({ model: 'some-model', stream: true });
+    const second = bodies[1].body.messages;
+    expect(second.map((m: any) => m.role)).toEqual(['system', 'user', 'assistant', 'user']);
+    expect(second[3].content).toContain('ghost');
+  });
+
+  it('surfaces upstream HTTP errors', async () => {
+    vi.stubGlobal('fetch', async () => new Response('quota exceeded', { status: 429 }));
+    const start = openAiChat({ baseUrl: 'https://agy.example/v1', apiKey: 'k', model: 'm' });
+    await expect(generateLesson(start, 'x', 'en')).rejects.toMatchObject({ status: 429 });
+  });
+
+  it('picks the provider from env', () => {
+    expect(chatFromEnv({})).toBeNull();
+    expect(chatFromEnv({ OPENAI_API_KEY: 'k', OPENAI_BASE_URL: 'https://a/v1', NEED_QUEST_MODEL: 'm' })?.label).toContain('openai-compatible');
+    expect(chatFromEnv({ OPENAI_API_KEY: 'k' })).toBeNull(); // 必须给模型名
+    expect(chatFromEnv({ ANTHROPIC_API_KEY: 'a' })?.label).toContain('anthropic');
+  });
+
+  it('extracts JSON from chatty replies', () => {
+    expect(extractJson('Sure! Here it is:\n```json\n{"a":1}\n```\nEnjoy')).toBe('{"a":1}');
+    expect(extractJson('blah {"a":{"b":2}} blah')).toBe('{"a":{"b":2}}');
   });
 });

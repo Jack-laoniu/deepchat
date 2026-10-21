@@ -4,12 +4,17 @@
 #   cd deepchat && git pull && sudo bash deploy/update.sh
 #
 # 顺便设置在线生成用的配置（都可选，只写你给出的那几项，其余保持不变）：
-#   ANTHROPIC_API_KEY=...          生成关卡用的 key
-#   ANTHROPIC_BASE_URL=https://... 兼容 Anthropic 接口的中转地址（不设就是官方接口）
-#   NEED_QUEST_MODEL=...           模型名（默认 claude-opus-5-5）
+#   Claude：
+#     ANTHROPIC_API_KEY=...          生成关卡用的 key
+#     ANTHROPIC_BASE_URL=https://... 兼容 Anthropic 接口的中转地址（不设就是官方接口）
+#   OpenAI 兼容接口（比如测试期的中转服务）：
+#     OPENAI_API_KEY=...             它给的 key
+#     OPENAI_BASE_URL=https://.../v1 它给的接口地址（通常以 /v1 结尾）
+#     NEED_QUEST_PROVIDER=openai     两种 key 都配了时用它指定走哪个
+#   NEED_QUEST_MODEL=...             模型名（Claude 默认 claude-opus-5-5；OpenAI 兼容接口必填）
 #   NEED_QUEST_ACCESS_CODE=...     测试访问码：设置后网页上要填对访问码才能生成
 # 例：
-#   ANTHROPIC_API_KEY=sk-xxx ANTHROPIC_BASE_URL=https://example.com NEED_QUEST_ACCESS_CODE=1234 sudo -E bash deploy/update.sh
+#   OPENAI_API_KEY=sk-xxx OPENAI_BASE_URL=https://example.com/v1 NEED_QUEST_MODEL=模型名 NEED_QUEST_ACCESS_CODE=1234 sudo -E bash deploy/update.sh
 
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -24,7 +29,7 @@ echo "==> 程序已更新"
 
 # 合并环境变量：只覆盖本次给出的项
 touch "$ENV_FILE" && chmod 600 "$ENV_FILE"
-for k in ANTHROPIC_API_KEY ANTHROPIC_BASE_URL NEED_QUEST_MODEL NEED_QUEST_ACCESS_CODE NEED_QUEST_EFFORT NEED_QUEST_IP_LIMIT NEED_QUEST_DAILY_LIMIT; do
+for k in ANTHROPIC_API_KEY ANTHROPIC_BASE_URL OPENAI_API_KEY OPENAI_BASE_URL NEED_QUEST_PROVIDER NEED_QUEST_MODEL NEED_QUEST_MAX_TOKENS NEED_QUEST_ACCESS_CODE NEED_QUEST_EFFORT NEED_QUEST_IP_LIMIT NEED_QUEST_DAILY_LIMIT; do
   v="${!k:-}"
   [ -n "$v" ] || continue
   grep -v "^$k=" "$ENV_FILE" > "$ENV_FILE.tmp" || true

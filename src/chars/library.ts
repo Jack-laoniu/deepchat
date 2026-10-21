@@ -32,7 +32,7 @@ export interface CharacterDef {
   /** 给大模型看的性格与适合的身份 */
   persona: string;
   roles: string;
-  voice: { pitch: number; rate: number };
+  voice: { pitch: number; rate: number; gender: 'f' | 'm' };
   look: Look;
 }
 
@@ -42,7 +42,7 @@ export const CHARACTERS: CharacterDef[] = [
     name: { zh: '乐乐', en: 'Lele', ja: 'レレ', es: 'Lele' },
     persona: '向导。热情话多，爱打比方，永远站在用户这边，会替用户吐槽不靠谱的人。',
     roles: '向导、主持人（每关都可用）',
-    voice: { pitch: 1.25, rate: 1.1 },
+    voice: { pitch: 1.25, rate: 1.1, gender: 'f' },
     look: { skin: '#F5C7A1', hair: { style: 'curly', color: '#5B3A29' }, top: '#FF8A3D', accent: '#FFD7B5', bottom: '#3B4A6B', outfit: 'hoodie', acc: ['freckles'] },
   },
   {
@@ -50,7 +50,7 @@ export const CHARACTERS: CharacterDef[] = [
     name: { zh: '老王', en: 'Old Wang', ja: '王さん', es: 'Don Wang' },
     persona: '过来人。干了二十年，嘴硬心软，爱讲自己踩过的坑，看不惯花冤枉钱。',
     roles: '过来人、老师傅、邻居、父亲',
-    voice: { pitch: 0.8, rate: 0.95 },
+    voice: { pitch: 0.8, rate: 0.95, gender: 'm' },
     look: { skin: '#D9A066', hair: { style: 'bald', color: '#8A8A8A' }, top: '#4C8C4A', accent: '#2F5E2E', bottom: '#6B5B45', outfit: 'plaid', acc: ['strawHat', 'mustache', 'wrinkles'] },
   },
   {
@@ -58,7 +58,7 @@ export const CHARACTERS: CharacterDef[] = [
     name: { zh: '钱老板', en: 'Boss Qian', ja: '銭社長', es: 'Jefe Qian' },
     persona: '商家。能说会道，总想让你加钱升级，但确实懂行；被戳穿时会打哈哈。',
     roles: '商家、销售、中介、装修公司',
-    voice: { pitch: 1, rate: 1.18 },
+    voice: { pitch: 1, rate: 1.18, gender: 'm' },
     look: { skin: '#F2C9A0', hair: { style: 'slick', color: '#1F1F1F' }, top: '#2F3E66', accent: '#D7263D', bottom: '#2F3E66', outfit: 'suit', acc: [] },
   },
   {
@@ -66,7 +66,7 @@ export const CHARACTERS: CharacterDef[] = [
     name: { zh: '美姐', en: 'Mei', ja: 'メイ', es: 'Mei' },
     persona: '管钱的人。精打细算，说话直接，一针见血地问「值不值」「真的需要吗」。',
     roles: '伴侣、家人、合伙人、财务',
-    voice: { pitch: 1.35, rate: 1.08 },
+    voice: { pitch: 1.35, rate: 1.08, gender: 'f' },
     look: { skin: '#F7D2B6', hair: { style: 'bun', color: '#2B1B17' }, top: '#8E5CC9', accent: '#E9D8FD', bottom: '#3F3D56', outfit: 'cardigan', acc: ['glasses', 'earrings'] },
   },
   {
@@ -74,7 +74,7 @@ export const CHARACTERS: CharacterDef[] = [
     name: { zh: '阿哲', en: 'Zack', ja: 'ザック', es: 'Zack' },
     persona: '技术发烧友。爱抠参数和细节，看不惯奸商，说话快、爱用术语。',
     roles: '懂技术的朋友、发烧友、程序员',
-    voice: { pitch: 1.15, rate: 1.2 },
+    voice: { pitch: 1.15, rate: 1.2, gender: 'm' },
     look: { skin: '#EBC09B', hair: { style: 'spiky', color: '#22223B' }, top: '#2EC4B6', accent: '#0B7A70', bottom: '#30343F', outfit: 'hoodie', acc: ['squareGlasses', 'headset'] },
   },
   {
@@ -82,7 +82,7 @@ export const CHARACTERS: CharacterDef[] = [
     name: { zh: '奶奶', en: 'Nana', ja: 'ナナばあちゃん', es: 'Abuela Nana' },
     persona: '长辈。心疼人、最怕不安全，总担心你累着、被骗，爱念叨。',
     roles: '长辈、母亲、奶奶、房东阿姨',
-    voice: { pitch: 1.4, rate: 0.9 },
+    voice: { pitch: 1.4, rate: 0.9, gender: 'f' },
     look: { skin: '#F3CFB0', hair: { style: 'bun', color: '#E6E6E6' }, top: '#E07A5F', accent: '#F4C7B8', bottom: '#5C4D7D', outfit: 'cardigan', acc: ['glasses', 'wrinkles'] },
   },
   {
@@ -90,7 +90,7 @@ export const CHARACTERS: CharacterDef[] = [
     name: { zh: '陆爷爷', en: 'Grandpa Lu', ja: '陸じいちゃん', es: 'Abuelo Lu' },
     persona: '老人家。倔、爱面子，心里藏着一个想圆的心愿，嘴上说「不用花钱」。',
     roles: '长辈、父亲、爷爷',
-    voice: { pitch: 0.7, rate: 0.88 },
+    voice: { pitch: 0.7, rate: 0.88, gender: 'm' },
     look: { skin: '#E2B48C', hair: { style: 'short', color: '#D9D9D9' }, top: '#5B7DB1', accent: '#3A5A8C', bottom: '#4A4A4A', outfit: 'shirt', acc: ['mustache', 'wrinkles'] },
   },
   {
@@ -98,7 +98,7 @@ export const CHARACTERS: CharacterDef[] = [
     name: { zh: '龚工', en: 'Engineer Gong', ja: 'ゴン技師', es: 'Ing. Gong' },
     persona: '工程师/专家。冷静专业，讲数据和标准，专门提醒风险和隐患。',
     roles: '工程师、专家、医生、律师、老师',
-    voice: { pitch: 0.9, rate: 1 },
+    voice: { pitch: 0.9, rate: 1, gender: 'm' },
     look: { skin: '#B97A4F', hair: { style: 'short', color: '#1A1A1A' }, top: '#3D5A80', accent: '#FFB400', bottom: '#293241', outfit: 'vest', acc: ['hardHat'] },
   },
   {
@@ -106,7 +106,7 @@ export const CHARACTERS: CharacterDef[] = [
     name: { zh: '豆豆', en: 'Dou', ja: 'ドウ', es: 'Dou' },
     persona: '小孩。童言无忌，总问最直白、大人不好意思问的问题。',
     roles: '孩子、弟弟妹妹、学生',
-    voice: { pitch: 1.6, rate: 1.15 },
+    voice: { pitch: 1.6, rate: 1.15, gender: 'f' },
     look: { skin: '#FAD7BD', hair: { style: 'bob', color: '#6B3E26' }, top: '#4CC9F0', accent: '#FFFFFF', bottom: '#F72585', outfit: 'tee', acc: [], scale: 0.8 },
   },
 ];
@@ -117,7 +117,7 @@ export const ME: CharacterDef = {
   name: { zh: '我', en: 'Me', ja: 'わたし', es: 'Yo' },
   persona: '',
   roles: '',
-  voice: { pitch: 1, rate: 1 },
+  voice: { pitch: 1, rate: 1, gender: 'f' },
   look: { skin: '#F1C9A5', hair: { style: 'short', color: '#3B2A20' }, top: '#22C55E', accent: '#15803D', bottom: '#334155', outfit: 'tee', acc: [] },
 };
 

@@ -23,6 +23,7 @@ export interface Who {
   color: string;
   pitch: number;
   rate: number;
+  gender: 'f' | 'm';
 }
 
 /** speaker id → 显示名、颜色、声音。名字跟随界面语言 */
@@ -41,6 +42,7 @@ export function useCast() {
         color: id === 'me' ? 'text-green-600' : id === GUIDE ? 'text-orange-500' : COLORS[Math.max(0, i) % COLORS.length],
         pitch: def?.voice.pitch ?? 1,
         rate: def?.voice.rate ?? 1,
+        gender: def?.voice.gender ?? 'f',
       };
     };
   }, [cast]);
@@ -161,7 +163,7 @@ export function Dialogue({
     setTalking(true);
     let alive = true;
     const minTalk = new Promise((r) => setTimeout(r, 400 + [...text].length * 110));
-    void Promise.all([speak(text, { pitch: c.pitch, rate: c.rate }), minTalk]).then(() => alive && setTalking(false));
+    void Promise.all([speak(text, { pitch: c.pitch, rate: c.rate, gender: c.gender }), minTalk]).then(() => alive && setTalking(false));
     return () => {
       alive = false;
     };
@@ -260,7 +262,7 @@ function Bubble({ who, text, mine, ask, current, chat }: { who: Who; text: strin
       className={`flex items-end gap-2 ${mine ? 'flex-row-reverse' : ''}`}
     >
       {!chat && (
-        <button onClick={() => !mine && speak(text, { pitch: who.pitch, rate: who.rate })} className="shrink-0 overflow-hidden rounded-full bg-slate-100">
+        <button onClick={() => !mine && speak(text, { pitch: who.pitch, rate: who.rate, gender: who.gender })} className="shrink-0 overflow-hidden rounded-full bg-slate-100">
           <Character id={who.id} size={40} bust />
         </button>
       )}

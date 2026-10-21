@@ -53,9 +53,36 @@ function noise(dur: number, gain = 0.3) {
   src.start();
 }
 
+/**
+ * iPhone 的 Safari 不支持 navigator.vibrate。iOS 18 起，点一下 <input type="checkbox" switch> 的标签
+ * 会触发系统的轻触感反馈，这里借它在 iPhone 上「震」一下（必须发生在用户点击的处理过程中）。
+ */
+function iosTick() {
+  try {
+    const label = document.createElement('label');
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.setAttribute('switch', '');
+    label.appendChild(input);
+    label.style.cssText = 'position:fixed;left:-9999px;opacity:0;pointer-events:none';
+    document.body.appendChild(label);
+    label.click();
+    label.remove();
+  } catch {
+    /* 不支持就算了 */
+  }
+}
+
 const vibrate = (p: number | number[]) => {
   try {
-    navigator.vibrate?.(p);
+    if (typeof navigator.vibrate === 'function') {
+      navigator.vibrate(p);
+      return;
+    }
+    // 模式 [震, 停, 震, …] → 在 iPhone 上用几下轻触近似
+    const pulses = Array.isArray(p) ? Math.ceil(p.length / 2) : 1;
+    iosTick();
+    for (let i = 1; i < pulses; i++) setTimeout(iosTick, i * 90);
   } catch {
     /* 不支持就算了 */
   }
