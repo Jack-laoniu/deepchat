@@ -1,3 +1,4 @@
+import { jsonrepair } from 'jsonrepair';
 import { z } from 'zod';
 import { CHARACTER_IDS, GUIDE, LANGS, MOODS } from '../chars/library';
 
@@ -301,10 +302,16 @@ export function parseLesson(input: unknown): ParseResult {
   let data = input;
   if (typeof input === 'string') {
     const m = input.trim().match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
+    const text = m ? m[1] : input;
     try {
-      data = JSON.parse(m ? m[1] : input);
+      data = JSON.parse(text);
     } catch (e) {
-      return { ok: false, errors: [`不是合法 JSON：${(e as Error).message}`] };
+      // 模型常犯的小毛病（中文里夹着没转义的 "、多余的逗号、被截断的结尾）先自动修一下
+      try {
+        data = JSON.parse(jsonrepair(text));
+      } catch {
+        return { ok: false, errors: [`不是合法 JSON：${(e as Error).message}`] };
+      }
     }
   }
   const r = Lesson.safeParse(data);

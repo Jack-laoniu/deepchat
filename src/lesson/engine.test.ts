@@ -214,3 +214,11 @@ describe('cheaper replacements', () => {
     expect(parseLesson(l).ok).toBe(true);
   });
 });
+
+describe('sloppy JSON from models', () => {
+  it('repairs unescaped quotes inside Chinese text and trailing commas', () => {
+    const text = JSON.stringify(dog).replace('"Hey! I\'m Lele.', '"Hey! I\'m "Lele".').replace(/}$/, ',}');
+    expect(() => JSON.parse(text)).toThrow();
+    expect(parseLesson(text).ok).toBe(true);
+  });
+});

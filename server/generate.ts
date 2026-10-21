@@ -23,7 +23,8 @@ export interface Chat {
 }
 /** 之前的对话轮次（网页上的「继续聊需求」每次把历史带上来） */
 export type Turn = { role: 'user' | 'assistant'; content: string };
-export type StartChat = (system: string, history?: Turn[]) => Chat;
+/** json：要求模型只输出 JSON（支持的接口会用 response_format 强制） */
+export type StartChat = (system: string, history?: Turn[], opts?: { json?: boolean }) => Chat;
 
 // ---------------- Claude ----------------
 
@@ -84,6 +85,8 @@ async function readSse(res: Response): Promise<string> {
 }
 
 const tokenParam = new Map<string, 'max_tokens' | 'max_completion_tokens' | 'none'>();
+/** 不支持 response_format 的接口+模型 */
+const noJsonMode = new Set<string>();
 const rejectsParam = (status: number, body: string) =>
   status === 400 && /max_completion_tokens|max_tokens|max output|maximum/i.test(body) && /unsupported|not supported|invalid|unrecognized|use|too large|exceed|maximum/i.test(body);
 
@@ -103,13 +106,19 @@ async function readReply(res: Response): Promise<string> {
 export function openAiChat(opts: { baseUrl: string; apiKey: string; model: string; maxTokens?: number }): StartChat {
   const url = `${opts.baseUrl.replace(/\/+$/, '')}/chat/completions`;
   const key = `${url}|${opts.model}`;
-  const post = (messages: OaMessage[], param: 'max_tokens' | 'max_completion_tokens' | 'none') =>
+  const post = (messages: OaMessage[], param: 'max_tokens' | 'max_completion_tokens' | 'none', json: boolean) =>
     fetch(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: `Bearer ${opts.apiKey}` },
-      body: JSON.stringify({ model: opts.model, messages, stream: true, ...(param === 'none' ? {} : { [param]: opts.maxTokens ?? 16000 }) }),
+      body: JSON.stringify({
+        model: opts.model,
+        messages,
+        stream: true,
+        ...(param === 'none' ? {} : { [param]: opts.maxTokens ?? 16000 }),
+        ...(json ? { response_format: { type: 'json_object' } } : {}),
+      }),
     });
-  return (system, history = []) => {
+  return (system, history = [], chatOpts = {}) => {
     const messages: OaMessage[] = [{ role: 'system', content: system }, ...history];
     return {
       async send(userText) {
@@ -119,14 +128,23 @@ export function openAiChat(opts: { baseUrl: string; apiKey: string; model: strin
         const order = (['max_tokens', 'max_completion_tokens', 'none'] as const).filter((p) => p !== tokenParam.get(key));
         const tries = tokenParam.has(key) ? [tokenParam.get(key)!, ...order] : order;
         let res: Response | null = null;
-        for (const param of tries) {
-          res = await post(messages, param);
+        let json = !!chatOpts.json && !noJsonMode.has(key);
+        for (let i = 0; i < tries.length; i++) {
+          const param = tries[i];
+          res = await post(messages, param, json);
           if (res.ok) {
             tokenParam.set(key, param);
             break;
           }
           const body = await res.text().catch(() => '');
-          if (!rejectsParam(res.status, body) || param === tries.at(-1)) throw new UpstreamError(res.status, body.slice(0, 300));
+          // 不认 response_format：去掉它用同一个长度参数再试
+          if (json && res.status === 400 && /response_format|json_object|json mode/i.test(body)) {
+            noJsonMode.add(key);
+            json = false;
+            i--;
+            continue;
+          }
+          if (!rejectsParam(res.status, body) || i === tries.length - 1) throw new UpstreamError(res.status, body.slice(0, 300));
         }
         const text = await readReply(res!);
         messages.push({ role: 'assistant', content: text });
@@ -164,7 +182,7 @@ export function extractJson(text: string): string {
  */
 export async function generateLesson(startChat: StartChat, need: string, lang: 'zh' | 'en', context = ''): Promise<GenerateResult> {
   const example = lang === 'zh' ? farm : dog;
-  const chat = startChat(GENERATOR_RULES);
+  const chat = startChat(GENERATOR_RULES, [], { json: true });
   const followUp = context
     ? `\n\nThis is a FOLLOW-UP level. The user already played one level for this need. What we learned so far:\n${context}\n\n` +
       `Design a NEW level that digs into what is still unclear or was never covered (especially anything the user says is still unclear). ` +
@@ -175,10 +193,14 @@ export async function generateLesson(startChat: StartChat, need: string, lang: '
   for (let attempt = 0; attempt <= MAX_FIX; attempt++) {
     const reply = await chat.send(prompt);
     if ('refused' in reply) return { ok: false, error: 'refused' };
-    const r = parseLesson(extractJson(reply.text));
+    const json = extractJson(reply.text);
+    const r = parseLesson(json);
     if (r.ok) return { ok: true, lesson: { ...r.lesson, need: r.lesson.need || need } };
     console.error(`generate attempt ${attempt + 1}: invalid level (${reply.text.length} chars):`, r.errors.slice(0, 5).join(' | '));
-    prompt = `The level is invalid:\n${r.errors.slice(0, 30).map((e) => `- ${e}`).join('\n')}\n\nFix exactly these problems and output the complete corrected JSON only.`;
+    // JSON 语法错：只说「第 6538 个字符」模型看不出是哪儿，把出错位置前后的原文带上
+    const pos = Number(r.errors[0].match(/position (\d+)/)?.[1]);
+    const near = Number.isFinite(pos) ? `\nThe text around the error (>>> marks the spot):\n${json.slice(Math.max(0, pos - 120), pos)}>>>${json.slice(pos, pos + 60)}\nCommon cause: a double quote inside a string; write quotes inside text as 「」 instead.` : '';
+    prompt = `The level is invalid:\n${r.errors.slice(0, 30).map((e) => `- ${e}`).join('\n')}${near}\n\nFix exactly these problems and output the complete corrected JSON only.`;
   }
   return { ok: false, error: 'invalid' };
 }
@@ -200,7 +222,7 @@ The player answered in their own words instead. React IN CHARACTER to exactly wh
 and if it reveals a constraint, risk or cost, say so briefly. One short spoken line only: at most 40 Chinese characters or 18 English words.
 Language: ${input.lang === 'zh' ? 'Simplified Chinese' : 'English'}.
 Output JSON only: {"say": "...", "mood": one of ${MOODS.join('|')}}`;
-  const reply = await startChat(system).send(input.text);
+  const reply = await startChat(system, [], { json: true }).send(input.text);
   if ('refused' in reply) return null;
   try {
     const j = JSON.parse(extractJson(reply.text)) as { say?: unknown; mood?: unknown };

@@ -41,7 +41,8 @@ RULES
 5. gamble.crash_if: flags under which it must crash ("always" or a list). When saving money is reasonable for a small scale / light load, don't use "always" and write an "ok" text.
 6. Prices are your estimates; never invent sources.
 7. 8–12 rounds: open with a chat with "${GUIDE}" asking the motivation, include at least one story, one map, one slider(budget), and end with the boss.
-8. ids use lowercase letters, digits, underscores only. Output JSON only, no explanation.`;
+8. ids use lowercase letters, digits, underscores only. Output JSON only, no explanation.
+9. Never put a raw double quote (") inside a string value. To quote speech inside text use 「」 (Chinese) or ‘ ’ (English).`;
 
 export function generatorPrompt(need: string, lang: 'zh' | 'en' = 'zh'): string {
   return `${GENERATOR_RULES}

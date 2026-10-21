@@ -138,6 +138,34 @@ describe('OpenAI-compatible provider', () => {
     expect(sys).toMatch(/Personality: .+/);
   });
 
+  it('asks for JSON mode when generating, and drops it for relays that reject it', async () => {
+    const bodies: any[] = [];
+    vi.stubGlobal('fetch', async (_u: string, init: RequestInit) => {
+      const body = JSON.parse(init.body as string);
+      bodies.push(body);
+      if (body.response_format) return new Response('{"error":"response_format is not supported"}', { status: 400 });
+      return sse(JSON.stringify(farm));
+    });
+    const start = openAiChat({ baseUrl: 'https://relay.example/v1', apiKey: 'k', model: 'json-less' });
+    expect((await generateLesson(start, '农场浇水', 'zh')).ok).toBe(true);
+    expect(bodies.map((b) => !!b.response_format)).toEqual([true, false]);
+    await generateLesson(start, '再来', 'zh');
+    expect(bodies.at(-1).response_format).toBeUndefined(); // 记住了
+  });
+
+  it('shows the model where its JSON broke', async () => {
+    const prompts: string[] = [];
+    const good = JSON.stringify(farm);
+    const broken = good.slice(0, 3000) + '{"k" 1}' + good.slice(3000); // 修不好、且报错带位置
+    vi.stubGlobal('fetch', async (_u: string, init: RequestInit) => {
+      prompts.push(JSON.parse(init.body as string).messages.at(-1).content);
+      return sse(prompts.length === 1 ? broken : good);
+    });
+    const start = openAiChat({ baseUrl: 'https://relay.example/v1', apiKey: 'k', model: 'm2' });
+    expect((await generateLesson(start, '农场浇水', 'zh')).ok).toBe(true);
+    expect(prompts[1]).toContain('>>>');
+  });
+
   it('surfaces upstream HTTP errors', async () => {
     vi.stubGlobal('fetch', async () => new Response('quota exceeded', { status: 429 }));
     const start = openAiChat({ baseUrl: 'https://agy.example/v1', apiKey: 'k', model: 'm' });
