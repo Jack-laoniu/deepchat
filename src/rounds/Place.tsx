@@ -5,7 +5,7 @@ import { useGame } from '../game';
 import { t } from '../i18n';
 import type { PlaceRound } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
-import { HandHint } from '../ui/Hint';
+import { HandHint, useHintPath } from '../ui/Hint';
 import { Btn } from '../ui/kit';
 import { Backdrop } from '../ui/Scene';
 
@@ -20,6 +20,8 @@ export function Place({ round }: { round: PlaceRound }) {
   const [warn, setWarn] = useState<{ zone: string; text: string } | null>(null);
   const [sent, setSent] = useState(false);
   const zoneRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const thingRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const box = useRef<HTMLDivElement>(null);
   const left = round.things.filter((th) => !placed[th.id]);
   const touched = Object.keys(placed).length > 0 || picked !== null;
 
@@ -41,7 +43,10 @@ export function Place({ round }: { round: PlaceRound }) {
     } else sfx.coin();
   };
 
-  const first = round.zones[0];
+  // 示范：从托盘里第一个东西拖到第一个合适的位置
+  const demoThing = left[0];
+  const demoZone = round.zones.find((z) => !demoThing || !z.bad.includes(demoThing.id)) ?? round.zones[0];
+  const path = useHintPath(box, () => (demoThing ? thingRefs.current[demoThing.id] : null), () => zoneRefs.current[demoZone.id], [demoThing?.id, demoZone.id]);
   return (
     <div className="flex h-full flex-col">
       <div className="mb-2 flex items-center justify-center gap-2">
@@ -50,6 +55,8 @@ export function Place({ round }: { round: PlaceRound }) {
       </div>
 
       {/* 场景：overflow clip 防止动画层把画面挤歪 */}
+      {/* 场景和托盘放在同一个容器里，示范手势盖在两者上面，不会被场景裁掉 */}
+      <div ref={box} className="relative flex flex-1 flex-col">
       <div className="relative flex-1 rounded-[28px] border-2 border-b-[6px] border-slate-300" style={{ overflow: 'clip' }}>
         <Backdrop kind={round.scene} />
         {round.zones.map((z) => {
@@ -111,7 +118,6 @@ export function Place({ round }: { round: PlaceRound }) {
             </motion.div>
           );
         })}
-        {first && <HandHint show={!touched && left.length > 0} mode="drag" from={{ x: 18, y: 92 }} to={{ x: first.x, y: first.y + 6 }} delay={1500} />}
       </div>
 
       {/* 待摆放的东西 */}
@@ -120,6 +126,7 @@ export function Place({ round }: { round: PlaceRound }) {
           left.map((th) => (
             <motion.button
               key={th.id}
+              ref={(el) => (thingRefs.current[th.id] = el)}
               layout
               drag
               dragSnapToOrigin
@@ -144,6 +151,8 @@ export function Place({ round }: { round: PlaceRound }) {
         ) : (
           <span className="text-base font-black text-green-600">✅</span>
         )}
+      </div>
+      {path && <HandHint show={!touched && left.length > 0} mode="drag" from={path.from} to={path.to} delay={1500} />}
       </div>
       {left.length > 0 && <div className="mb-1 text-center text-base font-black text-amber-700">{t('placeHint')}</div>}
 

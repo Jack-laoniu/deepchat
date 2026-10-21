@@ -5,7 +5,7 @@ import { useGame } from '../game';
 import { t } from '../i18n';
 import type { SortRound } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
-import { HandHint } from '../ui/Hint';
+import { HandHint, useHintPath } from '../ui/Hint';
 import { Btn } from '../ui/kit';
 
 const BIN_TONE = ['border-emerald-400 bg-emerald-50', 'border-sky-400 bg-sky-50', 'border-slate-300 bg-slate-100'];
@@ -20,6 +20,8 @@ export function Sort({ round }: { round: SortRound }) {
   const [over, setOver] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const binRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const cardRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const box = useRef<HTMLDivElement>(null);
   const left = round.cards.filter((c) => !placed[c.id]);
   const touched = Object.keys(placed).length > 0 || picked !== null;
 
@@ -28,6 +30,8 @@ export function Sort({ round }: { round: SortRound }) {
       const r = binRefs.current[b.id]?.getBoundingClientRect();
       return r && x >= r.left && x <= r.right && y >= r.top - 20 && y <= r.bottom;
     })?.id ?? null;
+
+  const path = useHintPath(box, () => (left[0] ? cardRefs.current[left[0].id] : null), () => binRefs.current[round.bins[0].id], [left[0]?.id]);
 
   const put = (cardId: string, binId: string) => {
     sfx.coin();
@@ -44,13 +48,14 @@ export function Sort({ round }: { round: SortRound }) {
       </div>
       <div className="mb-3 text-center text-base font-black text-amber-700">{left.length ? t('sortHint') : ''}</div>
 
-      <div className="relative flex flex-1 flex-col">
+      <div ref={box} className="relative flex flex-1 flex-col">
         {/* 待整理的卡片 */}
         <div className="flex flex-1 flex-wrap content-start justify-center gap-3">
           <AnimatePresence>
             {left.map((c) => (
               <motion.button
                 key={c.id}
+                ref={(el) => (cardRefs.current[c.id] = el)}
                 layout
                 drag
                 dragSnapToOrigin
@@ -111,7 +116,7 @@ export function Sort({ round }: { round: SortRound }) {
           })}
         </div>
 
-        <HandHint show={!touched && left.length > 0} mode="drag" from={{ x: 20, y: 18 }} to={{ x: 100 / round.bins.length / 2, y: 88 }} delay={1500} />
+        {path && <HandHint show={!touched && left.length > 0} mode="drag" from={path.from} to={path.to} delay={1500} />}
       </div>
 
       <Btn

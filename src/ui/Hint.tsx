@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type RefObject } from 'react';
 import { Emoji } from './Emoji';
 
 /**
@@ -46,12 +46,10 @@ export function HandHint({
             />
           )}
           {mode === 'drag' && (
-            <motion.span
-              className="absolute h-2 -translate-y-1/2 rounded-full bg-white/70"
-              style={{ top: `${from.y}%`, left: `${Math.min(from.x, dest.x)}%`, width: `${Math.abs(dest.x - from.x)}%` }}
-              animate={{ opacity: [0, 0.8, 0.8, 0] }}
-              transition={{ repeat: Infinity, duration: 2.2, times: [0, 0.2, 0.8, 1] }}
-            />
+            // 拖动轨迹：任意方向的虚线（起点到终点）
+            <motion.svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" animate={{ opacity: [0, 0.9, 0.9, 0] }} transition={{ repeat: Infinity, duration: 2.2, times: [0, 0.2, 0.8, 1] }}>
+              <line x1={from.x} y1={from.y} x2={dest.x} y2={dest.y} stroke="white" strokeOpacity=".85" strokeWidth="1.6" strokeDasharray="3 2.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 5 }} />
+            </motion.svg>
           )}
           <motion.div
             className="absolute"
@@ -83,4 +81,30 @@ export function HandHint({
       )}
     </AnimatePresence>
   );
+}
+
+/**
+ * 算出示范手势的起点和终点（相对 box 的百分比）：直接量「要拖的那个东西」和「要放的地方」在屏幕上的位置，
+ * 这样手指总是从真东西出发、落到真位置，不会被裁剪或对不上。
+ */
+export function useHintPath(box: RefObject<HTMLElement | null>, from: () => HTMLElement | null | undefined, to: () => HTMLElement | null | undefined, deps: unknown[]) {
+  const [path, setPath] = useState<{ from: { x: number; y: number }; to: { x: number; y: number } } | null>(null);
+  useEffect(() => {
+    const measure = () => {
+      const b = box.current?.getBoundingClientRect();
+      const f = from()?.getBoundingClientRect();
+      const t = to()?.getBoundingClientRect();
+      if (!b || !f || !t || !b.width || !b.height) return setPath(null);
+      const pct = (r: DOMRect) => ({ x: ((r.left + r.width / 2 - b.left) / b.width) * 100, y: ((r.top + r.height / 2 - b.top) / b.height) * 100 });
+      setPath({ from: pct(f), to: pct(t) });
+    };
+    // 等入场动画放完再量
+    const id = setTimeout(measure, 700);
+    window.addEventListener('resize', measure);
+    return () => {
+      clearTimeout(id);
+      window.removeEventListener('resize', measure);
+    };
+  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
+  return path;
 }
