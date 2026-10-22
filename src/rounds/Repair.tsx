@@ -1,7 +1,8 @@
 import { motion, useAnimationControls } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useGame } from '../game';
 import { sfx, sparkle } from '../fx/fx';
+import { startBossMusic, stopMusic } from '../fx/music';
 import { gambleCrashes, optionDelta } from '../lesson/engine';
 import type { BossRound, FixRound, Option } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
@@ -177,6 +178,11 @@ function DragTool({
 /** Boss 关：灾害从天而降砸向你的方案，选一个防护 */
 export function Boss({ round }: { round: BossRound }) {
   const g = useGame();
+  // 激昂的 Boss 战音乐：进场响起，离开（打完 / 关闭）淡出
+  useEffect(() => {
+    startBossMusic();
+    return stopMusic;
+  }, []);
   const hazard = useAnimationControls();
   const [stage, setStage] = useState<Stage>('idle');
   const [shield, setShield] = useState<string | null>(null);
