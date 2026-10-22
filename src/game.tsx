@@ -91,7 +91,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     crashes,
     feedback,
     open(l) {
-      setLocale(l.lang, l.currency);
+      setLocale(l.lang, l.currency, l.goal);
       setLesson(l);
       setAnswers([]);
       setHearts(MAX_HEARTS);

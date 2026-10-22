@@ -12,6 +12,10 @@ Choices change the plan's items and price and can "blow up" new problems (fix ro
 
 LANGUAGE: write ALL text in the user's language. Set "lang" to one of ${LANGS.join(', ')} and "currency" to the ISO code they'd pay in (CNY, USD, JPY, EUR…).
 
+WHAT IS THE "BUDGET"? Decide this FIRST, before writing anything else.
+- If the need is mainly about spending money (buying, renting, renovating, travelling…), the budget is money: omit "goal"; prices are in "currency".
+- If the need is NOT mainly about money (a sleep schedule, a study plan, getting fit, quitting a habit, organising the family's chores…), money would make every number zero. Instead pick ONE countable resource the user actually has to spend and trade off, and set "goal": {"name","unit","emoji"}, e.g. {"name":"时间","unit":"分钟/天","emoji":"⏱️"}, {"name":"精力","unit":"点","emoji":"⚡"}, {"name":"time","unit":"min/day","emoji":"⏱️"}. Then EVERY "price" (items, option price, the guess) and the budget slider are in that unit: items cost minutes/points, cheaper options save minutes/points, the slider asks how much of it they can really spare. Keep the numbers realistic (e.g. a bedtime routine of 20–60 min/day, energy 0–100). The plan's items are the habits/steps/tools that make up the plan.
+
 CHARACTERS: do NOT invent characters. Pick 2–4 from this fixed library and give each an "as" role for this story (e.g. {"id":"wang","as":"Dad"}). Pick people whose personalities clash.
 ${characterCatalog()}
 Reserved speakers usable without being in cast: "me" (the user), "narrator", "${GUIDE}" (the guide, use for the opening chat).
@@ -34,6 +38,7 @@ DIALOGUE
 - beats = lines {"who","say","mood"} and questions {"id","who","q","options":[...],"free":{...}}.
 - options may carry "reply": the characters' immediate reaction (tease, push back, warn).
 - "free" lets the user answer in their own words (typing or voice). "{v}" in fact is their words; "match" sets flags by keywords and reacts; "chips" are quick phrases. Use free at least twice: once for the motivation (why), once for the biggest worry or wish.
+- Dialogue is where the user feels cared for and hears REAL experience. Make each talk / map spot feel like a real person talking: 6–12 lines, characters share a concrete personal story with specific numbers and details ("my first winter, range dropped from 500 to 300 km", "I tried waking at 6 for a week and crashed by Thursday"), disagree with each other, then ask. Every talk round asks at least 2 questions; react to answers with "reply".
 - any line or question can have "if" to appear depending on earlier answers (e.g. the user said they're rarely home but picked manual control → a character calls it out).
 
 RULES
@@ -44,7 +49,7 @@ RULES
    To make something CHEAPER (downgrade, second-hand, smaller, skip it), the replacement MUST reuse the SAME id as the item it replaces (or put the old id in "remove"); a new id keeps both items and the total goes UP. A cost-cutting option must lower the total; a non-item saving is a negative "price".
 5. gamble.crash_if: flags under which it must crash ("always" or a list). When saving money is reasonable for a small scale / light load, don't use "always" and write an "ok" text.
 6. Prices are your estimates; never invent sources.
-7. 8–12 rounds: open with a chat with "${GUIDE}" asking the motivation, include at least one story, one map, one slider(budget), one sort (what they really need among optional extras), one chain (living with the choice), and a place or a day when space or routine matters, and end with the boss. Max 16 rounds.
+7. 8–12 rounds: open with a chat with "${GUIDE}" asking the motivation, include at least one story, one map, one slider (kind budget, in money or in the goal unit), one sort (what they really need among optional extras), one chain (living with the choice), and a place or a day when space or routine matters, and end with the boss. Max 16 rounds.
 8. ids use lowercase letters, digits, underscores only. Output JSON only, no explanation.
 9. Never put a raw double quote (") inside a string value. To quote speech inside text use 「」 (Chinese) or ‘ ’ (English).`;
 

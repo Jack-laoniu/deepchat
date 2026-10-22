@@ -5,7 +5,7 @@ import { sfx } from '../fx/fx';
 import { jingle } from '../fx/music';
 import { speak } from '../fx/voice';
 import { useGame } from '../game';
-import { t, type MsgKey } from '../i18n';
+import { getGoal, t, type MsgKey } from '../i18n';
 import { chainMeters, matches, METERS, optionDelta, type Meter } from '../lesson/engine';
 import type { ChainRound, Option } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
@@ -14,6 +14,8 @@ import { Btn } from '../ui/kit';
 import { useCast } from './Talk';
 
 const ICON: Record<Meter, string> = { money: '💰', easy: '😌', good: '🎯', safe: '🛡️' };
+/** 非金钱关卡里「钱」那瓶换成这关的资源 */
+const icon = (m: Meter) => (m === 'money' && getGoal() ? getGoal()!.emoji : ICON[m]);
 const NAME: Record<Meter, MsgKey> = { money: 'meterMoney', easy: 'meterEasy', good: 'meterGood', safe: 'meterSafe' };
 
 /** 这个选择会让各条槽动多少（用来在拖动时预告，像 Reigns 槽上方的小圆点） */
@@ -134,7 +136,7 @@ export function Chain({ round }: { round: ChainRound }) {
         {/* 牌堆 + 当前卡 */}
         <div className="relative flex flex-1 items-center justify-center px-9 pb-[14%]">
           {Array.from({ length: Math.min(3, Math.max(0, remaining - 1)) }, (_, i) => (
-            <div key={i} className="absolute h-[78%] w-[78%] max-w-[270px] rounded-[26px] border-2 border-slate-200 bg-slate-50" style={{ transform: `translateY(${(i + 1) * 7}px) rotate(${(i % 2 ? 1 : -1) * (i + 1) * 2.5}deg)`, boxShadow: '0 8px 16px rgba(0,0,0,.35)', zIndex: 3 - i }} />
+            <div key={i} className="absolute h-[78%] w-[80%] max-w-[280px] rounded-[26px] border-2 border-slate-200 bg-slate-50" style={{ transform: `translateY(${(i + 1) * 7}px) rotate(${(i % 2 ? 1 : -1) * (i + 1) * 2.5}deg)`, boxShadow: '0 8px 16px rgba(0,0,0,.35)', zIndex: 3 - i }} />
           ))}
           <AnimatePresence mode="popLayout">
             {card && (
@@ -156,7 +158,7 @@ export function Chain({ round }: { round: ChainRound }) {
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-                className="relative flex h-[78%] w-[78%] max-w-[270px] cursor-grab touch-none flex-col overflow-hidden rounded-[26px] border-2 border-slate-200 bg-white shadow-[0_18px_30px_rgba(0,0,0,.45)] active:cursor-grabbing"
+                className="relative flex max-h-full min-h-[78%] w-[80%] max-w-[280px] cursor-grab touch-none flex-col overflow-hidden rounded-[26px] border-2 border-slate-200 bg-white shadow-[0_18px_30px_rgba(0,0,0,.45)] active:cursor-grabbing"
               >
                 {/* 顶部：谁在问 */}
                 <div className="flex items-center gap-2 bg-gradient-to-r from-amber-100 to-orange-100 px-3 py-2">
@@ -166,11 +168,11 @@ export function Chain({ round }: { round: ChainRound }) {
                   <div className="text-sm font-black text-slate-600">{who(card.who).as ?? who(card.who).name}</div>
                   <div className="ml-auto text-xs font-black text-slate-400">{index + 1}/{cards.length}</div>
                 </div>
-                <div className="flex flex-1 flex-col items-center justify-center px-3 text-center">
-                  <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 2.2 }} style={{ filter: 'drop-shadow(2px 6px 4px rgba(0,0,0,.2))' }}>
-                    <Emoji e={card.emoji} size={70} />
+                <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-3 py-2 text-center">
+                  <motion.div className="shrink-0" animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 2.2 }} style={{ filter: 'drop-shadow(2px 6px 4px rgba(0,0,0,.2))' }}>
+                    <Emoji e={card.emoji} size={[...card.say].length > 22 ? 48 : 62} />
                   </motion.div>
-                  <div className="mt-2 text-[18px] font-extrabold leading-snug text-slate-700">{card.say}</div>
+                  <div className={`mt-2 break-words font-extrabold leading-snug text-slate-700 ${[...card.say].length > 30 ? 'text-[15px]' : [...card.say].length > 18 ? 'text-[16px]' : 'text-[18px]'}`}>{card.say}</div>
                 </div>
                 {/* 往哪边拖，哪边的印章盖上来 */}
                 <motion.div style={{ opacity: stampLeft }} className="pointer-events-none absolute right-3 top-14 rotate-12 rounded-xl border-4 border-rose-500 bg-white/80 px-2 py-0.5 text-xl font-black text-rose-500">
@@ -212,7 +214,7 @@ export function Chain({ round }: { round: ChainRound }) {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-30 flex items-center justify-center px-6" style={{ background: 'radial-gradient(circle, rgba(127,29,29,.55), rgba(15,10,30,.85))' }}>
               <motion.div initial={{ scale: 0.5, rotate: -8 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 13, delay: 0.25 }} className="w-full rounded-[28px] border-4 border-rose-400 bg-white p-5 text-center shadow-2xl">
                 <div className="relative mx-auto w-fit">
-                  <Emoji e={ICON[broke]} size={72} />
+                  <Emoji e={icon(broke)} size={72} />
                   <motion.span className="absolute -right-4 -top-3" initial={{ scale: 0 }} animate={{ scale: [0, 1.4, 1] }} transition={{ delay: 0.4 }}>
                     <Emoji e="💥" size={44} />
                   </motion.span>
@@ -289,7 +291,7 @@ function Flask({ meter, value, preview, delta, deltaKey, broken }: { meter: Mete
           {/* 玻璃高光 */}
           <div className="absolute left-1.5 top-2 h-[60%] w-1.5 rounded-full bg-white/50" />
           <span className="absolute inset-0 flex items-center justify-center">
-            <Emoji e={ICON[meter]} size={24} />
+            <Emoji e={icon(meter)} size={24} />
           </span>
         </div>
         {broken && (

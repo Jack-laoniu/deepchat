@@ -8,13 +8,15 @@ export const yuan = (n: number) => money(n);
 
 const H: Record<Lang, Record<string, string>> = {
   zh: {
+    goalNote: '这个需求不以花钱为主：下面所有「价格 / 合计 / 上限」都是用户的「{name}」，单位：{unit}。请按这个资源来规划，不要换算成钱。',
     need: '用户原话', quotes: '用户自己说的话（原话，最能代表真实意图）', ask: '问', facts: '用户亲自确认的情况', plan: '当前方案',
     est: '估算', adjust: '调整', total: '合计', guess: 'AI 盲猜起点', cap: '用户预算上限', noCap: '用户没有给出预算上限',
     risks: '用户明确接受的风险', crashes: '已验证不可行的省钱做法（用户试过，在其条件下会出问题）', verify: '待核实（沿用 AI 盲猜，用户未确认）',
-    todo: '请你', t1: '先就「待核实」各项向用户确认；', t2: '在预算内给出可执行的详细方案：采购清单（含规格型号）、实施步骤、验收标准；', t3: '以上价格均为估算，请给出核价渠道和方法，不要把估算当报价。',
+    todo: '请你', t1: '先就「待核实」各项向用户确认；', t2: '在预算内给出可执行的详细方案：采购清单（含规格型号）、实施步骤、验收标准；', t3: '以上数字均为估算，请给出核价渠道和方法，不要把估算当报价。',
     lang: '请用中文回答。',
   },
   en: {
+    goalNote: 'This need is not mainly about money: every price / total / cap below is the user\'s "{name}", in {unit}. Plan around that resource; do not convert it to money.',
     need: "User's original request", quotes: "In the user's own words (best signal of real intent)", ask: 'Asked', facts: 'Confirmed by the user', plan: 'Current plan',
     est: 'estimate', adjust: 'Adjustment', total: 'Total', guess: 'AI initial guess', cap: 'User budget cap', noCap: 'User did not set a budget cap',
     risks: 'Risks the user explicitly accepted', crashes: 'Cost-cutting ideas proven not to work (the user tried; they fail under their conditions)', verify: 'To verify (kept from the AI guess, not confirmed)',
@@ -22,6 +24,7 @@ const H: Record<Lang, Record<string, string>> = {
     lang: 'Answer in English.',
   },
   ja: {
+    goalNote: 'お金が主ではない要望です：以下の価格・合計・上限はすべてユーザーの「{name}」（単位：{unit}）。お金に換算せず、この資源で計画してください。',
     need: 'ユーザーの元の要望', quotes: 'ユーザー自身の言葉（本当の意図に最も近い）', ask: '質問', facts: 'ユーザーが確認した事実', plan: '現在のプラン',
     est: '概算', adjust: '調整', total: '合計', guess: 'AI の初期予想', cap: 'ユーザーの予算上限', noCap: '予算上限は未設定',
     risks: 'ユーザーが明示的に受け入れたリスク', crashes: '効かないと確認された節約案（ユーザーの条件では失敗する）', verify: '要確認（AI の予想のまま、未確認）',
@@ -29,6 +32,7 @@ const H: Record<Lang, Record<string, string>> = {
     lang: '日本語で回答してください。',
   },
   es: {
+    goalNote: 'Esta necesidad no es principalmente de dinero: cada precio / total / límite de abajo es el «{name}» del usuario, en {unit}. Planifica con ese recurso; no lo conviertas a dinero.',
     need: 'Petición original del usuario', quotes: 'En palabras del usuario (la mejor señal de su intención real)', ask: 'Pregunta', facts: 'Confirmado por el usuario', plan: 'Plan actual',
     est: 'estimado', adjust: 'Ajuste', total: 'Total', guess: 'Estimación inicial de la IA', cap: 'Presupuesto máximo', noCap: 'El usuario no fijó presupuesto',
     risks: 'Riesgos aceptados explícitamente', crashes: 'Ideas de ahorro que no funcionan (el usuario las probó; fallan en sus condiciones)', verify: 'Por verificar (de la estimación de la IA, sin confirmar)',
@@ -58,6 +62,7 @@ export function superPrompt(lesson: Lesson, p: Played, crashes: Crash[]): string
   L.push('');
 
   L.push(`## ${h.plan}`);
+  if (lesson.goal) L.push(`> ${h.goalNote.replace('{name}', lesson.goal.name).replace('{unit}', lesson.goal.unit)}`);
   for (const i of p.cart) L.push(`- ${i.name}: ${yuan(i.price)} (${i.source ?? h.est})${i.spec ? ` — ${i.spec}` : ''}`);
   for (const e of p.extras) L.push(`- ${h.adjust}「${e.label}」: ${e.price > 0 ? '+' : ''}${yuan(e.price)}`);
   L.push(`- ${h.total}: ${yuan(p.total)} (${h.guess} ${yuan(guessTotal)})`);

@@ -58,8 +58,44 @@ const T = {
   },
 } as const;
 
+/** 不怎么花钱、主要花时间精力的需求（作息、学习、健身、习惯…）：预算换成「每天的时间」 */
+const TIME_NEED = /计划|习惯|早睡|早起|作息|睡眠|学习|背单词|考试|减肥|健身|锻炼|跑步|戒烟|戒酒|戒|冥想|阅读|读书|时间管理|自律|拖延|plan|habit|sleep|wake|study|learn|exam|fitness|workout|exercise|running|quit|meditat|reading|routine|procrastinat/i;
+const MONEY_NEED = /买|购|钱|预算|元|块|价|租|装修|报价|buy|purchase|cost|price|budget|\$|rent|renovat|afford/i;
+export const looksTimeBased = (need: string) => TIME_NEED.test(need) && !MONEY_NEED.test(need);
+
+/** 时间版：把会提到钱的几处换掉 */
+const TIME = {
+  zh: {
+    goal: { name: '时间', unit: '分钟', emoji: '⏱️' },
+    main: '主要投入', buffer: '缓冲时间',
+    whyO: [['⏱️', '省时间', '最想省时间'], ['💪', '坚持下去', '最想能坚持下去'], ['🛡️', '更安心', '最想要安心、少出错'], ['✨', '过得更好', '想让生活质量更好']],
+    cards: [['⏱️', '花的时间', '每天要花多少时间'], ['⭐', '效果', '效果'], ['🧘', '轻松', '不累、不痛苦'], ['⚡', '见效快', '尽快看到变化'], ['👫', '有人陪', '有人一起做/监督'], ['😌', '省心', '省心、少操心']],
+    budgetQ: '每天能挤出多久？', budgetFact: '每天最多能投入 {v} 分钟',
+    chain: [
+      ['daliu', '多花半小时效果翻倍，加不加？', '⏳', ['不加', '不愿再多花时间', { easy: 10, good: -10 }], ['加', '愿意多花时间换效果', { easy: -15, good: 15 }]],
+      ['mei', '周末想睡懒觉，要不要破例？', '🛌', ['破例', '周末会放松一下', { easy: 10, good: -10 }], ['照旧', '周末也坚持', { easy: -10, good: 10 }]],
+      ['xiaobei', '朋友约你熬夜，去不去？', '🌙', ['去', '偶尔会被打乱', { safe: -20, easy: 10 }], ['不去', '为计划推掉', { safe: 10, easy: -10 }]],
+    ],
+    problem: '三天就坚持不住', fixL: '从小目标开始', fixF: '先从很小的目标开始，再慢慢加', gamL: '硬扛', gamCrash: '第四天就放弃了', gamOk: '居然扛住了',
+  },
+  en: {
+    goal: { name: 'time', unit: 'min', emoji: '⏱️' },
+    main: 'Main effort', buffer: 'Buffer time',
+    whyO: [['⏱️', 'Save time', 'Mostly wants to save time'], ['💪', 'Stick to it', 'Mostly wants to stick with it'], ['🛡️', 'Peace of mind', 'Wants peace of mind and fewer mistakes'], ['✨', 'Better life', 'Wants a better quality of life']],
+    cards: [['⏱️', 'Time', 'How much time it takes each day'], ['⭐', 'Results', 'Results'], ['🧘', 'Painless', 'Not exhausting or painful'], ['⚡', 'Quick wins', 'Sees changes soon'], ['👫', 'Buddy', 'Someone to do it with / keep them on track'], ['😌', 'Easy', 'Low effort, no hassle']],
+    budgetQ: 'Minutes a day?', budgetFact: 'Can spare at most {v} minutes a day',
+    chain: [
+      ['daliu', 'Thirty more minutes doubles the results. Add it?', '⏳', ['No', 'Will not spend more time', { easy: 10, good: -10 }], ['Add it', 'Will spend more time for results', { easy: -15, good: 15 }]],
+      ['mei', 'Sleep in this weekend?', '🛌', ['Sleep in', 'Relaxes at weekends', { easy: 10, good: -10 }], ['Keep going', 'Sticks to it at weekends too', { easy: -10, good: 10 }]],
+      ['xiaobei', 'Friends want a late night out. Go?', '🌙', ['Go', 'Plans get broken sometimes', { safe: -20, easy: 10 }], ['Skip', 'Turns it down for the plan', { safe: 10, easy: -10 }]],
+    ],
+    problem: 'Quit by day three', fixL: 'Start tiny', fixF: 'Starts with a tiny goal and builds up', gamL: 'Push through', gamCrash: 'Gave up on day four', gamOk: 'Somehow held on',
+  },
+} as const;
+
 export function genericLesson(need: string, lang: 'zh' | 'en'): LessonT {
-  const d = T[lang];
+  const timeBased = looksTimeBased(need);
+  const d = timeBased ? { ...T[lang], ...TIME[lang] } : T[lang];
   const opt = ([emoji, label, fact]: readonly [string, string, string], id: string, score?: Record<string, number>) => ({ id, emoji, label, fact, ...(score ? { score } : {}) });
   const raw = {
     v: 1,
@@ -69,6 +105,7 @@ export function genericLesson(need: string, lang: 'zh' | 'en'): LessonT {
     domain: 'generic',
     lang,
     currency: lang === 'zh' ? 'CNY' : 'USD',
+    ...(timeBased ? { goal: TIME[lang].goal } : {}),
     cast: [{ id: 'daliu' }, { id: 'mei' }, { id: 'xiaobei' }],
     guess: {
       line: d.guess,
@@ -91,7 +128,9 @@ export function genericLesson(need: string, lang: 'zh' | 'en'): LessonT {
         bins: [{ id: 'must', label: d.must, emoji: '✅' }, { id: 'nice', label: d.nice, emoji: '🤔' }, { id: 'skip', label: d.skip, emoji: '❌', keep: false }],
         cards: d.cards.map(([emoji, label, fact], i) => ({ id: `c${i}`, emoji, label, fact })),
       },
-      { type: 'slider', id: 'budget', q: d.budgetQ, emoji: '💰', kind: 'budget', min: 0, max: lang === 'zh' ? 50000 : 10000, step: lang === 'zh' ? 500 : 100, fact: d.budgetFact },
+      timeBased
+        ? { type: 'slider', id: 'budget', q: d.budgetQ, emoji: '⏱️', kind: 'budget', min: 0, max: 180, step: 5, fact: d.budgetFact }
+        : { type: 'slider', id: 'budget', q: d.budgetQ, emoji: '💰', kind: 'budget', min: 0, max: lang === 'zh' ? 50000 : 10000, step: lang === 'zh' ? 500 : 100, fact: d.budgetFact },
       {
         type: 'day', id: 'routine', title: d.dayT, emoji: '🗓️',
         moments: d.dayM.map(([at, emoji, os], i) => ({ id: `m${i}`, at, emoji, options: os.map((o, j) => opt(o, `m${i}_${j}`)) })),

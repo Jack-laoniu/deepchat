@@ -1,0 +1,1355 @@
+{
+  "v": 1,
+  "need": "帮我制定一个早睡早起的计划",
+  "title": "早睡早起计划",
+  "emoji": "🌅",
+  "domain": "作息",
+  "lang": "zh",
+  "currency": "CNY",
+  "goal": {
+    "name": "时间",
+    "unit": "分钟",
+    "emoji": "⏱️"
+  },
+  "cast": [
+    {
+      "id": "xiaoting",
+      "as": "夜猫子室友"
+    },
+    {
+      "id": "wang",
+      "as": "晨练老王"
+    },
+    {
+      "id": "ajie",
+      "as": "同事"
+    },
+    {
+      "id": "mei",
+      "as": "过来人"
+    }
+  ],
+  "guess": {
+    "line": "我猜：五点起，晨跑冥想读书，一天两小时",
+    "items": [
+      {
+        "id": "run",
+        "emoji": "🏃",
+        "name": "五点晨跑",
+        "price": 45,
+        "spec": "每天 5:00 起床跑步 45 分钟"
+      },
+      {
+        "id": "meditate",
+        "emoji": "🧘",
+        "name": "晨间冥想",
+        "price": 15,
+        "spec": "起床后冥想 15 分钟"
+      },
+      {
+        "id": "read",
+        "emoji": "📖",
+        "name": "睡前读书",
+        "price": 30,
+        "spec": "睡前读纸质书 30 分钟"
+      },
+      {
+        "id": "journal",
+        "emoji": "📓",
+        "name": "写日记",
+        "price": 15,
+        "spec": "睡前写日记复盘 15 分钟"
+      },
+      {
+        "id": "coldshower",
+        "emoji": "🚿",
+        "name": "冷水澡",
+        "price": 15,
+        "spec": "早上冷水澡提神"
+      }
+    ]
+  },
+  "rounds": [
+    {
+      "type": "talk",
+      "id": "why",
+      "style": "chat",
+      "with": "xiaofang",
+      "title": "先聊聊",
+      "emoji": "💬",
+      "beats": [
+        {
+          "who": "xiaofang",
+          "say": "想早睡早起？我陪你把它变成真能坚持的计划！",
+          "mood": "happy"
+        },
+        {
+          "who": "xiaofang",
+          "say": "我以前也定过五点起，坚持了四天，第五天睡到十点。",
+          "mood": "thinking"
+        },
+        {
+          "id": "motive",
+          "who": "xiaofang",
+          "q": "你为什么想早睡早起？",
+          "options": [
+            {
+              "id": "mo_tired",
+              "emoji": "😪",
+              "label": "白天没精神",
+              "fact": "白天总是犯困、没精神，想改善精力",
+              "set": [
+                "tired"
+              ]
+            },
+            {
+              "id": "mo_me",
+              "emoji": "🌄",
+              "label": "想有自己的时间",
+              "fact": "想在早上留出属于自己的时间（学习/运动/发呆）",
+              "set": [
+                "me_time"
+              ]
+            },
+            {
+              "id": "mo_health",
+              "emoji": "🩺",
+              "label": "身体在报警",
+              "fact": "体检或身体出现问题，必须调整作息",
+              "set": [
+                "health"
+              ]
+            },
+            {
+              "id": "mo_forced",
+              "emoji": "🏢",
+              "label": "上班时间变早",
+              "fact": "上班/上学时间变早，被迫早起",
+              "set": [
+                "forced"
+              ]
+            }
+          ],
+          "free": {
+            "placeholder": "说说你自己的原因…",
+            "fact": "用户自己说的原因：{v}",
+            "chips": [
+              "总熬夜",
+              "想减肥",
+              "想学习"
+            ],
+            "reply": [
+              {
+                "who": "xiaofang",
+                "say": "嗯，这个理由很真实，记下了。",
+                "mood": "happy"
+              }
+            ]
+          }
+        },
+        {
+          "id": "now",
+          "who": "xiaofang",
+          "q": "你现在一般几点睡？",
+          "options": [
+            {
+              "id": "nw_11",
+              "emoji": "🕚",
+              "label": "十一点前",
+              "fact": "现在一般 23 点前睡，只是起不来",
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "睡得不晚！那问题可能在早上。",
+                  "mood": "thinking"
+                }
+              ]
+            },
+            {
+              "id": "nw_12",
+              "emoji": "🕛",
+              "label": "十二点左右",
+              "fact": "现在一般 24 点左右睡",
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "往前挪一小时就够啦，不难。",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "nw_1",
+              "emoji": "🕐",
+              "label": "一点以后",
+              "fact": "现在一般凌晨 1 点以后才睡",
+              "set": [
+                "very_late"
+              ],
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "那我们得一点点往前挪，别一下子改。",
+                  "mood": "worried"
+                }
+              ]
+            },
+            {
+              "id": "nw_mess",
+              "emoji": "🎲",
+              "label": "不固定",
+              "fact": "入睡时间不固定，时早时晚",
+              "set": [
+                "irregular"
+              ],
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "不固定比晚睡更伤，先固定下来。",
+                  "mood": "thinking"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "who": "xiaofang",
+          "say": "好，接下来听听身边人的真实经历。",
+          "mood": "happy"
+        }
+      ]
+    },
+    {
+      "type": "talk",
+      "id": "night",
+      "style": "story",
+      "title": "凌晨一点的客厅",
+      "emoji": "🌙",
+      "beats": [
+        {
+          "who": "narrator",
+          "say": "凌晨一点，客厅只亮着一块手机屏。",
+          "mood": "neutral"
+        },
+        {
+          "who": "xiaoting",
+          "say": "再刷一个……就一个，刷完就睡。",
+          "mood": "happy"
+        },
+        {
+          "who": "narrator",
+          "say": "四十分钟后。",
+          "mood": "neutral"
+        },
+        {
+          "who": "xiaoting",
+          "say": "啊？两点了？明早八点还有会……",
+          "mood": "worried"
+        },
+        {
+          "who": "ajie",
+          "say": "我上个月也说要六点起，周一到周三都做到了。",
+          "mood": "thinking"
+        },
+        {
+          "who": "ajie",
+          "say": "周四加班到十一点，周五直接睡到九点，全盘崩了。",
+          "mood": "worried"
+        },
+        {
+          "who": "xiaoting",
+          "say": "我也是！一失败就破罐破摔，干脆熬得更晚。",
+          "mood": "angry"
+        },
+        {
+          "who": "ajie",
+          "say": "后来我发现，不是起不来，是睡前那一小时管不住。",
+          "mood": "thinking"
+        },
+        {
+          "id": "before",
+          "who": "xiaoting",
+          "q": "你睡前最后一小时一般在干嘛？",
+          "options": [
+            {
+              "id": "bf_phone",
+              "emoji": "📱",
+              "label": "刷手机",
+              "fact": "睡前一小时在床上刷手机/短视频",
+              "set": [
+                "phone_habit"
+              ],
+              "reply": [
+                {
+                  "who": "xiaoting",
+                  "say": "握手！咱俩是同一种人。",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "bf_show",
+              "emoji": "📺",
+              "label": "追剧打游戏",
+              "fact": "睡前追剧或打游戏，一集接一集",
+              "set": [
+                "phone_habit"
+              ],
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "下一集自动播放，最要命。",
+                  "mood": "worried"
+                }
+              ]
+            },
+            {
+              "id": "bf_work",
+              "emoji": "💻",
+              "label": "还在工作",
+              "fact": "睡前还在加班/回消息/学习",
+              "set": [
+                "work_late"
+              ],
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "那得先跟工作划条线。",
+                  "mood": "thinking"
+                }
+              ]
+            },
+            {
+              "id": "bf_think",
+              "emoji": "💭",
+              "label": "躺着想事",
+              "fact": "躺在床上睡不着，脑子停不下来",
+              "set": [
+                "anxious"
+              ],
+              "reply": [
+                {
+                  "who": "xiaoting",
+                  "say": "这个我懂，越想睡越清醒。",
+                  "mood": "worried"
+                }
+              ]
+            }
+          ],
+          "free": {
+            "placeholder": "说说你真实的睡前一小时…",
+            "fact": "用户描述的睡前一小时：{v}",
+            "chips": [
+              "刷短视频",
+              "回工作消息",
+              "陪孩子"
+            ],
+            "match": [
+              {
+                "words": [
+                  "孩子",
+                  "娃",
+                  "宝宝"
+                ],
+                "set": [
+                  "kids"
+                ],
+                "fact": "家里有孩子，睡前要陪孩子",
+                "reply": [
+                  {
+                    "who": "ajie",
+                    "say": "有娃的话，时间真不由自己。",
+                    "mood": "worried"
+                  }
+                ]
+              },
+              {
+                "words": [
+                  "工作",
+                  "加班",
+                  "消息",
+                  "老板"
+                ],
+                "set": [
+                  "work_late"
+                ],
+                "fact": "睡前常被工作占用",
+                "reply": [
+                  {
+                    "who": "ajie",
+                    "say": "先跟工作划条线吧。",
+                    "mood": "thinking"
+                  }
+                ]
+              }
+            ],
+            "reply": [
+              {
+                "who": "xiaoting",
+                "say": "嗯，大家都差不多。",
+                "mood": "neutral"
+              }
+            ]
+          }
+        },
+        {
+          "who": "xiaoting",
+          "say": "说真的，你要是成功了，教教我。",
+          "mood": "happy"
+        }
+      ]
+    },
+    {
+      "type": "map",
+      "id": "ask",
+      "title": "问问过来人",
+      "emoji": "🗺️",
+      "spots": [
+        {
+          "id": "park",
+          "emoji": "🌳",
+          "label": "晨练公园",
+          "who": "wang",
+          "x": 22,
+          "y": 30,
+          "beats": [
+            {
+              "who": "wang",
+              "say": "我五点半起了二十年，从来不靠意志力。",
+              "mood": "smug"
+            },
+            {
+              "who": "wang",
+              "say": "诀窍就俩：闹钟放门口，起来先拉窗帘见光。",
+              "mood": "happy"
+            },
+            {
+              "who": "wang",
+              "say": "刚开始那两周，中午困得要命，熬过去就好了。",
+              "mood": "thinking"
+            },
+            {
+              "id": "morning",
+              "who": "wang",
+              "q": "早起多出来的时间，你想干嘛？",
+              "options": [
+                {
+                  "id": "mn_sport",
+                  "emoji": "🏃",
+                  "label": "运动",
+                  "fact": "早起想用来运动锻炼",
+                  "set": [
+                    "want_sport"
+                  ],
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "好！明早公园见！",
+                      "mood": "happy"
+                    }
+                  ]
+                },
+                {
+                  "id": "mn_learn",
+                  "emoji": "📚",
+                  "label": "学习",
+                  "fact": "早起想用来学习、看书",
+                  "set": [
+                    "want_learn"
+                  ],
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "早上脑子最清楚，适合。",
+                      "mood": "happy"
+                    }
+                  ]
+                },
+                {
+                  "id": "mn_slow",
+                  "emoji": "🍳",
+                  "label": "慢慢吃早饭",
+                  "fact": "早起想不慌不忙吃顿早饭，从容出门",
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "这个最实在，也最容易坚持。",
+                      "mood": "happy"
+                    }
+                  ]
+                },
+                {
+                  "id": "mn_none",
+                  "emoji": "😴",
+                  "label": "其实就想多睡",
+                  "fact": "其实并不想早起做什么，只是想睡够、白天有精神",
+                  "set": [
+                    "just_sleep"
+                  ],
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "那重点是早睡，不是早起。",
+                      "mood": "thinking"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "office",
+          "emoji": "🏢",
+          "label": "公司",
+          "who": "ajie",
+          "x": 76,
+          "y": 28,
+          "beats": [
+            {
+              "who": "ajie",
+              "say": "我们组有人下午三点后不喝咖啡，说晚上睡得明显好。",
+              "mood": "thinking"
+            },
+            {
+              "who": "ajie",
+              "say": "我试了一周，十一点半真的就困了。",
+              "mood": "happy"
+            },
+            {
+              "id": "start",
+              "who": "ajie",
+              "q": "你几点得到公司/出门？",
+              "options": [
+                {
+                  "id": "st_flex",
+                  "emoji": "🧘",
+                  "label": "时间灵活",
+                  "fact": "上班时间灵活或在家办公",
+                  "set": [
+                    "flex"
+                  ],
+                  "reply": [
+                    {
+                      "who": "ajie",
+                      "say": "羡慕！那更要自己定规矩。",
+                      "mood": "happy"
+                    }
+                  ]
+                },
+                {
+                  "id": "st_9",
+                  "emoji": "🕘",
+                  "label": "九点左右",
+                  "fact": "每天九点左右到岗",
+                  "reply": [
+                    {
+                      "who": "ajie",
+                      "say": "七点起就很从容了。",
+                      "mood": "happy"
+                    }
+                  ]
+                },
+                {
+                  "id": "st_8",
+                  "emoji": "🕗",
+                  "label": "八点前",
+                  "fact": "每天八点前就要到，通勤远",
+                  "set": [
+                    "early_start"
+                  ],
+                  "reply": [
+                    {
+                      "who": "ajie",
+                      "say": "那十一点前必须睡，没得商量。",
+                      "mood": "worried"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "home",
+          "emoji": "🏠",
+          "label": "家里",
+          "who": "mei",
+          "x": 50,
+          "y": 64,
+          "beats": [
+            {
+              "who": "mei",
+              "say": "我生完二宝后被迫早睡，反而把十年的失眠治好了。",
+              "mood": "happy"
+            },
+            {
+              "who": "mei",
+              "say": "但我老公十二点还打游戏，灯一亮我就醒。",
+              "mood": "angry"
+            },
+            {
+              "id": "house",
+              "who": "mei",
+              "q": "你家晚上安静吗？",
+              "options": [
+                {
+                  "id": "hs_quiet",
+                  "emoji": "🤫",
+                  "label": "很安静",
+                  "fact": "家里晚上很安静，不会被打扰",
+                  "reply": [
+                    {
+                      "who": "mei",
+                      "say": "那你条件很好，就看自己了。",
+                      "mood": "happy"
+                    }
+                  ]
+                },
+                {
+                  "id": "hs_late",
+                  "emoji": "🎮",
+                  "label": "有人熬夜",
+                  "fact": "同住的人习惯熬夜，有光和声音",
+                  "set": [
+                    "noisy"
+                  ],
+                  "reply": [
+                    {
+                      "who": "mei",
+                      "say": "眼罩耳塞先备上，再好好谈谈。",
+                      "mood": "thinking"
+                    }
+                  ]
+                },
+                {
+                  "id": "hs_kids",
+                  "emoji": "👶",
+                  "label": "有娃",
+                  "fact": "家里有小孩，晚上可能被吵醒",
+                  "set": [
+                    "kids"
+                  ],
+                  "reply": [
+                    {
+                      "who": "mei",
+                      "say": "有娃就跟着娃一起睡，最省事。",
+                      "mood": "happy"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "slider",
+      "id": "budget",
+      "q": "每天能挤出多少分钟？",
+      "emoji": "⏱️",
+      "kind": "budget",
+      "min": 0,
+      "max": 150,
+      "step": 5,
+      "unit": "",
+      "fact": "每天愿意为早睡早起计划投入的时间上限：{v} 分钟（睡前流程+早晨安排）"
+    },
+    {
+      "type": "day",
+      "id": "routine",
+      "title": "你的一天",
+      "emoji": "🗓️",
+      "moments": [
+        {
+          "id": "d_am",
+          "at": "morning",
+          "emoji": "⏰",
+          "options": [
+            {
+              "id": "d_am_snooze",
+              "emoji": "😴",
+              "label": "赖床",
+              "fact": "闹钟响了会赖床好几次",
+              "set": [
+                "snoozer"
+              ]
+            },
+            {
+              "id": "d_am_up",
+              "emoji": "🙆",
+              "label": "一响就起",
+              "fact": "闹钟响了能马上起"
+            }
+          ]
+        },
+        {
+          "id": "d_noon",
+          "at": "noon",
+          "emoji": "☕",
+          "options": [
+            {
+              "id": "d_noon_coffee",
+              "emoji": "☕",
+              "label": "咖啡",
+              "fact": "下午还会喝咖啡/奶茶",
+              "set": [
+                "late_coffee"
+              ]
+            },
+            {
+              "id": "d_noon_nap",
+              "emoji": "💤",
+              "label": "午睡",
+              "fact": "中午能午睡一会儿",
+              "set": [
+                "nap"
+              ]
+            },
+            {
+              "id": "d_noon_none",
+              "emoji": "🍵",
+              "label": "都没有",
+              "fact": "中午不喝咖啡也不午睡"
+            }
+          ]
+        },
+        {
+          "id": "d_eve",
+          "at": "evening",
+          "emoji": "🌇",
+          "options": [
+            {
+              "id": "d_eve_ot",
+              "emoji": "💼",
+              "label": "加班",
+              "fact": "晚上经常加班",
+              "set": [
+                "work_late"
+              ]
+            },
+            {
+              "id": "d_eve_gym",
+              "emoji": "🏋️",
+              "label": "运动",
+              "fact": "傍晚会运动"
+            },
+            {
+              "id": "d_eve_home",
+              "emoji": "🏠",
+              "label": "回家",
+              "fact": "下班就回家"
+            }
+          ]
+        },
+        {
+          "id": "d_night",
+          "at": "night",
+          "emoji": "🌙",
+          "options": [
+            {
+              "id": "d_night_bed",
+              "emoji": "🛏️",
+              "label": "床上刷",
+              "fact": "睡前在床上玩手机",
+              "set": [
+                "phone_habit"
+              ]
+            },
+            {
+              "id": "d_night_sofa",
+              "emoji": "🛋️",
+              "label": "沙发看剧",
+              "fact": "睡前在沙发看剧"
+            },
+            {
+              "id": "d_night_book",
+              "emoji": "📖",
+              "label": "看书",
+              "fact": "睡前看书"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "place",
+      "id": "room",
+      "title": "手机晚上睡哪？",
+      "emoji": "🛏️",
+      "scene": "room",
+      "zones": [
+        {
+          "id": "bed",
+          "label": "床头",
+          "emoji": "🛏️",
+          "x": 24,
+          "y": 58,
+          "fact": "放在床头，伸手就能拿到",
+          "bad": [
+            "phone"
+          ],
+          "warn": "放床头，就会刷到一点"
+        },
+        {
+          "id": "desk",
+          "label": "书桌",
+          "emoji": "🪑",
+          "x": 54,
+          "y": 44,
+          "fact": "放在卧室书桌上，要下床才能拿到"
+        },
+        {
+          "id": "hall",
+          "label": "客厅",
+          "emoji": "🛋️",
+          "x": 80,
+          "y": 62,
+          "fact": "放在客厅，不进卧室"
+        }
+      ],
+      "things": [
+        {
+          "id": "phone",
+          "emoji": "📱",
+          "label": "手机",
+          "fact": "晚上手机充电/放置的位置"
+        },
+        {
+          "id": "alarm",
+          "emoji": "⏰",
+          "label": "闹钟",
+          "fact": "闹钟放的位置（离床越远越不容易赖床）"
+        },
+        {
+          "id": "lamp",
+          "emoji": "💡",
+          "label": "小夜灯",
+          "fact": "暖光小夜灯放的位置"
+        }
+      ]
+    },
+    {
+      "type": "fix",
+      "id": "fix_phone",
+      "q": "手机还在床头！",
+      "emoji": "📱",
+      "problem": "一拿起就停不下",
+      "if": {
+        "any": [
+          "phone_bed"
+        ]
+      },
+      "options": [
+        {
+          "id": "fp_hall",
+          "emoji": "🛋️",
+          "label": "放客厅充电",
+          "fact": "睡前把手机放客厅充电，买个普通闹钟",
+          "set": [
+            "phone_out"
+          ],
+          "add": [
+            {
+              "id": "alarmclock",
+              "emoji": "⏰",
+              "name": "普通闹钟",
+              "price": 0,
+              "spec": "几十块的机械闹钟，替代手机闹钟"
+            }
+          ],
+          "tip": "最有效，没有之一",
+          "score": {
+            "good": 20,
+            "easy": -5
+          }
+        },
+        {
+          "id": "fp_lock",
+          "emoji": "🔒",
+          "label": "设定时锁屏",
+          "fact": "用手机自带的屏幕时间，23:00 后锁住娱乐 App",
+          "tip": "比意志力靠谱",
+          "score": {
+            "good": 10,
+            "easy": 5
+          }
+        },
+        {
+          "id": "fp_gray",
+          "emoji": "⚫",
+          "label": "开灰度模式",
+          "fact": "睡前把屏幕调成黑白，降低刷的欲望",
+          "tip": "小技巧，效果因人而异",
+          "score": {
+            "good": 5
+          }
+        }
+      ],
+      "gamble": {
+        "label": "靠意志力",
+        "fact": "不做改变，靠意志力睡前不刷手机",
+        "crash_if": [
+          "phone_habit"
+        ],
+        "crash": "又刷到两点，计划第一天就破功",
+        "loss": 0,
+        "ok": "居然忍住了"
+      }
+    },
+    {
+      "type": "sort",
+      "id": "extras",
+      "q": "计划里留哪些？",
+      "emoji": "🧾",
+      "bins": [
+        {
+          "id": "must",
+          "label": "要做",
+          "emoji": "✅"
+        },
+        {
+          "id": "later",
+          "label": "以后再说",
+          "emoji": "🤔",
+          "keep": false
+        },
+        {
+          "id": "skip",
+          "label": "不要",
+          "emoji": "❌",
+          "keep": false
+        }
+      ],
+      "cards": [
+        {
+          "id": "run",
+          "emoji": "🏃",
+          "label": "五点晨跑",
+          "fact": "每天 5:00 起床跑步 45 分钟",
+          "item": {
+            "id": "run",
+            "emoji": "🏃",
+            "name": "五点晨跑",
+            "price": 45,
+            "spec": ""
+          }
+        },
+        {
+          "id": "meditate",
+          "emoji": "🧘",
+          "label": "冥想",
+          "fact": "冥想 15 分钟",
+          "item": {
+            "id": "meditate",
+            "emoji": "🧘",
+            "name": "冥想",
+            "price": 15,
+            "spec": ""
+          }
+        },
+        {
+          "id": "read",
+          "emoji": "📖",
+          "label": "睡前读书",
+          "fact": "睡前读纸质书 30 分钟，替代刷手机",
+          "item": {
+            "id": "read",
+            "emoji": "📖",
+            "name": "睡前读书",
+            "price": 30,
+            "spec": ""
+          }
+        },
+        {
+          "id": "journal",
+          "emoji": "📓",
+          "label": "写日记",
+          "fact": "睡前写日记 15 分钟",
+          "item": {
+            "id": "journal",
+            "emoji": "📓",
+            "name": "写日记",
+            "price": 15,
+            "spec": ""
+          }
+        },
+        {
+          "id": "coldshower",
+          "emoji": "🚿",
+          "label": "冷水澡",
+          "fact": "早上冷水澡 15 分钟",
+          "item": {
+            "id": "coldshower",
+            "emoji": "🚿",
+            "name": "冷水澡",
+            "price": 15,
+            "spec": ""
+          }
+        },
+        {
+          "id": "stretch",
+          "emoji": "🤸",
+          "label": "睡前拉伸",
+          "fact": "睡前拉伸 10 分钟，帮助放松入睡",
+          "item": {
+            "id": "stretch",
+            "emoji": "🤸",
+            "name": "睡前拉伸",
+            "price": 10,
+            "spec": ""
+          }
+        },
+        {
+          "id": "footbath",
+          "emoji": "🦶",
+          "label": "泡脚",
+          "fact": "睡前泡脚 20 分钟",
+          "item": {
+            "id": "footbath",
+            "emoji": "🦶",
+            "name": "泡脚",
+            "price": 20,
+            "spec": ""
+          }
+        }
+      ]
+    },
+    {
+      "type": "chain",
+      "id": "month",
+      "title": "计划开始后第一个月",
+      "emoji": "📅",
+      "cards": [
+        {
+          "id": "c_dinner",
+          "who": "ajie",
+          "say": "周五部门聚餐，要续摊去唱歌，来不来？",
+          "emoji": "🎤",
+          "left": {
+            "id": "c_dinner_go",
+            "emoji": "🎉",
+            "label": "去",
+            "fact": "周末前的聚会会参加到很晚",
+            "price": 0,
+            "score": {
+              "good": -15,
+              "easy": 10
+            }
+          },
+          "right": {
+            "id": "c_dinner_no",
+            "emoji": "🏠",
+            "label": "十点先走",
+            "fact": "聚会到十点就先走",
+            "score": {
+              "good": 10,
+              "easy": -10
+            }
+          }
+        },
+        {
+          "id": "c_weekend",
+          "who": "xiaoting",
+          "say": "周末了！睡到中午补觉吧？",
+          "emoji": "🛌",
+          "left": {
+            "id": "c_weekend_sleep",
+            "emoji": "😴",
+            "label": "睡到中午",
+            "fact": "周末会补觉睡到中午",
+            "score": {
+              "good": -20,
+              "easy": 15
+            }
+          },
+          "right": {
+            "id": "c_weekend_keep",
+            "emoji": "⏰",
+            "label": "晚一小时起",
+            "fact": "周末最多比平时晚起一小时",
+            "score": {
+              "good": 10,
+              "easy": -10
+            }
+          }
+        },
+        {
+          "id": "c_game",
+          "who": "xiaoting",
+          "say": "新出的游戏，今晚一起开黑到一点？",
+          "emoji": "🎮",
+          "if": {
+            "any": [
+              "noisy",
+              "phone_habit"
+            ]
+          },
+          "left": {
+            "id": "c_game_play",
+            "emoji": "🕹️",
+            "label": "就今天",
+            "fact": "偶尔会为游戏熬夜",
+            "score": {
+              "good": -15,
+              "easy": 10
+            }
+          },
+          "right": {
+            "id": "c_game_no",
+            "emoji": "🙅",
+            "label": "改到周六下午",
+            "fact": "把娱乐挪到白天",
+            "score": {
+              "good": 10,
+              "easy": -5
+            }
+          }
+        },
+        {
+          "id": "c_rain",
+          "who": "wang",
+          "say": "下雨了，今早还跑吗？",
+          "emoji": "🌧️",
+          "if": {
+            "any": [
+              "want_sport",
+              "run_must"
+            ]
+          },
+          "left": {
+            "id": "c_rain_skip",
+            "emoji": "🛌",
+            "label": "不跑了",
+            "fact": "雨天就取消晨跑",
+            "score": {
+              "good": -5,
+              "easy": 10
+            }
+          },
+          "right": {
+            "id": "c_rain_indoor",
+            "emoji": "🤸",
+            "label": "室内跳绳",
+            "fact": "雨天改成室内运动 15 分钟",
+            "score": {
+              "good": 10,
+              "easy": -10
+            }
+          }
+        },
+        {
+          "id": "c_work",
+          "who": "ajie",
+          "say": "老板十一点发消息：明早要方案。",
+          "emoji": "💼",
+          "left": {
+            "id": "c_work_now",
+            "emoji": "💻",
+            "label": "现在就改",
+            "fact": "深夜被工作打断会立刻处理",
+            "score": {
+              "safe": -15,
+              "good": -10
+            }
+          },
+          "right": {
+            "id": "c_work_am",
+            "emoji": "🌅",
+            "label": "明早早起改",
+            "fact": "把工作挪到第二天早上",
+            "score": {
+              "safe": -5,
+              "easy": -10
+            }
+          }
+        },
+        {
+          "id": "c_insomnia",
+          "who": "mei",
+          "say": "十一点躺下了，一点还睡不着。",
+          "emoji": "😵",
+          "left": {
+            "id": "c_insomnia_phone",
+            "emoji": "📱",
+            "label": "拿手机",
+            "fact": "睡不着就看手机",
+            "score": {
+              "good": -15
+            }
+          },
+          "right": {
+            "id": "c_insomnia_up",
+            "emoji": "🛋️",
+            "label": "起来坐会儿",
+            "fact": "睡不着就离开床，困了再回来",
+            "score": {
+              "good": 10,
+              "easy": -5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "talk",
+      "id": "check",
+      "style": "chat",
+      "with": "mei",
+      "title": "过来人的提醒",
+      "emoji": "☕",
+      "beats": [
+        {
+          "who": "mei",
+          "say": "坚持一个月啦？我跟你说个我自己的教训。",
+          "mood": "happy"
+        },
+        {
+          "who": "mei",
+          "say": "我第一次调作息，一下从一点改到十点，结果躺床上瞪眼到十二点。",
+          "mood": "worried"
+        },
+        {
+          "who": "mei",
+          "say": "后来每周只提前十五分钟，一个多月就稳了。",
+          "mood": "happy"
+        },
+        {
+          "id": "pace",
+          "who": "mei",
+          "q": "你想怎么往前挪？",
+          "options": [
+            {
+              "id": "pc_slow",
+              "emoji": "🐢",
+              "label": "每周早15分钟",
+              "fact": "每周把入睡时间提前 15 分钟，逐步调整",
+              "set": [
+                "gradual"
+              ],
+              "reply": [
+                {
+                  "who": "mei",
+                  "say": "对，慢就是快。",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "pc_fast",
+              "emoji": "🚀",
+              "label": "一步到位",
+              "fact": "想直接一步改到目标作息",
+              "set": [
+                "all_in"
+              ],
+              "reply": [
+                {
+                  "who": "mei",
+                  "say": "行……第一周会很难熬，做好准备。",
+                  "mood": "worried"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "reward",
+          "who": "mei",
+          "q": "坚持下来，想怎么奖励自己？",
+          "options": [
+            {
+              "id": "rw_food",
+              "emoji": "🍰",
+              "label": "吃顿好的",
+              "fact": "坚持一周奖励自己吃顿好的"
+            },
+            {
+              "id": "rw_buy",
+              "emoji": "🎁",
+              "label": "买个想要的",
+              "fact": "坚持一个月奖励自己一件想要的东西"
+            },
+            {
+              "id": "rw_none",
+              "emoji": "😌",
+              "label": "不用奖励",
+              "fact": "不需要奖励，精神好就是奖励"
+            }
+          ],
+          "free": {
+            "placeholder": "比如：周末去爬山",
+            "fact": "用户给自己的奖励：{v}",
+            "chips": [
+              "看场电影",
+              "睡个懒觉",
+              "买新枕头"
+            ],
+            "reply": [
+              {
+                "who": "mei",
+                "say": "好，说到做到！",
+                "mood": "happy"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "boss",
+      "id": "boss",
+      "q": "连续加班一周！",
+      "emoji": "👹",
+      "problem": "每晚都到十一点",
+      "options": [
+        {
+          "id": "b_short",
+          "emoji": "✂️",
+          "label": "睡前流程减半",
+          "fact": "加班的日子只保留最短的睡前流程（拉伸 5 分钟、不看手机）",
+          "price": -15,
+          "tip": "流程可以短，但不能断",
+          "score": {
+            "good": 10,
+            "easy": 5
+          }
+        },
+        {
+          "id": "b_nap",
+          "emoji": "💤",
+          "label": "午睡二十分钟",
+          "fact": "加班周用 20 分钟午睡补精力",
+          "tip": "别超过半小时",
+          "score": {
+            "easy": 10
+          }
+        },
+        {
+          "id": "b_talk",
+          "emoji": "🗣️",
+          "label": "跟领导谈边界",
+          "fact": "和领导沟通，晚上十点后的消息第二天早上处理",
+          "tip": "说清楚，大多数人能理解",
+          "score": {
+            "safe": 10,
+            "easy": -5
+          }
+        }
+      ],
+      "gamble": {
+        "label": "硬撑着照旧",
+        "fact": "加班周也坚持原计划五点起床",
+        "crash_if": [
+          "work_late",
+          "early_start"
+        ],
+        "crash": "第三天开会睡着，被点名了",
+        "loss": 0,
+        "ok": "这周加班不多，扛住了"
+      }
+    }
+  ],
+  "secret": "先管住睡前一小时，早起自然就来了"
+}

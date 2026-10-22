@@ -4,39 +4,42 @@ import { ac, isMuted, onMute, out } from './fx';
  * 背景音乐：全部现场合成（不用音频文件，手机网页秒开）。正式的授权音乐到了可以替换成文件播放。
  *
  * 一首曲子 = 速度 + 每小节一个和弦 + 几条音轨（乐器 + 16 步的节奏型）。
- * 乐器：拨弦（Karplus–Strong，像尤克里里/竖琴）、马林巴、钟琴/八音盒、电钢琴、口哨、铺底和弦、贝斯、鼓。
+ * 乐器：电钢琴、铺底和弦、软贝斯、柔和钟琴、弦乐长音、低鼓（拨弦/马林巴/口哨等只留给音效和旧代码）。
  * 曲目按 docs/art-brief.md 第 7 节：home / story / explore / tension / day_* / boss，外加 3 段短乐句。
  * 切换曲目会交叉淡入淡出；角色说话时自动压低音量（duck）。
  */
 
 export type Theme = 'home' | 'story' | 'explore' | 'tension' | 'day_morning' | 'day_noon' | 'day_evening' | 'day_night' | 'boss';
-type Inst = 'pluck' | 'marimba' | 'bell' | 'keys' | 'whistle' | 'pad' | 'bass' | 'sawbass' | 'lead' | 'kick' | 'snare' | 'hat' | 'shaker' | 'tick';
-/** 一条音轨：每小节 16 步；音高写成「和弦里的第几个音」(0,1,2,3=高八度根音) 加八度，或者 null 休止 */
+type Inst = 'pluck' | 'marimba' | 'bell' | 'keys' | 'whistle' | 'pad' | 'bass' | 'sawbass' | 'lead' | 'kick' | 'snare' | 'hat' | 'shaker' | 'tick' | 'strings' | 'tom' | 'soft';
+/** 一条音轨：每小节 16 步；音高写成「和弦里的第几个音」(0..和弦音数，最后一个是高八度根音) 加八度，或者 null 休止 */
 type Track = { inst: Inst; steps: (number | null)[]; octave?: number; vol?: number; len?: number; everyBar?: (bar: number) => boolean };
 type Song = { bpm: number; chords: number[][]; tracks: Track[]; vol: number; intro?: boolean };
 
 const hz = (m: number) => 440 * 2 ** ((m - 69) / 12);
 const _ = null;
 
-// 和弦（MIDI 号）
-const C = [60, 64, 67], G = [55, 59, 62], Am = [57, 60, 64], F = [53, 57, 60], Dm = [50, 53, 57], Bb = [46, 50, 53], Em = [52, 55, 59], D = [50, 54, 57], E = [52, 56, 59];
+// 和弦（MIDI 号）。剧情那首用三和弦；其它曲子用七和弦，听起来更暖、更「生活」
+const C = [60, 64, 67], F = [53, 57, 60], Dm = [50, 53, 57], Bb = [46, 50, 53];
+const Cmaj7 = [48, 52, 55, 59], Fmaj7 = [53, 57, 60, 64], Am7 = [57, 60, 64, 67], Dm7 = [50, 53, 57, 60], Em7 = [52, 55, 59, 62], G6 = [55, 59, 62, 64], Gsus = [55, 60, 62, 67], E7 = [52, 56, 59, 62];
 
+/**
+ * 统一音色：都从「剧情」那首（电钢琴 + 铺底 + 软贝斯，用户觉得好听）长出来，只换速度、和弦、音型和一点点点缀，
+ * 不再用尤克里里扫弦 / 口哨 / 马林巴 / 方波 / 锯齿贝斯这些容易吵、容易廉价的音色。
+ */
 const SONGS: Record<Theme, Song> = {
-  // 首页：轻快、邀请感。尤克里里扫弦 + 口哨主旋律 + 沙锤
+  // 首页：温暖、邀请感。电钢琴分解和弦 + 钟琴两三个音的小旋律
   home: {
-    bpm: 100,
-    vol: 0.11,
-    chords: [C, G, Am, F],
+    bpm: 86,
+    vol: 0.08,
+    chords: [Cmaj7, Am7, Fmaj7, G6],
     tracks: [
-      { inst: 'pluck', steps: [_, _, 0, _, _, 1, 2, _, _, _, 0, _, 1, _, 2, _], octave: 0, vol: 0.5 },
-      { inst: 'whistle', steps: [2, _, _, 1, 2, _, 3, _, _, _, 2, _, 1, _, _, _], octave: 1, vol: 0.18, len: 2, everyBar: (b) => b % 2 === 0 },
-      { inst: 'whistle', steps: [1, _, 0, _, 1, _, _, _, 0, _, _, _, _, _, _, _], octave: 1, vol: 0.18, len: 3, everyBar: (b) => b % 2 === 1 },
-      { inst: 'bass', steps: [0, _, _, _, _, _, 0, _, 0, _, _, _, _, _, _, _], octave: -2, vol: 0.5 },
-      { inst: 'shaker', steps: [1, _, 1, _, 1, _, 1, _, 1, _, 1, _, 1, _, 1, _] },
-      { inst: 'kick', steps: [1, _, _, _, _, _, _, _, 1, _, _, _, _, _, _, _], vol: 0.5 },
+      { inst: 'pad', steps: [0, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _], octave: -1, len: 16, vol: 0.3 },
+      { inst: 'keys', steps: [0, _, _, 2, _, _, 3, _, _, _, 1, _, 2, _, _, _], octave: 0, vol: 0.4, len: 4 },
+      { inst: 'soft', steps: [_, _, _, _, _, _, _, _, 4, _, _, _, 3, _, 2, _], octave: 1, vol: 0.22, len: 3, everyBar: (b) => b % 2 === 1 },
+      { inst: 'bass', steps: [0, _, _, _, _, _, _, _, _, _, 0, _, _, _, _, _], octave: -2, vol: 0.38, len: 6 },
     ],
   },
-  // 剧情 / 聊天：在台词下面，很轻。电钢琴慢琶音 + 铺底
+  // 剧情 / 聊天：在台词下面，很轻。电钢琴慢琶音 + 铺底（保持不动）
   story: {
     bpm: 84,
     vol: 0.07,
@@ -47,83 +50,84 @@ const SONGS: Record<Theme, Song> = {
       { inst: 'bass', steps: [0, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _], octave: -2, vol: 0.4, len: 8 },
     ],
   },
-  // 探索：好奇、轻松。马林巴固定音型 + 钟琴点缀 + 拨弦贝斯
+  // 探索：好奇但不吵。电钢琴八分音符轻轻走 + 偶尔一颗钟琴
   explore: {
-    bpm: 110,
-    vol: 0.1,
-    chords: [G, D, Em, C],
-    tracks: [
-      { inst: 'marimba', steps: [0, _, 2, _, 1, _, 2, _, 0, _, 2, _, 1, _, 3, _], octave: 0, vol: 0.5 },
-      { inst: 'bell', steps: [_, _, _, _, _, _, _, _, 3, _, _, _, 2, _, _, _], octave: 1, vol: 0.25, everyBar: (b) => b % 2 === 1 },
-      { inst: 'pluck', steps: [0, _, _, _, 0, _, _, _, 0, _, _, _, 0, _, _, _], octave: -2, vol: 0.6 },
-      { inst: 'shaker', steps: [_, _, 1, _, _, _, 1, _, _, _, 1, _, _, _, 1, _] },
-      { inst: 'kick', steps: [1, _, _, _, _, _, _, _, 1, _, _, _, _, _, _, _], vol: 0.4 },
-    ],
-  },
-  // 取舍：有点悬念。拨弦断奏 + 时钟滴答 + 低音持续
-  tension: {
-    bpm: 120,
-    vol: 0.1,
-    chords: [Am, Am, F, E],
-    tracks: [
-      { inst: 'pluck', steps: [0, _, 0, _, 2, _, 0, _, 1, _, 0, _, 2, _, 1, _], octave: 0, vol: 0.45 },
-      { inst: 'pad', steps: [0, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _], octave: -1, len: 16, vol: 0.25 },
-      { inst: 'bass', steps: [0, _, _, _, 0, _, _, _, 0, _, _, _, 0, _, _, _], octave: -2, vol: 0.45 },
-      { inst: 'tick', steps: [1, _, _, _, 1, _, _, _, 1, _, _, _, 1, _, _, _] },
-    ],
-  },
-  // 一天：同一个主题，四种配器
-  day_morning: {
     bpm: 92,
-    vol: 0.09,
-    chords: [C, F, G, C],
+    vol: 0.075,
+    chords: [Fmaj7, G6, Em7, Am7],
     tracks: [
-      { inst: 'whistle', steps: [2, _, _, _, 1, _, 0, _, 1, _, _, _, _, _, _, _], octave: 1, vol: 0.2, len: 3 },
-      { inst: 'pluck', steps: [0, _, 1, _, 2, _, 1, _, 0, _, 1, _, 2, _, 1, _], octave: 0, vol: 0.4 },
-      { inst: 'bass', steps: [0, _, _, _, _, _, _, _, 0, _, _, _, _, _, _, _], octave: -2, vol: 0.35 },
+      { inst: 'pad', steps: [0, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _], octave: -1, len: 16, vol: 0.28 },
+      { inst: 'keys', steps: [0, _, 2, _, 3, _, 2, _, 1, _, 2, _, 3, _, 4, _], octave: 0, vol: 0.3, len: 2 },
+      { inst: 'soft', steps: [_, _, _, _, _, _, _, _, _, _, _, _, 4, _, _, _], octave: 1, vol: 0.2, len: 4, everyBar: (b) => b % 4 === 3 },
+      { inst: 'bass', steps: [0, _, _, _, _, _, _, _, 0, _, _, _, _, _, _, _], octave: -2, vol: 0.35, len: 6 },
+    ],
+  },
+  // 取舍：有点悬念，但不刺耳。小调铺底 + 低音区四分音符脉冲（像心跳）+ 很轻的弦乐
+  tension: {
+    bpm: 88,
+    vol: 0.08,
+    chords: [Am7, Fmaj7, Dm7, E7],
+    tracks: [
+      { inst: 'pad', steps: [0, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _], octave: -1, len: 16, vol: 0.3 },
+      { inst: 'keys', steps: [0, _, _, _, 0, _, _, _, 0, _, _, _, 0, _, 1, _], octave: -1, vol: 0.3, len: 2 },
+      { inst: 'strings', steps: [_, _, _, _, _, _, _, _, 2, _, _, _, _, _, _, _], octave: 0, vol: 0.25, len: 8, everyBar: (b) => b % 2 === 1 },
+      { inst: 'bass', steps: [0, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _], octave: -2, vol: 0.4, len: 12 },
+      { inst: 'tom', steps: [1, _, _, 1, _, _, _, _, 1, _, _, 1, _, _, _, _], vol: 0.25 },
+    ],
+  },
+  // 一天：同一套和弦，早中晚夜只换音型和亮度
+  day_morning: {
+    bpm: 84,
+    vol: 0.075,
+    chords: [Cmaj7, Fmaj7, Gsus, Cmaj7],
+    tracks: [
+      { inst: 'pad', steps: [0, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _], octave: -1, len: 16, vol: 0.25 },
+      { inst: 'keys', steps: [0, _, _, 1, _, _, 2, _, 3, _, _, _, 2, _, _, _], octave: 0, vol: 0.35, len: 3 },
+      { inst: 'soft', steps: [4, _, _, _, 3, _, _, _, _, _, _, _, _, _, _, _], octave: 1, vol: 0.2, len: 4, everyBar: (b) => b % 2 === 0 },
+      { inst: 'bass', steps: [0, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _], octave: -2, vol: 0.35, len: 8 },
     ],
   },
   day_noon: {
-    bpm: 104,
-    vol: 0.1,
-    chords: [C, F, G, C],
+    bpm: 96,
+    vol: 0.075,
+    chords: [Cmaj7, Fmaj7, Gsus, Cmaj7],
     tracks: [
-      { inst: 'marimba', steps: [0, _, 2, 1, _, 2, 3, _, 0, _, 2, 1, _, 2, 3, _], octave: 0, vol: 0.5 },
-      { inst: 'bass', steps: [0, _, _, _, 0, _, _, _, 0, _, _, _, 0, _, _, _], octave: -2, vol: 0.4 },
-      { inst: 'shaker', steps: [1, _, 1, _, 1, _, 1, _, 1, _, 1, _, 1, _, 1, _] },
+      { inst: 'pad', steps: [0, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _], octave: -1, len: 16, vol: 0.22 },
+      { inst: 'keys', steps: [0, _, 2, _, 1, _, 3, _, 0, _, 2, _, 4, _, 3, _], octave: 0, vol: 0.3, len: 2 },
+      { inst: 'bass', steps: [0, _, _, _, _, _, 0, _, _, _, _, _, _, _, _, _], octave: -2, vol: 0.35, len: 5 },
     ],
   },
   day_evening: {
-    bpm: 80,
-    vol: 0.08,
-    chords: [Am, F, C, G],
+    bpm: 78,
+    vol: 0.07,
+    chords: [Am7, Fmaj7, Cmaj7, G6],
     tracks: [
-      { inst: 'keys', steps: [0, _, _, 1, _, _, 2, _, _, _, 1, _, _, _, _, _], octave: 0, vol: 0.45, len: 4 },
+      { inst: 'keys', steps: [0, _, _, 1, _, _, 2, _, _, _, 1, _, _, _, _, _], octave: 0, vol: 0.4, len: 4 },
       { inst: 'pad', steps: [0, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _], octave: -1, len: 16, vol: 0.3 },
       { inst: 'bass', steps: [0, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _], octave: -2, vol: 0.35, len: 8 },
     ],
   },
   day_night: {
-    bpm: 72,
-    vol: 0.08,
-    chords: [F, C, Dm, C],
+    bpm: 68,
+    vol: 0.07,
+    chords: [Fmaj7, Cmaj7, Dm7, Cmaj7],
     tracks: [
-      { inst: 'bell', steps: [2, _, 1, _, 0, _, 1, _, 2, _, _, _, 3, _, _, _], octave: 1, vol: 0.3 },
-      { inst: 'pad', steps: [0, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _], octave: -1, len: 16, vol: 0.3 },
+      { inst: 'soft', steps: [2, _, _, _, 1, _, _, _, 3, _, _, _, _, _, _, _], octave: 1, vol: 0.2, len: 6 },
+      { inst: 'pad', steps: [0, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _], octave: -1, len: 16, vol: 0.32 },
+      { inst: 'bass', steps: [0, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _], octave: -2, vol: 0.3, len: 12 },
     ],
   },
-  // Boss：激昂。底鼓 + 军鼓 + 踩镲、锯齿贝斯、琶音主旋律，开场一小节上冲
+  // Boss：有分量，但仍是同一套温暖音色。弦乐长音 + 定音鼓式的低鼓 + 电钢琴八度
   boss: {
-    bpm: 150,
-    vol: 0.16,
-    intro: true,
-    chords: [Am, F, C, G],
+    bpm: 104,
+    vol: 0.1,
+    chords: [Am7, Fmaj7, Cmaj7, G6, Am7, Fmaj7, Dm7, E7],
     tracks: [
-      { inst: 'kick', steps: [1, _, _, _, 1, _, _, _, 1, _, 1, _, 1, _, _, _] },
-      { inst: 'snare', steps: [_, _, _, _, 1, _, _, _, _, _, _, _, 1, _, _, 1] },
-      { inst: 'hat', steps: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] },
-      { inst: 'sawbass', steps: [0, _, 0, _, 0, _, _, 0, _, 0, _, 1, _, 0, 2, _], octave: -2, vol: 0.9 },
-      { inst: 'lead', steps: [0, 1, 2, 1, 0, 1, 2, 3, 0, 1, 2, 1, 2, 3, 2, 1], octave: 1, vol: 0.35 },
+      { inst: 'pad', steps: [0, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _], octave: -1, len: 16, vol: 0.3 },
+      { inst: 'strings', steps: [0, _, _, _, _, _, _, _, 2, _, _, _, _, _, _, _], octave: 0, vol: 0.32, len: 8 },
+      { inst: 'keys', steps: [0, _, _, 0, _, _, 2, _, 4, _, _, 3, _, _, 2, _], octave: 0, vol: 0.32, len: 2 },
+      { inst: 'bass', steps: [0, _, _, 0, _, _, _, _, 0, _, _, 0, _, _, _, _], octave: -2, vol: 0.45, len: 3 },
+      { inst: 'tom', steps: [1, _, _, 1, _, _, _, _, 1, _, _, 1, _, _, 1, 1], vol: 0.45 },
     ],
   },
 };
@@ -267,6 +271,45 @@ function note(a: AudioContext, dest: AudioNode, inst: Inst, t: number, midi: num
       }
       return;
     }
+    case 'soft':
+      // 柔和钟琴：纯正弦 + 一点点二倍泛音，慢一点起音，不刺
+      osc(a, dest, t, 'sine', f, vol * 0.45, 0.02, dur + 1.2);
+      osc(a, dest, t, 'sine', f * 2, vol * 0.06, 0.02, dur * 0.5 + 0.4);
+      return;
+    case 'strings': {
+      // 弦乐长音：三个微走音的锯齿波，低通更暗，慢起慢收
+      const lp = a.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 1300;
+      lp.Q.value = 0.3;
+      lp.connect(dest);
+      for (const det of [-6, 0, 7]) {
+        const o = a.createOscillator();
+        o.type = 'sawtooth';
+        o.frequency.value = f;
+        o.detune.value = det;
+        const g = a.createGain();
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(vol * 0.1, t + Math.min(0.6, dur * 0.4));
+        g.gain.setValueAtTime(vol * 0.1, t + dur * 0.8);
+        g.gain.linearRampToValueAtTime(0, t + dur + 0.6);
+        o.connect(g).connect(lp);
+        o.start(t);
+        o.stop(t + dur + 0.7);
+      }
+      return;
+    }
+    case 'tom': {
+      // 低沉的定音鼓：正弦从 110Hz 滑到 60Hz，软起音
+      const o = a.createOscillator();
+      o.frequency.setValueAtTime(110, t);
+      o.frequency.exponentialRampToValueAtTime(58, t + 0.25);
+      const g = env(a, t, vol * 0.8, 0.008, 0.45);
+      o.connect(g).connect(dest);
+      o.start(t);
+      o.stop(t + 0.5);
+      return;
+    }
     case 'bass':
       osc(a, dest, t, 'triangle', f, vol * 0.6, 0.01, Math.max(0.3, dur));
       osc(a, dest, t, 'sine', f, vol * 0.4, 0.01, Math.max(0.3, dur));
@@ -356,7 +399,8 @@ function schedule(a: AudioContext, p: Playing) {
         if (tr.everyBar && !tr.everyBar(b)) continue;
         const v = tr.steps[s];
         if (v === null || v === undefined) continue;
-        const midi = [...chord, chord[0] + 12][v % 4] + 12 * (tr.octave ?? 0);
+        const tones = [...chord, chord[0] + 12];
+        const midi = tones[v % tones.length] + 12 * (tr.octave ?? 0);
         note(a, p.gain, tr.inst, t, midi, tr.vol ?? 1, (tr.len ?? 1) * stepDur);
       }
     }
@@ -429,7 +473,7 @@ export const jingle = {
     const dest = out(a);
     [60, 64, 67, 72].forEach((m, i) => note(a, dest, 'bell', t + i * 0.12, m + 12, 0.5, 0.2));
     [60, 64, 67, 72].forEach((m) => note(a, dest, 'keys', t + 0.5, m, 0.35, 1.2));
-    note(a, dest, 'pluck', t + 0.5, 48, 0.6, 1);
+    note(a, dest, 'bass', t + 0.5, 48, 0.5, 1.2);
   },
   /** 翻车：滑稽的「哇哦哦」下行 */
   lose() {
@@ -459,6 +503,6 @@ export const jingle = {
     if (!a) return;
     const t = a.currentTime + 0.02;
     const dest = out(a);
-    [67, 71, 74, 79].forEach((m, i) => note(a, dest, 'marimba', t + i * 0.07, m, 0.6, 0.2));
+    [67, 71, 74, 79].forEach((m, i) => note(a, dest, 'soft', t + i * 0.08, m, 0.7, 0.3));
   },
 };

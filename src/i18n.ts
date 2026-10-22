@@ -594,16 +594,42 @@ export type MsgKey = keyof Dict;
 
 let current: Lang = detectLang();
 let currentCurrency = 'CNY';
+/** 不涉及花钱的关卡：拿什么当预算（时间、精力…）。null = 钱 */
+export type Goal = { name: string; unit: string; emoji: string };
+let currentGoal: Goal | null = null;
 export const setLang = (l: Lang) => (current = l);
 export const getLang = () => current;
-/** 开局时按关卡设置语言和币种 */
-export function setLocale(lang: Lang, currency: string) {
+export const getGoal = () => currentGoal;
+/** 开局时按关卡设置语言、币种和「预算」的单位 */
+export function setLocale(lang: Lang, currency: string, goal?: Goal | null) {
   current = lang;
   currentCurrency = currency;
+  currentGoal = goal ?? null;
 }
 
+/** 非金钱关卡里，这些文案换一种说法（{g} = 资源名，如「时间」「精力」） */
+const GOAL_ALT: Partial<Record<Lang, Partial<Record<MsgKey, string>>>> = {
+  zh: {
+    iGuess: '我猜要用',
+    hintBudget: '拖到「你的方案」那条线，看看{g}够不够',
+    meterMoney: '{g}',
+    more: '多用 {x}，但更值得',
+    discussChips: '{g}还能再省吗？|我可能忽略了什么？|第一步该做什么？',
+    sortSaySkip: '断舍离！|不要就不要！|省下一点{g}～',
+  },
+  en: {
+    hintBudget: 'Drag to the “Your plan” line to see if your {g} is enough',
+    meterMoney: '{g}',
+    more: '+{x}, but worth it',
+    over: 'Plan is {x} over your limit',
+    discussChips: 'Can I use less {g}?|What might I be missing?|What should I do first?',
+  },
+};
+
 export function t(key: MsgKey, vars: Record<string, string | number> = {}): string {
-  return DICTS[current][key].replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
+  const alt = currentGoal ? GOAL_ALT[current]?.[key] : undefined;
+  const all: Record<string, string | number> = currentGoal ? { g: currentGoal.name, ...vars } : vars;
+  return (alt ?? DICTS[current][key]).replace(/\{(\w+)\}/g, (_, k) => String(all[k] ?? ''));
 }
 
 export const pickCheer = () => {
@@ -623,6 +649,10 @@ export function detectLang(): UiLang {
 export const LOCALE: Record<Lang, string> = { zh: 'zh-CN', en: 'en-US', ja: 'ja-JP', es: 'es-ES' };
 
 export function money(n: number, currency = currentCurrency, lang: Lang = current): string {
+  if (currentGoal) {
+    const v = Math.round(n).toLocaleString(LOCALE[lang]);
+    return /[\u2E80-\uFFEF]/.test(currentGoal.unit) ? `${v}${currentGoal.unit}` : `${v} ${currentGoal.unit}`;
+  }
   try {
     return new Intl.NumberFormat(LOCALE[lang], { style: 'currency', currency, maximumFractionDigits: 0 }).format(Math.round(n));
   } catch {

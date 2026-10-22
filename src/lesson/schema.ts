@@ -346,6 +346,12 @@ export const LessonShape = z.object({
     domain: upto(40).default(''),
     lang: z.enum(LANGS).default('zh'),
     currency: z.string().length(3).default('CNY'),
+    /**
+     * 这关拿什么当「预算」。不填 = 钱（按 currency 显示）。
+     * 不涉及花钱的需求（早睡早起、学习计划…）填一种可数的资源，比如每天的分钟数、精力点，
+     * 之后所有 price / 预算滑块 / 合计都按这个单位算和显示。
+     */
+    goal: z.object({ name: short(4), unit: short(4), emoji }).optional(),
     cast: z.array(CastMember).max(6).default([]),
     guess: z.object({
       line: short(28),

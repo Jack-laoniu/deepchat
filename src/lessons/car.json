@@ -81,27 +81,43 @@
       "beats": [
         {
           "who": "narrator",
-          "say": "晚上八点，小区楼下。阿杰刚提了电车。"
-        },
-        {
-          "who": "wang",
-          "say": "电车？冬天续航打七折，你就等着排队吧。",
-          "mood": "smug"
-        },
-        {
-          "who": "ajie",
-          "say": "一公里一毛。你那个，六毛。",
+          "say": "晚上八点，小区楼下。阿杰刚提了电车，老王凑过来看。",
           "mood": "neutral"
         },
         {
           "who": "wang",
-          "say": "那是你有地方充。",
+          "say": "电车？我开了十五年油车，这玩意儿我不信。",
+          "mood": "smug"
+        },
+        {
+          "who": "ajie",
+          "say": "王哥，我算过：家里充一度三毛，一公里不到五分钱。",
+          "mood": "happy"
+        },
+        {
+          "who": "wang",
+          "say": "那冬天呢？我侄子去年冬天，五百的续航只跑了三百出头。",
+          "mood": "smug"
+        },
+        {
+          "who": "ajie",
+          "say": "……冬天是掉得多。我上周开暖风，确实掉了快三成。",
+          "mood": "worried"
+        },
+        {
+          "who": "wang",
+          "say": "还有，你那是有自己的车位能装桩。",
           "mood": "angry"
         },
         {
           "who": "ajie",
-          "say": "……",
+          "say": "这倒是。我们楼没车位的同事，天天半夜去抢公共桩。",
           "mood": "thinking"
+        },
+        {
+          "who": "wang",
+          "say": "我就说嘛。买车不看车，先看你家停哪儿。",
+          "mood": "smug"
         },
         {
           "id": "use",
@@ -217,6 +233,98 @@
               }
             ]
           }
+        },
+        {
+          "id": "fear",
+          "who": "wang",
+          "q": "说实话，你最怕买车后遇到啥？",
+          "options": [
+            {
+              "id": "fr_range",
+              "emoji": "🥶",
+              "label": "冬天跑不远",
+              "fact": "最担心冬天续航缩水、跑不远",
+              "set": [
+                "fear_range"
+              ],
+              "reply": [
+                {
+                  "who": "wang",
+                  "say": "那你可得看清冬季实测续航，别看宣传数字。",
+                  "mood": "thinking"
+                }
+              ]
+            },
+            {
+              "id": "fr_charge",
+              "emoji": "🔌",
+              "label": "充电排队",
+              "fact": "最担心充电难、排队浪费时间",
+              "set": [
+                "fear_charge"
+              ],
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "这个关键看你能不能装桩，等会儿去问问物业。",
+                  "mood": "thinking"
+                }
+              ]
+            },
+            {
+              "id": "fr_value",
+              "emoji": "📉",
+              "label": "掉价太快",
+              "fact": "最担心车子贬值快、以后不好卖",
+              "set": [
+                "fear_value"
+              ],
+              "reply": [
+                {
+                  "who": "wang",
+                  "say": "电车三年掉一半不稀奇，我那油车五年才掉四成。",
+                  "mood": "smug"
+                }
+              ]
+            },
+            {
+              "id": "fr_cost",
+              "emoji": "💸",
+              "label": "养不起",
+              "fact": "最担心保险、保养、停车等养车开销",
+              "set": [
+                "fear_cost"
+              ],
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "我第一年保险就六千多，比我想的贵。",
+                  "mood": "worried"
+                }
+              ]
+            }
+          ],
+          "free": {
+            "placeholder": "说说你最担心的…",
+            "fact": "用户最担心的事：{v}",
+            "chips": [
+              "冬天续航",
+              "没地方充",
+              "保险太贵"
+            ],
+            "reply": [
+              {
+                "who": "wang",
+                "say": "嗯，这个担心有道理，咱们一样一样看。",
+                "mood": "thinking"
+              }
+            ]
+          }
+        },
+        {
+          "who": "ajie",
+          "say": "反正别听销售吹，先把自己的情况想清楚。",
+          "mood": "neutral"
         }
       ]
     },
@@ -236,7 +344,17 @@
           "beats": [
             {
               "who": "xiaobei",
-              "say": "装充电桩可以。要车位产权或租赁合同，还要物业签字。",
+              "say": "充电桩的事啊，这个月第五个来问的了。",
+              "mood": "neutral"
+            },
+            {
+              "who": "xiaobei",
+              "say": "上个月三栋有人从家里拉电线下来充，被罚了两百。",
+              "mood": "worried"
+            },
+            {
+              "who": "xiaobei",
+              "say": "装桩要车位产权或租赁合同，再加物业签字、电力报装。",
               "mood": "neutral"
             },
             {
@@ -293,6 +411,11 @@
                   ]
                 }
               ]
+            },
+            {
+              "who": "xiaobei",
+              "say": "对了，小区那六个公共桩，晚上九点以后基本排满。",
+              "mood": "thinking"
             }
           ]
         },
@@ -308,6 +431,11 @@
               "who": "daliu",
               "say": "这款卖爆了！今天定，脚垫贴膜全送！",
               "mood": "happy"
+            },
+            {
+              "who": "daliu",
+              "say": "我跟您说实话，月底冲量，这几天价格最好谈。",
+              "mood": "smug"
             },
             {
               "who": "daliu",
@@ -374,6 +502,55 @@
                   ]
                 }
               ]
+            },
+            {
+              "id": "when",
+              "who": "daliu",
+              "q": "您打算什么时候提车？",
+              "options": [
+                {
+                  "id": "wh_now",
+                  "emoji": "⚡",
+                  "label": "越快越好",
+                  "fact": "想尽快提车，议价空间小",
+                  "reply": [
+                    {
+                      "who": "daliu",
+                      "say": "现车就有！今天就能签！",
+                      "mood": "happy"
+                    }
+                  ]
+                },
+                {
+                  "id": "wh_wait",
+                  "emoji": "🗓️",
+                  "label": "等月底谈价",
+                  "fact": "愿意等到月底/季度末冲量时再谈价格",
+                  "set": [
+                    "savvy"
+                  ],
+                  "reply": [
+                    {
+                      "who": "daliu",
+                      "say": "……您是懂行的。",
+                      "mood": "worried"
+                    }
+                  ]
+                },
+                {
+                  "id": "wh_look",
+                  "emoji": "👀",
+                  "label": "先多看几家",
+                  "fact": "还想多比较几家店和几款车",
+                  "reply": [
+                    {
+                      "who": "daliu",
+                      "say": "行，留个微信，有优惠我第一个告诉您。",
+                      "mood": "neutral"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -389,6 +566,11 @@
               "who": "mei",
               "say": "先说好，我也要开。我可不会倒车入库。",
               "mood": "neutral"
+            },
+            {
+              "who": "mei",
+              "say": "我同事去年买车，光第一年保险就八千多，还没算停车费。",
+              "mood": "worried"
             },
             {
               "id": "who",
@@ -425,6 +607,60 @@
                   ]
                 }
               ]
+            },
+            {
+              "id": "monthly",
+              "who": "mei",
+              "q": "每个月养车，最多能接受多少？",
+              "options": [
+                {
+                  "id": "mo_low",
+                  "emoji": "🪙",
+                  "label": "一千以内",
+                  "fact": "每月养车费（充电/油费、停车、保险分摊）希望控制在 1000 元以内",
+                  "set": [
+                    "tight_monthly"
+                  ],
+                  "reply": [
+                    {
+                      "who": "mei",
+                      "say": "那油钱电费就得算细点了。",
+                      "mood": "thinking"
+                    }
+                  ]
+                },
+                {
+                  "id": "mo_mid",
+                  "emoji": "💰",
+                  "label": "一到两千",
+                  "fact": "每月养车费可接受 1000–2000 元",
+                  "reply": [
+                    {
+                      "who": "mei",
+                      "say": "嗯，这个还行。",
+                      "mood": "happy"
+                    }
+                  ]
+                },
+                {
+                  "id": "mo_any",
+                  "emoji": "🤷",
+                  "label": "没算过",
+                  "fact": "还没算过每月养车费",
+                  "reply": [
+                    {
+                      "who": "mei",
+                      "say": "那我回头帮你算，别买得起养不起。",
+                      "mood": "smug"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "who": "mei",
+              "say": "还有，妈说了，过年得开车回去，让她在村里有面子。",
+              "mood": "smug"
             }
           ]
         }
@@ -920,6 +1156,140 @@
               "easy": -10
             }
           }
+        }
+      ]
+    },
+    {
+      "type": "talk",
+      "id": "mom_call",
+      "style": "chat",
+      "with": "ayi",
+      "title": "妈的电话",
+      "emoji": "📞",
+      "beats": [
+        {
+          "who": "ayi",
+          "say": "听说你要买车了？妈跟你说几句。",
+          "mood": "happy"
+        },
+        {
+          "who": "ayi",
+          "say": "你表哥前年买了个电车，过年回来在服务区排了两个钟头。",
+          "mood": "worried"
+        },
+        {
+          "who": "ayi",
+          "say": "到家饺子都凉了，你大舅说了他一晚上。",
+          "mood": "angry"
+        },
+        {
+          "id": "home_far",
+          "who": "ayi",
+          "q": "从你那开回老家，多远来着？",
+          "options": [
+            {
+              "id": "hf_near",
+              "emoji": "🏘️",
+              "label": "三百公里内",
+              "fact": "老家在 300 公里以内，一箱电/油可以到",
+              "reply": [
+                {
+                  "who": "ayi",
+                  "say": "那还好，半天就到了。",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "hf_mid",
+              "emoji": "🛣️",
+              "label": "三到八百",
+              "fact": "老家 300–800 公里，路上要补能一到两次",
+              "set": [
+                "longtrip"
+              ],
+              "reply": [
+                {
+                  "who": "ayi",
+                  "say": "那路上得充一两回吧？可得算好了。",
+                  "mood": "worried"
+                }
+              ]
+            },
+            {
+              "id": "hf_far",
+              "emoji": "🗺️",
+              "label": "八百以上",
+              "fact": "老家 800 公里以上，长途是刚需",
+              "set": [
+                "longtrip"
+              ],
+              "reply": [
+                {
+                  "who": "ayi",
+                  "say": "那么远！妈可不想你大过年在服务区等。",
+                  "mood": "worried"
+                }
+              ]
+            }
+          ],
+          "free": {
+            "placeholder": "比如：六百公里，开八小时",
+            "fact": "用户说的回老家距离：{v}",
+            "chips": [
+              "不回老家",
+              "坐高铁回",
+              "一年回两次"
+            ],
+            "reply": [
+              {
+                "who": "ayi",
+                "say": "好好，妈记住了。",
+                "mood": "happy"
+              }
+            ]
+          }
+        },
+        {
+          "who": "ayi",
+          "say": "钱够不够？不够妈这还有点。别太省，安全第一。",
+          "mood": "thinking"
+        },
+        {
+          "id": "mom_help",
+          "who": "ayi",
+          "q": "要不要妈给你添点？",
+          "options": [
+            {
+              "id": "mh_no",
+              "emoji": "🙅",
+              "label": "不用妈",
+              "fact": "不需要父母出钱，自己承担",
+              "reply": [
+                {
+                  "who": "ayi",
+                  "say": "行，有出息。",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "mh_yes",
+              "emoji": "🙏",
+              "label": "添一点",
+              "fact": "父母可能补贴一部分购车款，预算可略放宽",
+              "set": [
+                "family_help"
+              ],
+              "reply": [
+                {
+                  "who": "ayi",
+                  "say": "那就买个安全点的，别图便宜。",
+                  "mood": "smug"
+                }
+              ]
+            }
+          ]
         }
       ]
     },

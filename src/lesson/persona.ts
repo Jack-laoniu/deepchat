@@ -54,15 +54,24 @@ export function persona(lesson: Lesson, played: Played, crashes: Crash[], accept
   const { easy, good, safe } = played.score;
   // 明显比 AI 第一眼的方案省钱 → 精打细算；否则看哪项分最高
   const key: PersonaKey = guess > 0 && saved > guess * 0.15 ? 'money' : (Object.entries({ easy, good, safe }).sort((a, b) => b[1] - a[1])[0][0] as PersonaKey);
-  const [emoji, name, motto] = NAMES[lang][key];
   const zh = lang === 'zh';
+  let [emoji, name, motto] = NAMES[lang][key];
+  if (key === 'money' && lesson.goal) {
+    emoji = lesson.goal.emoji;
+    motto = zh ? `每一点${lesson.goal.name}都用在刀刃上` : `Every bit of ${lesson.goal.name} has a job`;
+  }
+  const meterName = (m: string) => (m === 'money' && lesson.goal ? lesson.goal.name : METER[lang][m as keyof (typeof METER)['zh']]);
 
   // 反差：优先「为了 A 一路牺牲 B」，其次「比 AI 猜的省/多花」，再其次「躲过/踩了几个坑」
   const fixes = lesson.rounds.filter((r) => r.type === 'fix' && played.visited.includes(r.id)).length;
   let twist: string;
-  if (accepted) twist = zh ? `为了想要的，一路牺牲了「${METER.zh[accepted]}」` : `Happily traded away ${METER.en[accepted]} to get there`;
+  if (accepted) twist = zh ? `为了想要的，一路牺牲了「${meterName(accepted)}」` : `Happily traded away ${meterName(accepted)} to get there`;
   else if (guess > 0 && Math.abs(saved) > guess * 0.1)
-    twist = saved > 0 ? (zh ? `比 AI 第一眼的方案省了 ${money(saved)}` : `${money(saved)} cheaper than the AI's first guess`) : zh ? `比 AI 猜的多花 ${money(-saved)}，但每一分都有理由` : `${money(-saved)} over the AI's guess, and worth every cent`;
+    twist = lesson.goal
+      ? saved > 0
+        ? zh ? `比 AI 第一眼的方案省了 ${money(saved)}` : `${money(saved)} less than the AI's first guess`
+        : zh ? `比 AI 猜的多用 ${money(-saved)}，但用得值` : `${money(-saved)} more than the AI's guess, and worth it`
+      : saved > 0 ? (zh ? `比 AI 第一眼的方案省了 ${money(saved)}` : `${money(saved)} cheaper than the AI's first guess`) : zh ? `比 AI 猜的多花 ${money(-saved)}，但每一分都有理由` : `${money(-saved)} over the AI's guess, and worth every cent`;
   else if (crashes.length) twist = zh ? `踩了 ${crashes.length} 个坑才学乖` : `Learned the hard way, ${crashes.length} time${crashes.length > 1 ? 's' : ''}`;
   else twist = zh ? `一路躲过了 ${fixes} 个坑` : `Dodged ${fixes} trap${fixes === 1 ? '' : 's'} on the way`;
 
