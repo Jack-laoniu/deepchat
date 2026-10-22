@@ -45,7 +45,7 @@ const ERRORS: Record<string, MsgKey> = { code: 'genCode', rate_ip: 'genRate', ra
 /** 在线生成关卡；context = 上一关的结果（再玩一轮时） */
 export async function requestLesson(
   need: string,
-  opts: { context?: string; signal?: AbortSignal } = {},
+  opts: { context?: string; avoid?: string[]; signal?: AbortSignal } = {},
 ): Promise<{ lesson: Lesson } | { error: string }> {
   // 服务器最多花 5 分钟（含备用模型和兜底），这边多等一点再放弃
   const ctrl = new AbortController();
@@ -55,7 +55,7 @@ export async function requestLesson(
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ need, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode(), context: opts.context }),
+      body: JSON.stringify({ need, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode(), context: opts.context, avoid: opts.avoid }),
       signal: ctrl.signal,
     });
     const data = (await res.json().catch(() => ({}))) as { lesson?: unknown; error?: string; detail?: string };

@@ -87,6 +87,8 @@ export interface Played {
   visited: string[];
   /** 连环取舍里用户接受见底的那条槽 */
   sacrificed?: Meter;
+  /** 用户已经做过的决定（「再玩一轮」时告诉 AI 别再问）；thing = 被决定的那样东西的名字 */
+  decisions: { thing: string; choice: string }[];
 }
 
 export const matches = (c: Cond | undefined, flags: Set<string>) =>
@@ -137,6 +139,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
   const score = { easy: 50, good: 50, safe: 50 };
   const quotes: Played['quotes'] = [];
   const visited: string[] = [];
+  const decisions: Played['decisions'] = [];
   let sacrificed: Meter | undefined;
   let budget: number | null = null;
   let current: Round | null = null;
@@ -196,6 +199,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
     visited.push(r.id);
     if ('value' in a && r.type === 'slider') {
       if (r.kind === 'budget') budget = a.value;
+      decisions.push({ thing: r.q, choice: `${a.value}${r.unit}` });
       facts.push(r.fact.replace('{v}', String(a.value)));
     } else if ('gamble' in a && (r.type === 'fix' || r.type === 'boss')) {
       if (r.gamble.fact) facts.push(r.gamble.fact);
@@ -203,7 +207,10 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
       score.safe -= 15;
     } else if ('option' in a) {
       const o = optionsOf(r).find((x) => x.id === a.option);
-      if (o) applyOption(o);
+      if (o) {
+        applyOption(o);
+        decisions.push({ thing: 'q' in r ? r.q : r.id, choice: o.label });
+      }
     } else if ('talk' in a && r.type === 'talk') {
       applyBeats(r.beats, a.talk);
     } else if ('map' in a && r.type === 'map') {
@@ -211,7 +218,10 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
     } else if ('chain' in a && r.type === 'chain') {
       for (const c of r.cards) {
         const side = a.chain.picks[c.id];
-        if (side) applyOption(c[side]);
+        if (side) {
+          applyOption(c[side]);
+          decisions.push({ thing: c.say, choice: c[side].label });
+        }
       }
       if (a.chain.accepted) {
         sacrificed = a.chain.accepted;
@@ -224,19 +234,25 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
         const z = r.zones.find((x) => x.id === a.place[th.id]);
         if (!z) continue;
         flags.add(`${th.id}_${z.id}`);
+        decisions.push({ thing: th.label, choice: z.label });
         facts.push(`${th.fact} → ${z.label}${z.fact ? `（${z.fact}）` : ''}`);
         if (z.bad.includes(th.id) && z.warn) risks.push(`${th.label} → ${z.label}: ${z.warn}`);
       }
     } else if ('day' in a && r.type === 'day') {
       for (const m of r.moments) {
         const o = m.options.find((x) => x.id === a.day[m.id]);
-        if (o) applyOption(o);
+        if (o) {
+          applyOption(o);
+          decisions.push({ thing: `${r.title} · ${m.at}`, choice: o.label });
+        }
       }
     } else if ('sort' in a && r.type === 'sort') {
       for (const c of r.cards) {
         const bin = r.bins.find((b) => b.id === a.sort[c.id]);
         if (!bin) continue;
         flags.add(`${c.id}_${bin.id}`);
+        decisions.push({ thing: c.item?.name ?? c.label, choice: bin.label });
+        if (c.item && c.item.name !== c.label) decisions.push({ thing: c.label, choice: bin.label });
         facts.push(`${c.fact} → ${bin.label}`);
         if (c.item) {
           if (bin.keep) cart.set(c.item.id, c.item);
@@ -265,6 +281,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
     quotes,
     visited,
     sacrificed,
+    decisions,
   };
 }
 

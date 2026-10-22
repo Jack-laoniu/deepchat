@@ -67,3 +67,38 @@ describe('salvage', () => {
     expect(lines.some((x) => x.includes('5 items, at most 4'))).toBe(true);
   });
 });
+
+describe('follow-up levels never re-ask decided things', () => {
+  it('removes already decided sort cards, and the round when too few remain', async () => {
+    const { dropDecided } = await import('./salvage');
+    const r = parseLesson(farm);
+    if (!r.ok) throw new Error();
+    // 上一关已经把「手机遥控」归为不要
+    const a = dropDecided(r.lesson, ['手机遥控']);
+    const sort = a.lesson.rounds.find((x) => x.type === 'sort')!;
+    if (sort.type !== 'sort') throw new Error();
+    expect(sort.cards.map((c) => c.label)).not.toContain('手机遥控');
+    expect(a.dropped).toEqual(['手机遥控']);
+    // 四张卡里三张已决定 → 剩一张，整关去掉
+    const b = dropDecided(r.lesson, ['手机遥控', '定时控制器', '过滤器']);
+    expect(b.lesson.rounds.some((x) => x.type === 'sort')).toBe(false);
+  });
+});
+
+describe('decisions recorded for follow-ups', () => {
+  it('lists sorted cards with the bin chosen', async () => {
+    const { play } = await import('./engine');
+    const r = parseLesson(farm);
+    if (!r.ok) throw new Error();
+    const p = play(r.lesson, [
+      { round: 'why', talk: {} },
+      { round: 'scale', option: 'small' },
+      { round: 'story', talk: {} },
+      { round: 'fix_mud', gamble: true },
+      { round: 'crop', option: 'corn' },
+      { round: 'extras', sort: { app: 'skip', timer: 'must', filter: 'must', sensor: 'nice' } },
+    ]);
+    expect(p.decisions).toContainEqual({ thing: '远程控制模块', choice: '不要' });
+    expect(p.decisions).toContainEqual({ thing: '手机遥控', choice: '不要' });
+  });
+});

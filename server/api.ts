@@ -3,6 +3,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { loadConfig, type Config } from './config';
 import { ttsFromConfig, type Tts } from './tts';
 import { genericLesson } from '../src/lesson/generic';
+import { dropDecided } from '../src/lesson/salvage';
 import { chatFromConfig, discussNeed, generateLesson, reactLine, UpstreamError, type GenerateResult, type ModelChoice, type StartChat, type Turn } from './generate';
 
 /**
@@ -107,7 +108,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
   if (!client) return void json(res, 503, { error: 'disabled' }), true;
 
-  let body: { need?: unknown; lang?: unknown; code?: unknown; context?: unknown };
+  let body: { need?: unknown; lang?: unknown; code?: unknown; context?: unknown; avoid?: unknown };
   try {
     body = (await readBody(req, 32_000)) as typeof body;
   } catch {
@@ -119,6 +120,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   if (!need || [...need].length > MAX_NEED_CHARS) return void json(res, 400, { error: 'need' }), true;
 
   const context = typeof body?.context === 'string' ? body.context.slice(0, MAX_PLAN_CHARS) : '';
+  const avoid = Array.isArray(body?.avoid) ? body.avoid.filter((x): x is string => typeof x === 'string').slice(0, 60).map((x) => x.slice(0, 60)) : [];
   const key = `${lang}:${need}:${context}`;
   if (cache.has(key)) return void (console.error(`generate: cache hit (${lang}) ${need.slice(0, 40)}`), json(res, 200, { lesson: cache.get(key) })), true;
 
@@ -150,6 +152,11 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
       r = await attempt(cfg.model.fallback.start, cfg.model.fallback.label);
     }
     console.error(`generate: ${r.ok ? 'ok' : r.error} after ${secs()}`);
+    if (r.ok && avoid.length) {
+      const d = dropDecided(r.lesson, avoid);
+      if (d.dropped.length) console.error(`generate: removed already-decided cards: ${d.dropped.join(', ')}`);
+      r = { ok: true, lesson: d.lesson };
+    }
     if (r.ok) {
       cache.set(key, r.lesson);
       if (cache.size > 200) cache.delete(cache.keys().next().value!);

@@ -25,7 +25,11 @@ export function NextStep({ plan, text, turns, setTurns }: { plan: string; text: 
   const [note, setNote] = useState('');
   const abort = useRef<AbortController | null>(null);
 
-  const context = () => (unclear.trim() ? `${text}\n\n## ${t('unclearLabel')}\n${unclear.trim()}` : text);
+  // 已经决定的事单独列出来（混在事实里模型会忽略），并把这些东西的名字发给服务器做最后一道过滤
+  const decisions = g.played?.decisions ?? [];
+  const decided = decisions.length ? `\n\n## ${t('decidedLabel')}\n${decisions.map((d) => `- ${d.thing} → ${d.choice}`).join('\n')}` : '';
+  const context = () => `${text}${decided}${unclear.trim() ? `\n\n## ${t('unclearLabel')}\n${unclear.trim()}` : ''}`;
+  const avoid = decisions.map((d) => d.thing);
 
   const replay = async () => {
     sfx.tap();
@@ -43,7 +47,7 @@ export function NextStep({ plan, text, turns, setTurns }: { plan: string; text: 
     const ctrl = new AbortController();
     abort.current = ctrl;
     setLoading(Date.now());
-    const r = await requestLesson(need, { context: context(), signal: ctrl.signal });
+    const r = await requestLesson(need, { context: context(), avoid, signal: ctrl.signal });
     if ('lesson' in r) return g.open(r.lesson);
     setLoading(null);
     if (r.error) setNote(r.error);

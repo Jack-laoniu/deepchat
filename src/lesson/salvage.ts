@@ -1,6 +1,6 @@
 import type { ZodIssue } from 'zod';
 import { CHARACTER_IDS } from '../chars/library';
-import { Lesson, textWidth, type Lesson as LessonT } from './schema';
+import { Lesson, textWidth, type Lesson as LessonT, type Round } from './schema';
 
 /**
  * 自动修补模型写的关卡：大多数校验错误是小毛病（某句话超了几个字、chips 多给了一个、卡片少写一边），
@@ -183,4 +183,33 @@ export function explainIssues(data: unknown, issues: ZodIssue[]): string[] {
     if (i.code === 'invalid_type' && v === undefined) return `${where} is missing (required).`;
     return `${where}: ${i.message}`;
   });
+}
+
+const norm = (s: string) => s.replace(/[\s·・、，,。.!！?？「」“”"']/g, '').toLowerCase();
+
+/**
+ * 「再玩一轮」的最后一道保险：新关卡里，用户已经决定过的东西不能再出现在整理归类 / 摆进生活里
+ * （模型即使被告知也常常照旧出题）。删掉这些卡片；剩下的卡片不够就删掉整个回合。
+ */
+export function dropDecided(lesson: LessonT, decided: string[]): { lesson: LessonT; dropped: string[] } {
+  const seen = new Set(decided.map(norm).filter(Boolean));
+  if (!seen.size) return { lesson, dropped: [] };
+  const hit = (...names: (string | undefined)[]) => names.some((n) => n && seen.has(norm(n)));
+  const dropped: string[] = [];
+  const rounds = lesson.rounds.flatMap<Round>((r) => {
+    if (r.type === 'sort') {
+      const cards = r.cards.filter((c) => !(hit(c.label, c.item?.name) && dropped.push(c.label)));
+      return cards.length >= 3 ? [{ ...r, cards }] : cards.length === r.cards.length ? [r] : [];
+    }
+    if (r.type === 'place') {
+      const things = r.things.filter((t) => !(hit(t.label) && dropped.push(t.label)));
+      const ids = new Set(things.map((t) => t.id));
+      return things.length ? [{ ...r, things, zones: r.zones.map((z) => ({ ...z, bad: z.bad.filter((b) => ids.has(b)) })) }] : [];
+    }
+    return [r];
+  });
+  if (!dropped.length) return { lesson, dropped };
+  // 删回合后，引用了那些回合标记的条件可能失效：交给 salvage 再校验一遍
+  const fixed = salvage({ ...lesson, rounds });
+  return fixed ? { lesson: fixed.lesson, dropped } : { lesson, dropped: [] };
 }
