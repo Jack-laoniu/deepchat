@@ -11,7 +11,7 @@
       "id": "wang"
     },
     {
-      "id": "qian",
+      "id": "daliu",
       "as": "农资店老板"
     },
     {
@@ -62,17 +62,17 @@
       "type": "talk",
       "id": "why",
       "style": "chat",
-      "title": "乐乐来了",
+      "title": "小芳来了",
       "emoji": "👋",
-      "with": "lele",
+      "with": "xiaofang",
       "beats": [
         {
-          "who": "lele",
-          "say": "嗨！我是乐乐，陪你把浇地这事理清楚～"
+          "who": "xiaofang",
+          "say": "嗨！我是小芳，陪你把浇地这事理清楚～"
         },
         {
           "id": "why",
-          "who": "lele",
+          "who": "xiaofang",
           "q": "先说说，为啥想装自动浇水？",
           "options": [
             {
@@ -85,7 +85,7 @@
               ],
               "reply": [
                 {
-                  "who": "lele",
+                  "who": "xiaofang",
                   "say": "懂！那「省心」排第一。",
                   "mood": "happy"
                 }
@@ -101,7 +101,7 @@
               ],
               "reply": [
                 {
-                  "who": "lele",
+                  "who": "xiaofang",
                   "say": "好，那浇得匀最重要。"
                 }
               ]
@@ -116,7 +116,7 @@
               ],
               "reply": [
                 {
-                  "who": "lele",
+                  "who": "xiaofang",
                   "say": "那得能用手机远程控制才行。"
                 }
               ]
@@ -145,7 +145,7 @@
                 ],
                 "reply": [
                   {
-                    "who": "lele",
+                    "who": "xiaofang",
                     "say": "省力是第一目标，记下了！"
                   }
                 ]
@@ -164,7 +164,7 @@
                 ],
                 "reply": [
                   {
-                    "who": "lele",
+                    "who": "xiaofang",
                     "say": "人不在也能浇，记下了！"
                   }
                 ]
@@ -182,7 +182,7 @@
                 "fact": "用户关注节水",
                 "reply": [
                   {
-                    "who": "lele",
+                    "who": "xiaofang",
                     "say": "要省水的话，滴灌是重点。"
                   }
                 ]
@@ -190,14 +190,14 @@
             ],
             "reply": [
               {
-                "who": "lele",
+                "who": "xiaofang",
                 "say": "收到，这个很重要！"
               }
             ]
           }
         },
         {
-          "who": "lele",
+          "who": "xiaofang",
           "say": "我先猜了一套，咱们边玩边改。"
         }
       ]
@@ -265,7 +265,7 @@
           "mood": "smug"
         },
         {
-          "who": "qian",
+          "who": "daliu",
           "say": "那套是我卖的，质量杠杠的！",
           "mood": "happy"
         },
@@ -325,7 +325,7 @@
               ],
               "reply": [
                 {
-                  "who": "qian",
+                  "who": "daliu",
                   "say": "有起伏就按坡地算，稳妥。"
                 }
               ]
@@ -333,7 +333,7 @@
           ]
         },
         {
-          "who": "qian",
+          "who": "daliu",
           "say": "后来我还给他加了过滤器，你猜为啥？",
           "mood": "smug"
         },
@@ -344,7 +344,7 @@
         },
         {
           "id": "water",
-          "who": "qian",
+          "who": "daliu",
           "q": "你家浇地用的什么水？",
           "options": [
             {
@@ -363,7 +363,7 @@
               },
               "reply": [
                 {
-                  "who": "qian",
+                  "who": "daliu",
                   "say": "自来水不用水泵，省一笔！"
                 }
               ]
@@ -419,7 +419,7 @@
                 "fact": "水源可能含泥沙杂质",
                 "reply": [
                   {
-                    "who": "qian",
+                    "who": "daliu",
                     "say": "这种水得过滤，记下了。"
                   }
                 ]
@@ -448,7 +448,7 @@
           "mood": "thinking"
         },
         {
-          "who": "qian",
+          "who": "daliu",
           "say": "嘿！我可是实在人！",
           "mood": "surprised"
         }
@@ -797,7 +797,7 @@
         },
         {
           "id": "c_clog",
-          "who": "qian",
+          "who": "daliu",
           "say": "喷头堵了一排，换新的还是自己通？",
           "emoji": "🔧",
           "left": {
@@ -884,17 +884,17 @@
           "id": "shop",
           "emoji": "🏪",
           "label": "农资店",
-          "who": "qian",
+          "who": "daliu",
           "x": 24,
           "y": 26,
           "beats": [
             {
-              "who": "qian",
+              "who": "daliu",
               "say": "哟，又来了！今天想问点啥？"
             },
             {
               "id": "ctrl",
-              "who": "qian",
+              "who": "daliu",
               "q": "想手机遥控，还是手动开关？",
               "if": {
                 "none": [
@@ -923,7 +923,7 @@
                   },
                   "reply": [
                     {
-                      "who": "qian",
+                      "who": "daliu",
                       "say": "好嘞，给你配个智能控制器。"
                     }
                   ]
@@ -937,7 +937,7 @@
               ]
             },
             {
-              "who": "qian",
+              "who": "daliu",
               "say": "你不是说人常不在家？手动可不行哦。",
               "if": {
                 "all": [
@@ -951,7 +951,7 @@
             },
             {
               "id": "who_runs",
-              "who": "qian",
+              "who": "daliu",
               "q": "装好以后，平时谁来管？",
               "options": [
                 {
@@ -970,7 +970,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "qian",
+                      "who": "daliu",
                       "say": "那得选按钮大、操作简单的。"
                     }
                   ]

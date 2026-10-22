@@ -158,7 +158,8 @@ describe('OpenAI-compatible provider', () => {
   it('shows the model where its JSON broke', async () => {
     const prompts: string[] = [];
     const good = JSON.stringify(farm);
-    const broken = good.slice(0, 3000) + '{"k" 1}' + good.slice(3000); // 修不好、且报错带位置
+    const at = good.indexOf('"title"');
+    const broken = good.slice(0, at) + '{"k" 1}' + good.slice(at); // 修不好、且报错带位置
     vi.stubGlobal('fetch', async (_u: string, init: RequestInit) => {
       prompts.push(JSON.parse(init.body as string).messages.at(-1).content);
       return sse(prompts.length === 1 ? broken : good);

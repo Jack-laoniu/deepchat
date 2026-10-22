@@ -4,7 +4,7 @@ import { Character } from '../chars/Character';
 import { GUIDE } from '../chars/library';
 import { t } from '../i18n';
 
-/** 等待生成：乐乐在想，提示轮换，显示已等待时间 */
+/** 等待生成：小芳在想，提示轮换，显示已等待时间 */
 export function Generating({ started, onCancel }: { started: number; onCancel: () => void }) {
   const tips = t('genTips').split('|');
   const [now, setNow] = useState(Date.now());

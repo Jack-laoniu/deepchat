@@ -1,6 +1,6 @@
 import { jsonrepair } from 'jsonrepair';
 import { z } from 'zod';
-import { CHARACTER_IDS, GUIDE, LANGS, MOODS } from '../chars/library';
+import { CHARACTER_IDS, GUIDE, LANGS, LEGACY_IDS, MOODS } from '../chars/library';
 
 /**
  * 一个「关卡」= 一次需求闯关。由大模型生成，前端只负责演。
@@ -436,8 +436,28 @@ export function parseLesson(input: unknown): ParseResult {
       }
     }
   }
-  const r = Lesson.safeParse(data);
+  const r = Lesson.safeParse(migrateIds(data));
   return r.success
     ? { ok: true, lesson: r.data }
     : { ok: false, errors: r.error.issues.map((i) => `${i.path.join('.') || '根'}：${i.message}`), data, issues: r.error.issues };
+}
+
+/** 旧角色 id 换成新阵容（旧关卡、服务器缓存、模型偶尔还用旧名字）；同一个人被映射两次时 cast 去重 */
+export function migrateIds(data: unknown): unknown {
+  const walk = (n: unknown): unknown => {
+    if (Array.isArray(n)) return n.map(walk);
+    if (!n || typeof n !== 'object') return n;
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(n as Record<string, unknown>)) {
+      if ((k === 'who' || k === 'with') && typeof v === 'string') out[k] = LEGACY_IDS[v] ?? v;
+      else if (k === 'cast' && Array.isArray(v)) {
+        const seen = new Set<string>();
+        out[k] = v
+          .map((c) => (c && typeof c === 'object' && typeof (c as { id?: unknown }).id === 'string' ? { ...c, id: LEGACY_IDS[(c as { id: string }).id] ?? (c as { id: string }).id } : c))
+          .filter((c) => !(c as { id?: string })?.id || (!seen.has((c as { id: string }).id) && seen.add((c as { id: string }).id)));
+      } else out[k] = walk(v);
+    }
+    return out;
+  };
+  return walk(data);
 }

@@ -35,7 +35,7 @@ describe('android without a speech engine', async () => {
   it('falls back to server speech after the first silent line, and keeps using it', async () => {
     setLocale('zh', 'CNY');
     taps.forEach((f) => f());
-    await speak('你好，我是乐乐', { gender: 'f' });
+    await speak('你好，我是小芳', { gender: 'f' });
     expect(started).toBe(1);
     expect(calls.some((c) => c.startsWith('/api/tts') && c.includes('你好'))).toBe(true);
 

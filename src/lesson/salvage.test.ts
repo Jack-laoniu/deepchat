@@ -52,10 +52,10 @@ describe('salvage', () => {
 
   it('adds a library character that the model forgot to cast', () => {
     const l = structuredClone(farm) as any;
-    l.rounds[2].beats[1].who = 'nana';
+    l.rounds[2].beats[1].who = 'xiaoting';
     const s = salvage(l)!;
     expect(s.heavy).toBe(false);
-    expect(s.lesson.cast.some((c) => c.id === 'nana')).toBe(true);
+    expect(s.lesson.cast.some((c) => c.id === 'xiaoting')).toBe(true);
   });
 
   it('tells the model the offending text and its width', () => {

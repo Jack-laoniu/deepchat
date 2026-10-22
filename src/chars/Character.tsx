@@ -226,7 +226,7 @@ function FaceAcc({ acc, look }: { acc: Accessory[]; look: Look }) {
   );
 }
 
-function HeadWear({ acc }: { acc: Accessory[] }) {
+function HeadWear({ acc, look }: { acc: Accessory[]; look: Look }) {
   return (
     <g>
       {acc.includes('headset') && (
@@ -253,8 +253,18 @@ function HeadWear({ acc }: { acc: Accessory[] }) {
       )}
       {acc.includes('cap') && (
         <g>
-          <path d="M-35,-14 C-35,-52 35,-52 35,-14 Z" fill="#E63946" />
-          <path d="M10,-16 Q40,-20 52,-12 Q40,-8 10,-12 Z" fill="#B91C1C" />
+          <path d="M-35,-14 C-35,-52 35,-52 35,-14 Z" fill={look.hatColor ?? '#E63946'} />
+          <path d="M10,-16 Q40,-20 52,-12 Q40,-8 10,-12 Z" fill={look.hatColor ?? '#B91C1C'} style={{ filter: 'brightness(.8)' }} />
+        </g>
+      )}
+      {acc.includes('headscarf') && (
+        <g>
+          {/* 包头的头巾：盖住头顶，在脑后打个结 */}
+          <path d="M-37,-10 C-38,-50 38,-50 37,-10 C20,-20 -20,-20 -37,-10 Z" fill={look.hatColor ?? '#D9824A'} />
+          <path d="M-37,-10 C-20,-18 20,-18 37,-10" stroke="#00000022" strokeWidth={3} fill="none" />
+          <circle cx={-34} cy={-30} r={2.2} fill="#FFFFFF88" />
+          <circle cx={-14} cy={-40} r={2.2} fill="#FFFFFF88" />
+          <circle cx={10} cy={-41} r={2.2} fill="#FFFFFF88" />
         </g>
       )}
     </g>
@@ -455,7 +465,7 @@ export function Character({
                 <Mouth mood={mood} open={open} />
                 <FaceAcc acc={look.acc} look={look} />
                 <HairFront look={look} />
-                <HeadWear acc={look.acc} />
+                <HeadWear acc={look.acc} look={look} />
               </motion.g>
             </g>
           </motion.g>

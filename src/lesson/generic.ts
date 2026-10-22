@@ -1,3 +1,4 @@
+import { GUIDE } from '../chars/library';
 import { Lesson, type Lesson as LessonT } from './schema';
 
 /**
@@ -25,9 +26,9 @@ const T = {
       ['night', '🌙', [['📱', '手机办', '希望在手机上就能搞定'], ['🧑‍🔧', '找人办', '希望有人上门/代办']]],
     ],
     chainT: '真到做的时候', chain: [
-      ['qian', '贵一点的更省心，要不要加钱？', '💸', ['不加钱', '不愿为省心多花钱', { easy: -15 }], ['加钱', '愿意为省心多花钱', { easy: 15, good: 5 }]],
+      ['daliu', '贵一点的更省心，要不要加钱？', '💸', ['不加钱', '不愿为省心多花钱', { easy: -15 }], ['加钱', '愿意为省心多花钱', { easy: 15, good: 5 }]],
       ['mei', '等打折能便宜两成，但要等一个月', '🏷️', ['等打折', '愿意等一等换便宜', { good: -10, easy: -5 }], ['马上办', '不想等，马上办', { easy: 10 }]],
-      ['gong', '便宜的那家口碑一般，要赌一把吗？', '🎲', ['赌一把', '愿意为便宜冒点风险', { safe: -25 }], ['选靠谱', '宁可贵也选靠谱的', { safe: 15 }]],
+      ['xiaobei', '便宜的那家口碑一般，要赌一把吗？', '🎲', ['赌一把', '愿意为便宜冒点风险', { safe: -25 }], ['选靠谱', '宁可贵也选靠谱的', { safe: 15 }]],
     ],
     bossQ: '最怕的事来了', problem: '钱花了却不好用', fixL: '先试再买', fixF: '先试用/看样再决定', gamL: '直接买', gamCrash: '买回来发现不合适', gamOk: '运气不错，挺合适',
   },
@@ -49,9 +50,9 @@ const T = {
       ['night', '🌙', [['📱', 'Phone', 'Wants to handle it on the phone'], ['🧑‍🔧', 'Someone', 'Wants someone to come and do it']]],
     ],
     chainT: 'When it gets real', chain: [
-      ['qian', 'The pricier one is less hassle. Pay more?', '💸', ['Keep cheap', 'Will not pay extra for convenience', { easy: -15 }], ['Pay more', 'Will pay extra for convenience', { easy: 15, good: 5 }]],
+      ['daliu', 'The pricier one is less hassle. Pay more?', '💸', ['Keep cheap', 'Will not pay extra for convenience', { easy: -15 }], ['Pay more', 'Will pay extra for convenience', { easy: 15, good: 5 }]],
       ['mei', 'Wait a month and it is 20% off.', '🏷️', ['Wait', 'Will wait to save money', { good: -10, easy: -5 }], ['Now', 'Wants it now', { easy: 10 }]],
-      ['gong', 'The cheap one has so-so reviews. Risk it?', '🎲', ['Risk it', 'Will take a risk to save money', { safe: -25 }], ['Go safe', 'Prefers the reliable option', { safe: 15 }]],
+      ['xiaobei', 'The cheap one has so-so reviews. Risk it?', '🎲', ['Risk it', 'Will take a risk to save money', { safe: -25 }], ['Go safe', 'Prefers the reliable option', { safe: 15 }]],
     ],
     bossQ: 'Your worst case', problem: 'Paid but useless', fixL: 'Try first', fixF: 'Tries or sees a sample before deciding', gamL: 'Just buy', gamCrash: "It doesn't fit after all", gamOk: 'Lucky — it fits',
   },
@@ -68,7 +69,7 @@ export function genericLesson(need: string, lang: 'zh' | 'en'): LessonT {
     domain: 'generic',
     lang,
     currency: lang === 'zh' ? 'CNY' : 'USD',
-    cast: [{ id: 'qian' }, { id: 'mei' }, { id: 'gong' }],
+    cast: [{ id: 'daliu' }, { id: 'mei' }, { id: 'xiaobei' }],
     guess: {
       line: d.guess,
       items: [
@@ -78,11 +79,11 @@ export function genericLesson(need: string, lang: 'zh' | 'en'): LessonT {
     },
     rounds: [
       {
-        type: 'talk', id: 'why', style: 'chat', with: 'lele', title: d.title, emoji: '💬',
+        type: 'talk', id: 'why', style: 'chat', with: GUIDE, title: d.title, emoji: '💬',
         beats: [
-          { who: 'lele', say: d.hi, mood: 'happy' },
-          { id: 'why', who: 'lele', q: d.why, options: d.whyO.map((o, i) => opt(o, `why_${i}`)), free: { placeholder: d.whyPh, fact: d.whyFact } },
-          { id: 'who', who: 'lele', q: d.whoQ, options: d.whoO.map((o, i) => opt(o, `who_${i}`)), free: { placeholder: d.whyPh, fact: d.whyFact } },
+          { who: GUIDE, say: d.hi, mood: 'happy' },
+          { id: 'why', who: GUIDE, q: d.why, options: d.whyO.map((o, i) => opt(o, `why_${i}`)), free: { placeholder: d.whyPh, fact: d.whyFact } },
+          { id: 'who', who: GUIDE, q: d.whoQ, options: d.whoO.map((o, i) => opt(o, `who_${i}`)), free: { placeholder: d.whyPh, fact: d.whyFact } },
         ],
       },
       {

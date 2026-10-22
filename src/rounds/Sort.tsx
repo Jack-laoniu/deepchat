@@ -24,7 +24,7 @@ function binLook(i: number, keep: boolean, n: number) {
 
 /**
  * 整理归类（「整理箱」）：桌上散着便签卡，拖进 / 点进纸箱、篮子、垃圾桶。没有标准答案。
- * 手感：拿起抬高、筐会张开迎接、飞进去有弧线、筐被压扁回弹、迸彩屑、连放音阶往上走、乐乐在旁边吐槽。
+ * 手感：拿起抬高、筐会张开迎接、飞进去有弧线、筐被压扁回弹、迸彩屑、连放音阶往上走、小芳在旁边吐槽。
  */
 export function Sort({ round }: { round: SortRound }) {
   const g = useGame();
@@ -56,7 +56,7 @@ export function Sort({ round }: { round: SortRound }) {
 
   const path = useHintPath(box, () => (left[0] ? cardRefs.current[left[0].id] : null), () => binRefs.current[round.bins[0].id], [left[0]?.id]);
 
-  /** 放进筐：先沿弧线飞过去，落下时筐回弹、迸彩屑、乐乐说一句 */
+  /** 放进筐：先沿弧线飞过去，落下时筐回弹、迸彩屑、小芳说一句 */
   const put = (cardId: string, binId: string, from?: { x: number; y: number }) => {
     const c = round.cards.find((x) => x.id === cardId)!;
     const start = from ?? centerIn(box.current, cardRefs.current[cardId]);
@@ -127,7 +127,7 @@ export function Sort({ round }: { round: SortRound }) {
           </div>
           <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(95% 85% at 45% 40%, rgba(0,0,0,0) 60%, rgba(60,30,10,.2) 100%)' }} />
 
-          {/* 乐乐在右上角看着，时不时吐槽一句 */}
+          {/* 小芳在右上角看着，时不时吐槽一句 */}
           <div className="absolute right-2 top-2 z-10 flex items-start gap-1">
             <AnimatePresence mode="wait">
               <motion.div

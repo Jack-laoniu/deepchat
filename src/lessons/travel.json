@@ -8,11 +8,11 @@
   "currency": "CNY",
   "cast": [
     {
-      "id": "nana",
+      "id": "ayi",
       "as": "妈妈"
     },
     {
-      "id": "lu",
+      "id": "wang",
       "as": "爸爸"
     },
     {
@@ -71,23 +71,23 @@
           "say": "晚饭后，爸妈在聊上次的旅行团。"
         },
         {
-          "who": "nana",
+          "who": "ayi",
           "say": "上回那个团，早上五点就叫起床！",
           "mood": "angry"
         },
         {
-          "who": "lu",
+          "who": "wang",
           "say": "一天跑四个景点，我腿都走肿了。",
           "mood": "sad"
         },
         {
-          "who": "nana",
+          "who": "ayi",
           "say": "还拉我们去玉石店，不买不让走。",
           "mood": "angry"
         },
         {
           "id": "legs",
-          "who": "nana",
+          "who": "ayi",
           "q": "你觉得爸妈能走一整天吗？",
           "options": [
             {
@@ -97,7 +97,7 @@
               "fact": "父母体力好，能走一整天",
               "reply": [
                 {
-                  "who": "lu",
+                  "who": "wang",
                   "say": "我还年轻着呢！",
                   "mood": "happy"
                 }
@@ -113,7 +113,7 @@
               ],
               "reply": [
                 {
-                  "who": "nana",
+                  "who": "ayi",
                   "say": "是啊，膝盖不行了。",
                   "mood": "sad"
                 }
@@ -153,7 +153,7 @@
                 "fact": "有心血管问题，高原需谨慎",
                 "reply": [
                   {
-                    "who": "lu",
+                    "who": "wang",
                     "say": "药我天天带着呢。"
                   }
                 ]
@@ -166,7 +166,7 @@
                 "fact": "容易晕车，山路车程要短",
                 "reply": [
                   {
-                    "who": "nana",
+                    "who": "ayi",
                     "say": "盘山路我可受不了。"
                   }
                 ]
@@ -174,14 +174,14 @@
             ],
             "reply": [
               {
-                "who": "nana",
+                "who": "ayi",
                 "say": "你记着就好。"
               }
             ]
           }
         },
         {
-          "who": "lu",
+          "who": "wang",
           "say": "反正这回，别再跟团暴走了。",
           "mood": "thinking"
         }
@@ -290,18 +290,18 @@
           "id": "dad",
           "emoji": "🛋️",
           "label": "客厅",
-          "who": "lu",
+          "who": "wang",
           "x": 25,
           "y": 28,
           "beats": [
             {
-              "who": "lu",
+              "who": "wang",
               "say": "我这辈子，就想看一回雪山。",
               "mood": "happy"
             },
             {
               "id": "where",
-              "who": "lu",
+              "who": "wang",
               "q": "这次最想去哪？",
               "options": [
                 {
@@ -321,7 +321,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "lu",
+                      "who": "wang",
                       "say": "好！就去那儿！",
                       "mood": "happy"
                     }
@@ -341,18 +341,18 @@
           "id": "mom",
           "emoji": "🍳",
           "label": "厨房",
-          "who": "nana",
+          "who": "ayi",
           "x": 75,
           "y": 30,
           "beats": [
             {
-              "who": "nana",
+              "who": "ayi",
               "say": "出去玩，吃饭我可挑。",
               "mood": "smug"
             },
             {
               "id": "food",
-              "who": "nana",
+              "who": "ayi",
               "q": "爸妈吃饭有啥讲究？",
               "options": [
                 {
@@ -368,7 +368,7 @@
                   "fact": "饮食需清淡少辣",
                   "reply": [
                     {
-                      "who": "nana",
+                      "who": "ayi",
                       "say": "云南菜辣，得提前说。",
                       "mood": "worried"
                     }
@@ -397,7 +397,7 @@
             },
             {
               "id": "mom_wish",
-              "who": "nana",
+              "who": "ayi",
               "q": "这趟玩完，你希望爸妈说啥？",
               "free": {
                 "placeholder": "说说你的心愿…",
@@ -409,7 +409,7 @@
                 "fact": "用户对这趟旅行的心愿：{v}",
                 "reply": [
                   {
-                    "who": "nana",
+                    "who": "ayi",
                     "say": "傻孩子……",
                     "mood": "happy"
                   }

@@ -11,7 +11,7 @@ type L10n = Record<Lang, string>;
 
 export type HairStyle = 'short' | 'curly' | 'bun' | 'long' | 'bald' | 'spiky' | 'slick' | 'bob';
 export type Outfit = 'tee' | 'hoodie' | 'shirt' | 'plaid' | 'suit' | 'cardigan' | 'vest';
-export type Accessory = 'glasses' | 'squareGlasses' | 'mustache' | 'beard' | 'strawHat' | 'hardHat' | 'cap' | 'headset' | 'earrings' | 'freckles' | 'wrinkles';
+export type Accessory = 'glasses' | 'squareGlasses' | 'mustache' | 'beard' | 'strawHat' | 'hardHat' | 'cap' | 'headset' | 'earrings' | 'freckles' | 'wrinkles' | 'headscarf';
 
 export interface Look {
   skin: string;
@@ -24,6 +24,8 @@ export interface Look {
   acc: Accessory[];
   /** 身高比例，小孩更矮 */
   scale?: number;
+  /** 帽子 / 头巾的颜色 */
+  hatColor?: string;
 }
 
 export interface CharacterDef {
@@ -37,97 +39,102 @@ export interface CharacterDef {
 }
 
 /**
- * 角色外形不带职业标志（安全帽、草帽、耳麦、反光背心…），名字也不带头衔：
- * 同一个人在不同需求里可能演医生、房东、销售，靠「as」给身份，靠性格和长相区分。
+ * 角色阵容按美术设定图（docs/art-brief.md 第 2 节；设定图由设计提供）。
+ * 外形尽量不带职业标志，名字不带头衔：同一个人在不同需求里可能演医生、房东、销售，
+ * 靠「as」给身份，靠性格和长相区分。
+ * 代码里的小人是占位，正式素材（Rive / 分层 SVG）到了按 id 替换。
  */
 export const CHARACTERS: CharacterDef[] = [
   {
-    id: 'lele',
-    name: { zh: '乐乐', en: 'Lele', ja: 'レレ', es: 'Lele' },
-    persona: '向导。热情话多，爱打比方，永远站在用户这边，会替用户吐槽不靠谱的人。',
-    roles: '向导、主持人（每关都可用）',
+    id: 'xiaofang',
+    name: { zh: '小芳', en: 'Fang', ja: 'ファン', es: 'Fang' },
+    persona: '向导。元气满满，有点冲动，很会照顾人；永远站在用户这边，会替用户吐槽不靠谱的人，兴奋了会跳起来比耶。',
+    roles: '向导、主持人、闺蜜/好朋友（每关都可用）',
     voice: { pitch: 1.25, rate: 1.1, gender: 'f' },
-    look: { skin: '#F5C7A1', hair: { style: 'curly', color: '#5B3A29' }, top: '#FF8A3D', accent: '#FFD7B5', bottom: '#3B4A6B', outfit: 'hoodie', acc: ['freckles'] },
-  },
-  {
-    id: 'wang',
-    name: { zh: '老王', en: 'Old Wang', ja: '王さん', es: 'Don Wang' },
-    persona: '过来人。干了二十年，嘴硬心软，爱讲自己踩过的坑，看不惯花冤枉钱。',
-    roles: '过来人、老师傅、邻居、父亲',
-    voice: { pitch: 0.8, rate: 0.95, gender: 'm' },
-    look: { skin: '#D9A066', hair: { style: 'bald', color: '#8A8A8A' }, top: '#4C8C4A', accent: '#2F5E2E', bottom: '#6B5B45', outfit: 'plaid', acc: ['cap', 'mustache', 'wrinkles'] },
-  },
-  {
-    id: 'qian',
-    name: { zh: '钱哥', en: 'Qian', ja: '銭さん', es: 'Qian' },
-    persona: '能说会道、八面玲珑，总想让你加钱升级，但确实懂行；被戳穿时会打哈哈。',
-    roles: '商家、销售、中介、装修公司',
-    voice: { pitch: 1, rate: 1.18, gender: 'm' },
-    look: { skin: '#F2C9A0', hair: { style: 'slick', color: '#1F1F1F' }, top: '#2F3E66', accent: '#D7263D', bottom: '#2F3E66', outfit: 'suit', acc: [] },
+    look: { skin: '#F6CFB0', hair: { style: 'bun', color: '#6B3E26' }, top: '#F27C9A', accent: '#FBD3DE', bottom: '#2D2D3A', outfit: 'hoodie', acc: ['freckles'] },
   },
   {
     id: 'mei',
     name: { zh: '美姐', en: 'Mei', ja: 'メイ', es: 'Mei' },
-    persona: '精打细算，说话直接，一针见血地问「值不值」「真的需要吗」。',
-    roles: '伴侣、家人、合伙人、财务',
-    voice: { pitch: 1.35, rate: 1.08, gender: 'f' },
-    look: { skin: '#F7D2B6', hair: { style: 'bun', color: '#2B1B17' }, top: '#8E5CC9', accent: '#E9D8FD', bottom: '#3F3D56', outfit: 'cardigan', acc: ['glasses', 'earrings'] },
+    persona: '理性又温柔，细心爱操心，说话有点毒舌；精打细算，一针见血地问「值不值」，习惯推一下眼镜。',
+    roles: '伴侣、姐姐、家里管钱的人、合伙人',
+    voice: { pitch: 1.1, rate: 1.0, gender: 'f' },
+    look: { skin: '#F7D2B6', hair: { style: 'long', color: '#3B2A20' }, top: '#B9A2E0', accent: '#E9DDFB', bottom: '#E8DCC4', outfit: 'shirt', acc: ['glasses', 'earrings'] },
   },
   {
-    id: 'zack',
-    name: { zh: '阿哲', en: 'Zack', ja: 'ザック', es: 'Zack' },
-    persona: '发烧友性格。爱抠参数和细节，看不惯奸商，说话快、爱用术语。',
-    roles: '懂技术的朋友、发烧友、程序员',
-    voice: { pitch: 1.15, rate: 1.2, gender: 'm' },
-    look: { skin: '#EBC09B', hair: { style: 'spiky', color: '#22223B' }, top: '#2EC4B6', accent: '#0B7A70', bottom: '#30343F', outfit: 'hoodie', acc: ['squareGlasses'] },
+    id: 'wang',
+    name: { zh: '老王', en: 'Old Wang', ja: '王さん', es: 'Don Wang' },
+    persona: '嘴上不饶人，心地善良，关键时刻靠得住；过来人，爱讲自己踩过的坑，背着手「啧」一声。',
+    roles: '过来人、老邻居、父亲/长辈、老师傅',
+    voice: { pitch: 0.8, rate: 0.95, gender: 'm' },
+    look: { skin: '#E2B48C', hair: { style: 'short', color: '#1F1F1F' }, top: '#2E3F5C', accent: '#4A5D80', bottom: '#3D3D3D', outfit: 'shirt', acc: ['wrinkles'] },
   },
   {
-    id: 'nana',
-    name: { zh: '奶奶', en: 'Nana', ja: 'ナナばあちゃん', es: 'Abuela Nana' },
-    persona: '长辈。心疼人、最怕不安全，总担心你累着、被骗，爱念叨。',
-    roles: '长辈、母亲、奶奶、房东阿姨',
-    voice: { pitch: 1.4, rate: 0.9, gender: 'f' },
-    look: { skin: '#F3CFB0', hair: { style: 'bun', color: '#E6E6E6' }, top: '#E07A5F', accent: '#F4C7B8', bottom: '#5C4D7D', outfit: 'cardigan', acc: ['glasses', 'wrinkles'] },
+    id: 'daliu',
+    name: { zh: '大刘', en: 'Big Liu', ja: 'リュウ', es: 'Liu' },
+    persona: '热情爱分享，话多，有点小浮夸；能说会道，总想推荐「更好的」、让你加钱升级，但确实懂行，被戳穿时会打哈哈，爱双手比赞。',
+    roles: '销售、中介、热心朋友、推荐达人',
+    voice: { pitch: 1, rate: 1.18, gender: 'm' },
+    look: { skin: '#EDC29E', hair: { style: 'short', color: '#4A3020' }, top: '#C5D33A', accent: '#E7EE9A', bottom: '#3A4A6B', outfit: 'hoodie', acc: ['cap', 'headset'], hatColor: '#2F6B4F' },
   },
   {
-    id: 'lu',
-    name: { zh: '陆爷爷', en: 'Grandpa Lu', ja: '陸じいちゃん', es: 'Abuelo Lu' },
-    persona: '老人家。倔、爱面子，心里藏着一个想圆的心愿，嘴上说「不用花钱」。',
-    roles: '长辈、父亲、爷爷',
-    voice: { pitch: 0.7, rate: 0.88, gender: 'm' },
-    look: { skin: '#E2B48C', hair: { style: 'short', color: '#D9D9D9' }, top: '#5B7DB1', accent: '#3A5A8C', bottom: '#4A4A4A', outfit: 'shirt', acc: ['mustache', 'wrinkles'] },
+    id: 'xiaoting',
+    name: { zh: '小婷', en: 'Ting', ja: 'ティン', es: 'Ting' },
+    persona: '温暖治愈，爱生活，喜欢小动物；关心感受和氛围，会问「你开心吗」「这样过日子舒服吗」。',
+    roles: '朋友、室友、妹妹、用户的另一半、有经验的同龄人',
+    voice: { pitch: 1.3, rate: 1.0, gender: 'f' },
+    look: { skin: '#F8D5BC', hair: { style: 'long', color: '#7A4A2A' }, top: '#F28C38', accent: '#FFD2A8', bottom: '#5A6B8C', outfit: 'hoodie', acc: [] },
   },
   {
-    id: 'gong',
-    name: { zh: '老龚', en: 'Gong', ja: 'ゴンさん', es: 'Gong' },
-    persona: '冷静严谨，讲数据和标准，专门提醒风险和隐患。',
-    roles: '工程师、专家、医生、律师、老师',
+    id: 'ajie',
+    name: { zh: '阿杰', en: 'Jay', ja: 'ジェイ', es: 'Jay' },
+    persona: '冷静少言，技术宅，细节控；只讲参数和事实，话很少但句句到点上，点头就是认可。',
+    roles: '懂技术的朋友、同事、发烧友、工程师',
+    voice: { pitch: 0.95, rate: 1.05, gender: 'm' },
+    look: { skin: '#EBC09B', hair: { style: 'short', color: '#1A1A1A' }, top: '#2B2B2E', accent: '#45454A', bottom: '#8C7B55', outfit: 'hoodie', acc: ['cap'], hatColor: '#1F1F22' },
+  },
+  {
+    id: 'ayi',
+    name: { zh: '阿姨', en: 'Auntie', ja: 'おばさん', es: 'Tía' },
+    persona: '热心肠，话不多但很有主意；心疼人，最怕不安全、怕你吃亏，笑眯眯地拿主意。',
+    roles: '妈妈/长辈、热心邻居、房东、家里的老人',
+    voice: { pitch: 1.15, rate: 0.92, gender: 'f' },
+    look: { skin: '#F0C9A6', hair: { style: 'bun', color: '#4A3326' }, top: '#5E8A55', accent: '#F4EFE6', bottom: '#4A4A55', outfit: 'cardigan', acc: ['headscarf', 'wrinkles'], hatColor: '#D9824A' },
+  },
+  {
+    id: 'xiaobei',
+    name: { zh: '小北', en: 'Bei', ja: 'ベイ', es: 'Bei' },
+    persona: '温和理性，喜欢思考，可靠但有点社恐；讲数据和标准，专门提醒风险和隐患，常拿着咖啡沉思。',
+    roles: '专家、顾问、医生、律师、老师、工程师',
     voice: { pitch: 0.9, rate: 1, gender: 'm' },
-    look: { skin: '#B97A4F', hair: { style: 'short', color: '#1A1A1A' }, top: '#3D5A80', accent: '#9FB4D3', bottom: '#293241', outfit: 'shirt', acc: ['beard', 'glasses'] },
-  },
-  {
-    id: 'dou',
-    name: { zh: '豆豆', en: 'Dou', ja: 'ドウ', es: 'Dou' },
-    persona: '小孩。童言无忌，总问最直白、大人不好意思问的问题。',
-    roles: '孩子、弟弟妹妹、学生',
-    voice: { pitch: 1.6, rate: 1.15, gender: 'f' },
-    look: { skin: '#FAD7BD', hair: { style: 'bob', color: '#6B3E26' }, top: '#4CC9F0', accent: '#FFFFFF', bottom: '#F72585', outfit: 'tee', acc: [], scale: 0.8 },
+    look: { skin: '#F2C9A0', hair: { style: 'short', color: '#2A2420' }, top: '#C9B08A', accent: '#EFE6D6', bottom: '#2E3440', outfit: 'cardigan', acc: ['glasses'] },
   },
 ];
 
-/** 玩家本人 */
+/** 玩家本人（小明） */
 export const ME: CharacterDef = {
   id: 'me',
   name: { zh: '我', en: 'Me', ja: 'わたし', es: 'Yo' },
   persona: '',
   roles: '',
-  voice: { pitch: 1, rate: 1, gender: 'f' },
-  look: { skin: '#F1C9A5', hair: { style: 'short', color: '#3B2A20' }, top: '#22C55E', accent: '#15803D', bottom: '#334155', outfit: 'tee', acc: [] },
+  voice: { pitch: 1, rate: 1, gender: 'm' },
+  look: { skin: '#F1C9A5', hair: { style: 'spiky', color: '#3B2A20' }, top: '#6B7344', accent: '#F4F1EA', bottom: '#2F3540', outfit: 'hoodie', acc: [] },
+};
+
+/** 旧角色 id → 新阵容里最接近的人（旧关卡、缓存、模型偶尔还用旧名字） */
+export const LEGACY_IDS: Record<string, string> = {
+  lele: 'xiaofang',
+  qian: 'daliu',
+  nana: 'ayi',
+  lu: 'wang',
+  zack: 'ajie',
+  gong: 'xiaobei',
+  dou: 'xiaoting',
 };
 
 export const CHARACTER_IDS = CHARACTERS.map((c) => c.id) as [string, ...string[]];
-export const GUIDE = 'lele';
-export const charById = (id: string) => (id === 'me' ? ME : CHARACTERS.find((c) => c.id === id));
+export const GUIDE = 'xiaofang';
+export const charById = (id: string) => (id === 'me' ? ME : CHARACTERS.find((c) => c.id === (LEGACY_IDS[id] ?? id)));
 
 /** 给大模型的角色清单 */
 export const characterCatalog = () =>

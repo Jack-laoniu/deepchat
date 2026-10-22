@@ -1,6 +1,6 @@
 import type { ZodIssue } from 'zod';
 import { CHARACTER_IDS } from '../chars/library';
-import { Lesson, textWidth, type Lesson as LessonT, type Round } from './schema';
+import { Lesson, migrateIds, textWidth, type Lesson as LessonT, type Round } from './schema';
 
 /**
  * 自动修补模型写的关卡：大多数校验错误是小毛病（某句话超了几个字、chips 多给了一个、卡片少写一边），
@@ -153,7 +153,7 @@ function fix(root: Record<string, unknown>, issue: ZodIssue, fixes: string[]): {
 
 export function salvage(data: unknown): Salvaged | null {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
-  const root = structuredClone(data) as Record<string, unknown>;
+  const root = migrateIds(structuredClone(data)) as Record<string, unknown>;
   const fixes: string[] = [];
   let heavy = false;
   for (let pass = 0; pass < MAX_PASSES; pass++) {

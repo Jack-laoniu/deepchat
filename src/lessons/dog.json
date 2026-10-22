@@ -8,19 +8,19 @@
   "currency": "USD",
   "cast": [
     {
-      "id": "qian",
+      "id": "daliu",
       "as": "Pet shop owner"
     },
     {
-      "id": "nana",
+      "id": "ayi",
       "as": "Grandma"
     },
     {
-      "id": "zack",
+      "id": "ajie",
       "as": "Roommate"
     },
     {
-      "id": "gong",
+      "id": "xiaobei",
       "as": "Vet"
     }
   ],
@@ -66,18 +66,18 @@
       "type": "talk",
       "id": "why",
       "style": "chat",
-      "title": "Hi, I'm Lele",
+      "title": "Hi, I'm Fang",
       "emoji": "👋",
-      "with": "lele",
+      "with": "xiaofang",
       "beats": [
         {
-          "who": "lele",
-          "say": "Hey! I'm Lele. Let's find the right dog for you!",
+          "who": "xiaofang",
+          "say": "Hey! I'm Fang. Let's find the right dog for you!",
           "mood": "happy"
         },
         {
           "id": "why",
-          "who": "lele",
+          "who": "xiaofang",
           "q": "So… why do you want a dog?",
           "options": [
             {
@@ -90,7 +90,7 @@
               ],
               "reply": [
                 {
-                  "who": "lele",
+                  "who": "xiaofang",
                   "say": "Aww. A buddy who's happy to see you!",
                   "mood": "happy"
                 }
@@ -106,7 +106,7 @@
               ],
               "reply": [
                 {
-                  "who": "lele",
+                  "who": "xiaofang",
                   "say": "Then the dog must be great with kids.",
                   "mood": "thinking"
                 }
@@ -122,7 +122,7 @@
               ],
               "reply": [
                 {
-                  "who": "lele",
+                  "who": "xiaofang",
                   "say": "An energetic breed it is!",
                   "mood": "happy"
                 }
@@ -151,7 +151,7 @@
                 ],
                 "reply": [
                   {
-                    "who": "lele",
+                    "who": "xiaofang",
                     "say": "Got it — a loyal companion.",
                     "mood": "happy"
                   }
@@ -170,7 +170,7 @@
                 ],
                 "reply": [
                   {
-                    "who": "lele",
+                    "who": "xiaofang",
                     "say": "Kid-friendly is a must, noted!"
                   }
                 ]
@@ -188,7 +188,7 @@
                 ],
                 "reply": [
                   {
-                    "who": "lele",
+                    "who": "xiaofang",
                     "say": "A sporty dog, noted!"
                   }
                 ]
@@ -202,7 +202,7 @@
                 "fact": "Wants a dog that makes them feel safer",
                 "reply": [
                   {
-                    "who": "lele",
+                    "who": "xiaofang",
                     "say": "A watchful dog, noted."
                   }
                 ]
@@ -210,14 +210,14 @@
             ],
             "reply": [
               {
-                "who": "lele",
+                "who": "xiaofang",
                 "say": "That matters a lot. Noted!"
               }
             ]
           }
         },
         {
-          "who": "lele",
+          "who": "xiaofang",
           "say": "I made a first guess. Let's see what's off."
         }
       ]
@@ -263,23 +263,23 @@
           "say": "Saturday morning at the dog park."
         },
         {
-          "who": "qian",
+          "who": "daliu",
           "say": "A husky! Perfect for anyone, trust me.",
           "mood": "smug"
         },
         {
-          "who": "nana",
+          "who": "ayi",
           "say": "Perfect? My husky ate my sofa!",
           "mood": "angry"
         },
         {
-          "who": "nana",
+          "who": "ayi",
           "say": "They need two hours of exercise. Every. Day.",
           "mood": "worried"
         },
         {
           "id": "hours",
-          "who": "nana",
+          "who": "ayi",
           "q": "How long are you out each day?",
           "options": [
             {
@@ -289,7 +289,7 @@
               "fact": "Away from home under 4 hours a day",
               "reply": [
                 {
-                  "who": "nana",
+                  "who": "ayi",
                   "say": "Good, the dog won't be lonely.",
                   "mood": "happy"
                 }
@@ -315,7 +315,7 @@
               ],
               "reply": [
                 {
-                  "who": "nana",
+                  "who": "ayi",
                   "say": "Oh dear, that's a long day…",
                   "mood": "sad"
                 }
@@ -360,7 +360,7 @@
                 "fact": "Works from home at least part of the week",
                 "reply": [
                   {
-                    "who": "nana",
+                    "who": "ayi",
                     "say": "Working from home? Lucky dog!",
                     "mood": "happy"
                   }
@@ -370,7 +370,7 @@
           }
         },
         {
-          "who": "zack",
+          "who": "ajie",
           "say": "Alone all day? It'll howl and the neighbors will hate us.",
           "mood": "worried",
           "if": {
@@ -380,7 +380,7 @@
           }
         },
         {
-          "who": "qian",
+          "who": "daliu",
           "say": "Then just buy a second dog! Two for one!",
           "mood": "smug",
           "if": {
@@ -390,7 +390,7 @@
           }
         },
         {
-          "who": "nana",
+          "who": "ayi",
           "say": "Don't listen to him, dear.",
           "mood": "angry",
           "if": {
@@ -630,7 +630,7 @@
       "cards": [
         {
           "id": "c_rain",
-          "who": "zack",
+          "who": "ajie",
           "say": "It's pouring and the puppy needs a walk. You're on a call.",
           "emoji": "🌧️",
           "left": {
@@ -656,7 +656,7 @@
         },
         {
           "id": "c_shoes",
-          "who": "nana",
+          "who": "ayi",
           "say": "He chewed your shoes. Crate him while you're out?",
           "emoji": "👟",
           "left": {
@@ -683,7 +683,7 @@
         },
         {
           "id": "c_vet",
-          "who": "gong",
+          "who": "xiaobei",
           "say": "He's limping. A check-up is $150. Wait and see?",
           "emoji": "🩺",
           "left": {
@@ -708,7 +708,7 @@
         },
         {
           "id": "c_trip",
-          "who": "qian",
+          "who": "daliu",
           "say": "Weekend trip with friends! Boarding is $80 a night.",
           "emoji": "🏕️",
           "left": {
@@ -744,18 +744,18 @@
           "id": "shop",
           "emoji": "🏪",
           "label": "Pet shop",
-          "who": "qian",
+          "who": "daliu",
           "x": 24,
           "y": 26,
           "beats": [
             {
-              "who": "qian",
+              "who": "daliu",
               "say": "Welcome! Puppies on sale today!",
               "mood": "happy"
             },
             {
               "id": "source",
-              "who": "qian",
+              "who": "daliu",
               "q": "Puppy, or an older dog?",
               "options": [
                 {
@@ -768,7 +768,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "qian",
+                      "who": "daliu",
                       "say": "Excellent choice!",
                       "mood": "smug"
                     }
@@ -796,7 +796,7 @@
                   },
                   "reply": [
                     {
-                      "who": "qian",
+                      "who": "daliu",
                       "say": "Uh… shelters are, um, fine too.",
                       "mood": "worried"
                     }
@@ -805,7 +805,7 @@
               ]
             },
             {
-              "who": "qian",
+              "who": "daliu",
               "say": "Puppies need training though. Classes are extra!",
               "mood": "smug",
               "if": {
@@ -820,18 +820,18 @@
           "id": "vet",
           "emoji": "🏥",
           "label": "Vet clinic",
-          "who": "gong",
+          "who": "xiaobei",
           "x": 76,
           "y": 28,
           "beats": [
             {
-              "who": "gong",
+              "who": "xiaobei",
               "say": "Two questions people forget to ask.",
               "mood": "thinking"
             },
             {
               "id": "allergy",
-              "who": "gong",
+              "who": "xiaobei",
               "q": "Anyone at home allergic?",
               "options": [
                 {
@@ -847,7 +847,7 @@
                   "fact": "Someone at home has pet allergies — needs a low-shedding breed",
                   "reply": [
                     {
-                      "who": "gong",
+                      "who": "xiaobei",
                       "say": "Then look at low-shedding breeds.",
                       "mood": "worried"
                     }
@@ -857,7 +857,7 @@
             },
             {
               "id": "bills",
-              "who": "gong",
+              "who": "xiaobei",
               "q": "Ready for surprise vet bills?",
               "options": [
                 {
@@ -895,18 +895,18 @@
           "id": "home",
           "emoji": "🛋️",
           "label": "Home",
-          "who": "zack",
+          "who": "ajie",
           "x": 50,
           "y": 72,
           "beats": [
             {
-              "who": "zack",
+              "who": "ajie",
               "say": "Dude, did you even check the lease?",
               "mood": "surprised"
             },
             {
               "id": "lease",
-              "who": "zack",
+              "who": "ajie",
               "q": "Does our lease allow dogs?",
               "options": [
                 {
@@ -922,7 +922,7 @@
                   "fact": "Unknown whether the lease allows dogs — must check with landlord before adopting",
                   "reply": [
                     {
-                      "who": "zack",
+                      "who": "ajie",
                       "say": "Check BEFORE the dog shows up.",
                       "mood": "angry"
                     }
@@ -932,7 +932,7 @@
             },
             {
               "id": "travel",
-              "who": "zack",
+              "who": "ajie",
               "q": "Who takes the dog when you travel?",
               "free": {
                 "placeholder": "e.g. a pet hotel",
@@ -951,7 +951,7 @@
                     ],
                     "reply": [
                       {
-                        "who": "zack",
+                        "who": "ajie",
                         "say": "Me?! …Fine. You owe me pizza.",
                         "mood": "smug"
                       }
@@ -968,7 +968,7 @@
                 ],
                 "reply": [
                   {
-                    "who": "zack",
+                    "who": "ajie",
                     "say": "Okay, as long as it's not me.",
                     "mood": "happy"
                   }
