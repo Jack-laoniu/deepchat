@@ -6,7 +6,7 @@ import { jingle } from '../fx/music';
 import { speak } from '../fx/voice';
 import { useGame } from '../game';
 import { t, type MsgKey } from '../i18n';
-import { chainMeters, METERS, optionDelta, type Meter } from '../lesson/engine';
+import { chainMeters, matches, METERS, optionDelta, type Meter } from '../lesson/engine';
 import type { ChainRound, Option } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
 import { HandHint } from '../ui/Hint';
@@ -29,6 +29,8 @@ export function Chain({ round }: { round: ChainRound }) {
   // 开局时的分数和清单固定下来：提交后全局状态会把这些选择算进去，再拿来当起点就重复计算了
   const [start] = useState(() => g.played!.score);
   const [cart] = useState(() => g.played!.cart);
+  // 按前面的选择决定出哪些卡（比如油车分支换一张「油价又涨了」）
+  const [cards] = useState(() => round.cards.filter((c) => matches(c.if, g.played!.flags)));
   const [picks, setPicks] = useState<Record<string, 'left' | 'right'>>({});
   const [touched, setTouched] = useState(false);
   const [lean, setLean] = useState<'left' | 'right' | null>(null);
@@ -46,19 +48,19 @@ export function Chain({ round }: { round: ChainRound }) {
   const flying = useRef(false);
   useMotionValueEvent(x, 'change', (v) => setLean(v < -30 ? 'left' : v > 30 ? 'right' : null));
 
-  const { meters, broke } = useMemo(() => chainMeters(start, cart, round.cards, picks), [start, cart, round.cards, picks]);
+  const { meters, broke } = useMemo(() => chainMeters(start, cart, cards, picks), [start, cart, cards, picks]);
   const index = Object.keys(picks).length;
-  const card = broke ? null : round.cards[index];
-  const finished = !broke && index >= round.cards.length;
+  const card = broke ? null : cards[index];
+  const finished = !broke && index >= cards.length;
   // 购物车跟着已做的选择变化，预告才准
   const cartNow = useMemo(() => {
     let items = [...cart];
-    for (const c of round.cards.slice(0, index)) {
+    for (const c of cards.slice(0, index)) {
       const o = c[picks[c.id]];
       items = items.filter((i) => !o.remove.includes(i.id) && !o.add.some((a) => a.id === i.id)).concat(o.add);
     }
     return items;
-  }, [cart, round.cards, picks, index]);
+  }, [cart, cards, picks, index]);
   const hint = card && lean ? preview(card[lean], cartNow) : {};
 
   useEffect(() => {
@@ -107,7 +109,7 @@ export function Chain({ round }: { round: ChainRound }) {
     });
   };
 
-  const remaining = round.cards.length - index;
+  const remaining = cards.length - index;
   return (
     <motion.div className="relative flex h-full flex-col" animate={shake ? { x: [0, -14, 12, -8, 6, 0] } : {}} transition={{ duration: 0.5 }} key={`shake-${shake}`}>
       <div className="mb-2 flex items-center justify-center gap-2">
@@ -162,7 +164,7 @@ export function Chain({ round }: { round: ChainRound }) {
                     <Character id={card.who} size={44} bust talking={!touched} />
                   </div>
                   <div className="text-sm font-black text-slate-600">{who(card.who).as ?? who(card.who).name}</div>
-                  <div className="ml-auto text-xs font-black text-slate-400">{index + 1}/{round.cards.length}</div>
+                  <div className="ml-auto text-xs font-black text-slate-400">{index + 1}/{cards.length}</div>
                 </div>
                 <div className="flex flex-1 flex-col items-center justify-center px-3 text-center">
                   <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 2.2 }} style={{ filter: 'drop-shadow(2px 6px 4px rgba(0,0,0,.2))' }}>

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { SAMPLES } from '../lessons';
 import dog from '../lessons/dog.json';
-import { chainMeters, gambleCrashes, play, revealsProblem, walkBeats, type Answer, type Replies } from './engine';
+import farmRaw from '../lessons/farm.json';
+import { chainMeters, gambleCrashes, matches, play, revealsProblem, walkBeats, type Answer, type Replies } from './engine';
 import { superPrompt } from './output';
 import { parseLesson, textWidth, type Beat, type Lesson } from './schema';
 import { setLocale } from '../i18n';
@@ -24,10 +25,10 @@ const why = talk('why', { why: { option: 'tired' } });
 const story = (land: string, water: string) => talk('story', { land: { option: land }, water: { option: water } });
 
 describe('samples', () => {
-  it('all samples are valid', () => expect(lessons).toHaveLength(6));
+  it('all samples are valid', () => expect(lessons).toHaveLength(SAMPLES.length));
 
   it('rejects walls of text, dangling flags and unknown speakers', () => {
-    const bad = structuredClone(SAMPLES[0]) as any;
+    const bad = structuredClone(farmRaw) as any;
     bad.rounds[1].q = '这是一个特别特别特别长的、根本不适合放在游戏画面里的问题';
     bad.rounds[3].if = { all: ['nobody_sets_this'] };
     bad.rounds[2].beats[1].who = 'ghost';
@@ -175,7 +176,7 @@ describe('characters & languages', () => {
   const dog = lessons.find((l) => l.title === 'Getting a dog')!;
 
   it('rejects characters that are not in the library', () => {
-    const bad = structuredClone(SAMPLES[0]) as any;
+    const bad = structuredClone(farmRaw) as any;
     bad.cast.push({ id: 'unicorn' });
     expect(parseLesson(bad).ok).toBe(false);
   });
@@ -292,5 +293,37 @@ describe('place and day rounds', () => {
     const q = play(farmL, [...answers, { round: 'spots', place: { pump: 'well', box: 'shed' } }, { round: 'routine', day: { m_am: 'm_am_phone' } }]);
     expect(q.risks.some((r) => r.includes('短路'))).toBe(false);
     expect(q.facts).toContain('早上想在手机上看看就行');
+  });
+});
+
+describe('benchmark quest: first car', () => {
+  const car = lessons.find((l) => l.title === '第一辆车')!;
+  const upTo = (spot: string, extra: Answer[] = []): Answer[] => [
+    { round: 'quarrel', talk: { use: { option: 'u_commute' } } },
+    { round: 'ask', map: { wuye: { spot: { option: spot } }, dian: { pay: { option: 'p_full' } }, home: { who: { option: 'w_me' } } } },
+    { round: 'budget', value: 200000 },
+    { round: 'routine', day: { m_am: 'm_am_car', m_noon: 'm_noon_stay', m_eve: 'm_eve_home', m_night: 'm_night_charge' } },
+    { round: 'park', place: { car: 'street', charger: 'office' } },
+    ...extra,
+  ];
+
+  it('no fixed parking spot blows up into a charging problem; with a spot it does not', () => {
+    expect(play(car, upTo('s_none')).current?.id).toBe('fix_charge');
+    expect(play(car, upTo('s_own')).current?.id).toBe('extras');
+  });
+
+  it('switching to petrol replaces the car and charges full purchase tax', () => {
+    const p = play(car, upTo('s_none', [{ round: 'fix_charge', option: 'f_oil' }]));
+    expect(p.cart.find((i) => i.id === 'car')?.name).toBe('燃油车');
+    expect(p.cart.find((i) => i.id === 'tax')?.price).toBe(11000);
+  });
+
+  it('the charging-queue card only shows up for people without a spot', () => {
+    const chain = car.rounds.find((r) => r.type === 'chain')!;
+    if (chain.type !== 'chain') throw new Error();
+    const noSpot = play(car, upTo('s_none')).flags;
+    const own = play(car, upTo('s_own')).flags;
+    expect(chain.cards.filter((c) => matches(c.if, noSpot)).map((c) => c.id)).toContain('c_queue');
+    expect(chain.cards.filter((c) => matches(c.if, own)).map((c) => c.id)).not.toContain('c_queue');
   });
 });

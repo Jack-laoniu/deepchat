@@ -15,7 +15,8 @@ import { Place } from '../rounds/Place';
 import { Day } from '../rounds/Day';
 import { FeedbackSheet } from '../ui/FeedbackSheet';
 import { TopBar } from '../ui/kit';
-import { t } from '../i18n';
+import { money, t } from '../i18n';
+import { Emoji } from '../ui/Emoji';
 
 function RoundView({ round }: { round: Round }) {
   switch (round.type) {
@@ -74,6 +75,7 @@ export function Play() {
   return (
     <motion.div animate={crashed ? { x: [0, -14, 14, -10, 10, -4, 0] } : { x: 0 }} transition={{ duration: 0.5 }} className="flex h-full flex-col">
       <TopBar progress={p.done / p.estimate} hearts={g.hearts} total={p.total} budget={p.budget} streak={g.streak} onClose={g.home} />
+      <PlanStrip />
       <div className="relative flex-1 overflow-hidden px-5 pb-6 pt-6">
         <AnimatePresence mode="wait">
           {current && (
@@ -109,5 +111,41 @@ export function Play() {
       </AnimatePresence>
       <FeedbackSheet fb={g.feedback} onNext={g.next} />
     </motion.div>
+  );
+}
+
+/**
+ * 方案一直在长：顶栏下面一条「我的方案」，每次选择都看得到东西加进来 / 被拿掉、总价在变。
+ * 用户不用等到最后才看到成果。
+ */
+function PlanStrip() {
+  const g = useGame();
+  const p = g.played!;
+  const shown = p.cart.slice(0, 9);
+  return (
+    <div className="mx-5 mt-1 flex items-center gap-1.5 rounded-2xl border-2 border-slate-100 bg-slate-50 px-2 py-1">
+      <span className="text-xs font-black text-slate-400">{t('myPlan')}</span>
+      <div className="flex min-w-0 flex-1 items-center gap-0.5 overflow-hidden">
+        <AnimatePresence initial={false}>
+          {shown.map((it) => (
+            <motion.span
+              key={it.id}
+              layout
+              initial={{ scale: 0, y: -12 }}
+              animate={{ scale: [0, 1.5, 1], y: 0 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ duration: 0.45 }}
+              title={it.name}
+            >
+              <Emoji e={it.emoji} size={22} />
+            </motion.span>
+          ))}
+        </AnimatePresence>
+        {p.cart.length > shown.length && <span className="text-xs font-black text-slate-400">+{p.cart.length - shown.length}</span>}
+      </div>
+      <motion.span key={p.total} initial={{ scale: 1.4, color: '#f59e0b' }} animate={{ scale: 1, color: '#334155' }} className="text-sm font-black tabular-nums">
+        {money(p.total)}
+      </motion.span>
+    </div>
   );
 }

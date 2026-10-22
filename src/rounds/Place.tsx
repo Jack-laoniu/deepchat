@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { sfx } from '../fx/fx';
 import { useGame } from '../game';
+import { matches } from '../lesson/engine';
 import { t } from '../i18n';
 import type { PlaceRound } from '../lesson/schema';
 import { centerIn, useBursts } from '../ui/Burst';
@@ -31,6 +32,8 @@ export function Place({ round }: { round: PlaceRound }) {
   const box = useRef<HTMLDivElement>(null);
   const { fire, layer } = useBursts();
   const left = round.things.filter((th) => !placed[th.id]);
+  // 前面的回答决定某些位置用不了（比如没有固定车位）
+  const locked = new Set(round.zones.filter((z) => z.lockIf && matches(z.lockIf, g.played!.flags)).map((z) => z.id));
   const done = left.length === 0;
   const touched = Object.keys(placed).length > 0 || picked !== null;
 
@@ -47,12 +50,19 @@ export function Place({ round }: { round: PlaceRound }) {
 
   const zoneAt = (x: number, y: number) =>
     round.zones.find((z) => {
+      if (locked.has(z.id)) return false;
       const r = zoneRefs.current[z.id]?.getBoundingClientRect();
       return r && x >= r.left - 20 && x <= r.right + 20 && y >= r.top - 30 && y <= r.bottom + 16;
     })?.id ?? null;
 
   const put = (thingId: string, zoneId: string) => {
     const z = round.zones.find((x) => x.id === zoneId)!;
+    if (locked.has(zoneId)) {
+      sfx.buzz();
+      setWarn({ zone: zoneId, text: z.lockNote || t('placeLocked') });
+      setTimeout(() => setWarn((w) => (w?.zone === zoneId ? null : w)), 2800);
+      return;
+    }
     const bad = z.bad.includes(thingId);
     setPlaced((p) => ({ ...p, [thingId]: zoneId }));
     setPicked(null);
@@ -82,7 +92,7 @@ export function Place({ round }: { round: PlaceRound }) {
 
   // 示范：从纸箱里第一个东西拖到第一个合适的位置
   const demoThing = left[0];
-  const demoZone = round.zones.find((z) => !demoThing || !z.bad.includes(demoThing.id)) ?? round.zones[0];
+  const demoZone = round.zones.find((z) => !locked.has(z.id) && (!demoThing || !z.bad.includes(demoThing.id))) ?? round.zones[0];
   const path = useHintPath(box, () => (demoThing ? thingRefs.current[demoThing.id] : null), () => zoneRefs.current[demoZone.id], [demoThing?.id, demoZone.id]);
 
   return (
@@ -101,6 +111,7 @@ export function Place({ round }: { round: PlaceRound }) {
             const here = round.things.filter((th) => placed[th.id] === z.id);
             const shaking = warn?.zone === z.id;
             const hot = over === z.id;
+            const isLocked = locked.has(z.id);
             const justLanded = landed?.zone === z.id;
             return (
               <motion.div
@@ -108,10 +119,10 @@ export function Place({ round }: { round: PlaceRound }) {
                 data-zone={z.id}
                 ref={(el) => (zoneRefs.current[z.id] = el)}
                 onClick={() => picked && put(picked, z.id)}
-                className={`absolute z-[3] flex flex-col items-center ${picked ? 'cursor-pointer' : ''}`}
+                className={`absolute z-[3] flex flex-col items-center ${picked ? 'cursor-pointer' : ''} ${isLocked ? 'grayscale' : ''}`}
                 style={{ left: `${z.x}%`, top: `${z.y}%`, marginLeft: -48, width: 96 }}
-                animate={shaking ? { x: [0, -9, 9, -6, 6, 0] } : { scale: hot ? 1.15 : picked ? [1, 1.06, 1] : 1 }}
-                transition={shaking ? { duration: 0.5 } : picked && !hot ? { repeat: Infinity, duration: 1.1 } : { duration: 0.2 }}
+                animate={shaking ? { x: [0, -9, 9, -6, 6, 0] } : { scale: hot ? 1.15 : picked && !isLocked ? [1, 1.06, 1] : 1, opacity: isLocked ? 0.75 : 1 }}
+                transition={shaking ? { duration: 0.5 } : picked && !hot && !isLocked ? { repeat: Infinity, duration: 1.1 } : { duration: 0.2 }}
               >
                 {/* 地上的位置：亮面在左上；可放时发光 */}
                 <div
@@ -141,8 +152,13 @@ export function Place({ round }: { round: PlaceRound }) {
                       ))}
                     </div>
                   ) : (
-                    <span className="opacity-80">
+                    <span className="relative opacity-80">
                       <Emoji e={z.emoji} size={30} />
+                      {isLocked && (
+                        <span className="absolute -right-4 -top-3">
+                          <Emoji e="🔒" size={22} />
+                        </span>
+                      )}
                     </span>
                   )}
                   {/* 放错：红色 ✕ 冒一下 */}

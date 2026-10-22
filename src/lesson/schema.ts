@@ -223,6 +223,8 @@ export const ChainRound = z.object({
         emoji,
         left: Option,
         right: Option,
+        /** 满足条件才出现这张卡（不同选择走不同的分支） */
+        if: Cond.optional(),
       }),
     )
     .min(3)
@@ -277,6 +279,9 @@ export const PlaceRound = z.object({
         /** 不适合放在这里的东西 */
         bad: z.array(id).default([]),
         warn: upto(28).default(''),
+        /** 满足条件时这个位置是锁住的（灰掉、放不进去），比如「没有固定车位」 */
+        lockIf: Cond.optional(),
+        lockNote: upto(28).default(''),
       }),
     )
     .min(2)
@@ -379,6 +384,8 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
       checkCond(r.if, ['rounds', i, 'if']);
       const beats = r.type === 'talk' ? r.beats : r.type === 'map' ? r.spots.flatMap((s) => s.beats) : [];
       beats.forEach((b) => checkCond(b.if, ['rounds', i, 'beats']));
+      if (r.type === 'chain') r.cards.forEach((c, j) => checkCond(c.if, ['rounds', i, 'cards', j, 'if']));
+      if (r.type === 'place') r.zones.forEach((z, j) => checkCond(z.lockIf, ['rounds', i, 'zones', j, 'lockIf']));
       [...linesOf(r), ...asksOf(r)].forEach((b) => {
         if (!speakers.has(b.who)) err(['rounds', i], `角色 ${b.who} 不在 cast 里`);
       });

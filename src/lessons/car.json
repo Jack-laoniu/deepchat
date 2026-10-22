@@ -1,0 +1,993 @@
+{
+  "v": 1,
+  "need": "想买第一辆车，纠结油车还是电车",
+  "title": "第一辆车",
+  "emoji": "🚗",
+  "domain": "买车：油车 / 电车 / 混动",
+  "lang": "zh",
+  "currency": "CNY",
+  "cast": [
+    {
+      "id": "ajie",
+      "as": "刚提电车的同事"
+    },
+    {
+      "id": "wang",
+      "as": "楼下老司机"
+    },
+    {
+      "id": "daliu",
+      "as": "4S店销售"
+    },
+    {
+      "id": "xiaobei",
+      "as": "物业经理"
+    },
+    {
+      "id": "mei",
+      "as": "另一半"
+    },
+    {
+      "id": "ayi",
+      "as": "妈"
+    }
+  ],
+  "guess": {
+    "line": "我猜：一辆最火的纯电车，落地十六万",
+    "items": [
+      {
+        "id": "car",
+        "emoji": "🚙",
+        "name": "热门纯电车",
+        "price": 138000,
+        "spec": "销售主推的爆款，裸车价"
+      },
+      {
+        "id": "tax",
+        "emoji": "🧾",
+        "name": "购置税",
+        "price": 6100,
+        "spec": "新能源车 2026–2027 年减半征收（估算，以当地政策为准）"
+      },
+      {
+        "id": "ins",
+        "emoji": "🛡️",
+        "name": "首年保险",
+        "price": 5500,
+        "spec": "交强险 + 商业险（估算）"
+      },
+      {
+        "id": "plate",
+        "emoji": "🪪",
+        "name": "上牌杂费",
+        "price": 500
+      },
+      {
+        "id": "pkg",
+        "emoji": "🎁",
+        "name": "精品大礼包",
+        "price": 3000,
+        "spec": "脚垫、香水座、行车记录仪，4S 店打包卖"
+      }
+    ]
+  },
+  "rounds": [
+    {
+      "type": "talk",
+      "id": "quarrel",
+      "style": "story",
+      "title": "楼下的争吵",
+      "emoji": "🏘️",
+      "beats": [
+        {
+          "who": "narrator",
+          "say": "晚上八点，小区楼下。阿杰刚提了电车。"
+        },
+        {
+          "who": "wang",
+          "say": "电车？冬天续航打七折，你就等着排队吧。",
+          "mood": "smug"
+        },
+        {
+          "who": "ajie",
+          "say": "一公里一毛。你那个，六毛。",
+          "mood": "neutral"
+        },
+        {
+          "who": "wang",
+          "say": "那是你有地方充。",
+          "mood": "angry"
+        },
+        {
+          "who": "ajie",
+          "say": "……",
+          "mood": "thinking"
+        },
+        {
+          "id": "use",
+          "who": "ajie",
+          "q": "你呢？车主要拿来干嘛？",
+          "options": [
+            {
+              "id": "u_commute",
+              "emoji": "🏢",
+              "label": "天天开去上班",
+              "fact": "主要用途：每天通勤上班",
+              "set": [
+                "commute"
+              ],
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "通勤？那电车省下的钱最多。",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "u_family",
+              "emoji": "🛒",
+              "label": "周末买菜遛娃",
+              "fact": "主要用途：周末家用、接送孩子、买菜",
+              "set": [
+                "weekend"
+              ],
+              "reply": [
+                {
+                  "who": "wang",
+                  "say": "那开得少，油车电车差不了几个钱。",
+                  "mood": "neutral"
+                }
+              ]
+            },
+            {
+              "id": "u_long",
+              "emoji": "🛣️",
+              "label": "常跑长途",
+              "fact": "主要用途：经常跑长途、跨城",
+              "set": [
+                "longtrip"
+              ],
+              "reply": [
+                {
+                  "who": "wang",
+                  "say": "跑长途？听我的，别碰纯电。",
+                  "mood": "smug"
+                },
+                {
+                  "who": "ajie",
+                  "say": "……也不一定。",
+                  "mood": "worried"
+                }
+              ]
+            }
+          ],
+          "free": {
+            "placeholder": "比如：上班、接孩子、回老家…",
+            "fact": "用户自己说的主要用途：{v}",
+            "chips": [
+              "上班",
+              "接孩子",
+              "回老家"
+            ],
+            "match": [
+              {
+                "words": [
+                  "老家",
+                  "长途",
+                  "出差",
+                  "跨城"
+                ],
+                "set": [
+                  "longtrip"
+                ],
+                "fact": "经常跑长途",
+                "reply": [
+                  {
+                    "who": "wang",
+                    "say": "长途？那充电你得好好算算。",
+                    "mood": "thinking"
+                  }
+                ]
+              },
+              {
+                "words": [
+                  "上班",
+                  "通勤",
+                  "公司"
+                ],
+                "set": [
+                  "commute"
+                ],
+                "fact": "每天通勤",
+                "reply": [
+                  {
+                    "who": "ajie",
+                    "say": "通勤族，电车最划算。",
+                    "mood": "happy"
+                  }
+                ]
+              }
+            ],
+            "reply": [
+              {
+                "who": "ajie",
+                "say": "记下了。",
+                "mood": "neutral"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "map",
+      "id": "ask",
+      "title": "挨个问一圈",
+      "emoji": "🗺️",
+      "spots": [
+        {
+          "id": "wuye",
+          "emoji": "🏢",
+          "label": "物业",
+          "who": "xiaobei",
+          "x": 22,
+          "y": 28,
+          "beats": [
+            {
+              "who": "xiaobei",
+              "say": "装充电桩可以。要车位产权或租赁合同，还要物业签字。",
+              "mood": "neutral"
+            },
+            {
+              "id": "spot",
+              "who": "xiaobei",
+              "q": "你的车位，是买的还是租的？",
+              "options": [
+                {
+                  "id": "s_own",
+                  "emoji": "🔑",
+                  "label": "买的固定车位",
+                  "fact": "有产权固定车位，可以申请装家用充电桩",
+                  "set": [
+                    "own_spot"
+                  ],
+                  "reply": [
+                    {
+                      "who": "xiaobei",
+                      "say": "那装桩没问题，两周能批。",
+                      "mood": "happy"
+                    }
+                  ]
+                },
+                {
+                  "id": "s_rent",
+                  "emoji": "📝",
+                  "label": "租的车位",
+                  "fact": "租的固定车位，装桩需要车位主人同意",
+                  "set": [
+                    "rent_spot"
+                  ],
+                  "reply": [
+                    {
+                      "who": "xiaobei",
+                      "say": "得车位主人签字。他要是不同意……",
+                      "mood": "worried"
+                    }
+                  ]
+                },
+                {
+                  "id": "s_none",
+                  "emoji": "🚫",
+                  "label": "没有固定车位",
+                  "fact": "没有固定车位，晚上停路边或临时车位，无法装家用充电桩",
+                  "set": [
+                    "no_spot"
+                  ],
+                  "reply": [
+                    {
+                      "who": "xiaobei",
+                      "say": "那就装不了。只能用公共桩。",
+                      "mood": "worried"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "dian",
+          "emoji": "🚘",
+          "label": "4S店",
+          "who": "daliu",
+          "x": 76,
+          "y": 26,
+          "beats": [
+            {
+              "who": "daliu",
+              "say": "这款卖爆了！今天定，脚垫贴膜全送！",
+              "mood": "happy"
+            },
+            {
+              "who": "daliu",
+              "say": "贷款首付只要三万，就收个四千服务费。",
+              "mood": "smug"
+            },
+            {
+              "id": "pay",
+              "who": "daliu",
+              "q": "您是全款还是贷款？",
+              "options": [
+                {
+                  "id": "p_full",
+                  "emoji": "💵",
+                  "label": "全款",
+                  "fact": "全款购车，不办贷款",
+                  "reply": [
+                    {
+                      "who": "daliu",
+                      "say": "全款啊……那、那精品包您得看看。",
+                      "mood": "worried"
+                    }
+                  ]
+                },
+                {
+                  "id": "p_loan",
+                  "emoji": "🏦",
+                  "label": "贷款",
+                  "fact": "办厂家金融贷款，需付金融服务费约 4000 元",
+                  "set": [
+                    "loan"
+                  ],
+                  "add": [
+                    {
+                      "id": "loanfee",
+                      "emoji": "🏦",
+                      "name": "金融服务费",
+                      "price": 4000,
+                      "spec": "4S 店贷款手续费，可以谈或拒绝"
+                    }
+                  ],
+                  "reply": [
+                    {
+                      "who": "daliu",
+                      "say": "明智！我这就给您办。",
+                      "mood": "smug"
+                    }
+                  ]
+                },
+                {
+                  "id": "p_ask",
+                  "emoji": "🧐",
+                  "label": "服务费是啥？",
+                  "fact": "先问清楚金融服务费是什么、能不能免",
+                  "set": [
+                    "savvy"
+                  ],
+                  "reply": [
+                    {
+                      "who": "daliu",
+                      "say": "呃……这个，大家都交的嘛。",
+                      "mood": "worried"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "home",
+          "emoji": "🏠",
+          "label": "家里",
+          "who": "mei",
+          "x": 50,
+          "y": 62,
+          "beats": [
+            {
+              "who": "mei",
+              "say": "先说好，我也要开。我可不会倒车入库。",
+              "mood": "neutral"
+            },
+            {
+              "id": "who",
+              "who": "mei",
+              "q": "这车，以后谁开得多？",
+              "options": [
+                {
+                  "id": "w_both",
+                  "emoji": "👫",
+                  "label": "两个人都开",
+                  "fact": "两人都会开，需要好开、好停、有倒车辅助",
+                  "set": [
+                    "shared"
+                  ],
+                  "reply": [
+                    {
+                      "who": "mei",
+                      "say": "那倒车影像和雷达必须有。",
+                      "mood": "thinking"
+                    }
+                  ]
+                },
+                {
+                  "id": "w_me",
+                  "emoji": "🙋",
+                  "label": "主要我开",
+                  "fact": "主要自己开",
+                  "reply": [
+                    {
+                      "who": "mei",
+                      "say": "行。那钱这块我来盯。",
+                      "mood": "smug"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "slider",
+      "id": "budget",
+      "q": "落地价最多多少？",
+      "emoji": "💰",
+      "kind": "budget",
+      "min": 80000,
+      "max": 300000,
+      "step": 5000,
+      "unit": "",
+      "fact": "落地价预算上限：{v} 元"
+    },
+    {
+      "type": "day",
+      "id": "routine",
+      "title": "你的一天",
+      "emoji": "🗓️",
+      "moments": [
+        {
+          "id": "m_am",
+          "at": "morning",
+          "emoji": "⏰",
+          "options": [
+            {
+              "id": "m_am_car",
+              "emoji": "🚗",
+              "label": "开车",
+              "fact": "每天早上开车上班",
+              "set": [
+                "drive_commute"
+              ]
+            },
+            {
+              "id": "m_am_metro",
+              "emoji": "🚇",
+              "label": "地铁",
+              "fact": "早上坐地铁上班，车不常开"
+            }
+          ]
+        },
+        {
+          "id": "m_noon",
+          "at": "noon",
+          "emoji": "🏢",
+          "options": [
+            {
+              "id": "m_noon_stay",
+              "emoji": "💺",
+              "label": "在公司",
+              "fact": "白天车一直停着"
+            },
+            {
+              "id": "m_noon_run",
+              "emoji": "🚗",
+              "label": "出去跑",
+              "fact": "白天经常开车外出办事",
+              "set": [
+                "daytime_drive"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "m_eve",
+          "at": "evening",
+          "emoji": "🌇",
+          "options": [
+            {
+              "id": "m_eve_kid",
+              "emoji": "🧒",
+              "label": "接娃",
+              "fact": "傍晚开车接孩子、买菜"
+            },
+            {
+              "id": "m_eve_home",
+              "emoji": "🏠",
+              "label": "回家",
+              "fact": "下班直接回家"
+            }
+          ]
+        },
+        {
+          "id": "m_night",
+          "at": "night",
+          "emoji": "🌙",
+          "options": [
+            {
+              "id": "m_night_charge",
+              "emoji": "🔌",
+              "label": "楼下充",
+              "fact": "晚上把车停在楼下能充电的地方"
+            },
+            {
+              "id": "m_night_street",
+              "emoji": "🅿️",
+              "label": "停路边",
+              "fact": "晚上只能停路边",
+              "set": [
+                "street_park"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "place",
+      "id": "park",
+      "title": "车晚上睡哪？",
+      "emoji": "🌃",
+      "scene": "street",
+      "zones": [
+        {
+          "id": "own",
+          "label": "固定车位",
+          "emoji": "🅿️",
+          "x": 24,
+          "y": 62,
+          "fact": "自家固定车位，可以装家用充电桩",
+          "lockIf": {
+            "any": [
+              "no_spot"
+            ]
+          },
+          "lockNote": "你说过没有固定车位"
+        },
+        {
+          "id": "street",
+          "label": "路边",
+          "emoji": "🌳",
+          "x": 52,
+          "y": 44,
+          "fact": "路边临时车位，不能装桩，只能用公共桩",
+          "bad": [
+            "charger"
+          ],
+          "warn": "路边不让装桩，只能排公共桩"
+        },
+        {
+          "id": "office",
+          "label": "公司车库",
+          "emoji": "🏢",
+          "x": 78,
+          "y": 62,
+          "fact": "公司地下车库，可能有公共充电桩，周末用不了"
+        }
+      ],
+      "things": [
+        {
+          "id": "car",
+          "emoji": "🚗",
+          "label": "我的车",
+          "fact": "车晚上停放的位置"
+        },
+        {
+          "id": "charger",
+          "emoji": "🔌",
+          "label": "充电桩",
+          "fact": "充电桩装在哪"
+        }
+      ]
+    },
+    {
+      "type": "fix",
+      "id": "fix_charge",
+      "q": "充电没着落！",
+      "emoji": "🔌",
+      "problem": "家里装不了充电桩",
+      "if": {
+        "any": [
+          "no_spot"
+        ]
+      },
+      "options": [
+        {
+          "id": "f_hybrid",
+          "emoji": "🔀",
+          "label": "换插混/增程",
+          "fact": "改选插电混动或增程车：短途用电、长途用油，不依赖家用充电桩",
+          "set": [
+            "hybrid"
+          ],
+          "add": [
+            {
+              "id": "car",
+              "emoji": "🚙",
+              "name": "插混/增程车",
+              "price": 145000,
+              "spec": "短途用电、长途用油"
+            }
+          ],
+          "tip": "不用天天找桩",
+          "score": {
+            "easy": 20
+          }
+        },
+        {
+          "id": "f_office",
+          "emoji": "🏢",
+          "label": "去公司充",
+          "fact": "主要在公司车库充电，需要确认公司有桩",
+          "tip": "先问清公司让不让充",
+          "score": {
+            "easy": 5
+          }
+        },
+        {
+          "id": "f_oil",
+          "emoji": "⛽",
+          "label": "干脆买油车",
+          "fact": "改选燃油车，不考虑充电",
+          "set": [
+            "oil"
+          ],
+          "add": [
+            {
+              "id": "car",
+              "emoji": "🚗",
+              "name": "燃油车",
+              "price": 125000,
+              "spec": "同级别燃油车"
+            },
+            {
+              "id": "tax",
+              "emoji": "🧾",
+              "name": "购置税",
+              "price": 11000,
+              "spec": "燃油车全额征收（约裸车价 ÷ 1.13 × 10%，估算）"
+            }
+          ],
+          "tip": "省心，但油钱贵",
+          "score": {
+            "easy": 15,
+            "good": -5
+          }
+        }
+      ],
+      "gamble": {
+        "label": "靠公共桩",
+        "fact": "打算全靠公共充电桩",
+        "crash_if": [
+          "drive_commute"
+        ],
+        "crash": "天天通勤，排桩排到崩溃",
+        "loss": 0,
+        "ok": "开得少，公共桩也够用"
+      }
+    },
+    {
+      "type": "sort",
+      "id": "extras",
+      "q": "销售的加装单",
+      "emoji": "🧾",
+      "bins": [
+        {
+          "id": "must",
+          "label": "必须",
+          "emoji": "✅"
+        },
+        {
+          "id": "nice",
+          "label": "有更好",
+          "emoji": "🤔",
+          "keep": false
+        },
+        {
+          "id": "skip",
+          "label": "不要",
+          "emoji": "❌",
+          "keep": false
+        }
+      ],
+      "cards": [
+        {
+          "id": "film",
+          "emoji": "🪟",
+          "label": "原厂贴膜",
+          "fact": "原厂贴膜 4800 元，外面同等膜一般便宜一半",
+          "item": {
+            "id": "film",
+            "emoji": "🪟",
+            "name": "原厂贴膜",
+            "price": 4800
+          }
+        },
+        {
+          "id": "pkg",
+          "emoji": "🎁",
+          "label": "精品大礼包",
+          "fact": "精品大礼包 3000 元：脚垫、香水座、行车记录仪，实际价值很低",
+          "item": {
+            "id": "pkg",
+            "emoji": "🎁",
+            "name": "精品大礼包",
+            "price": 3000
+          }
+        },
+        {
+          "id": "warranty",
+          "emoji": "📜",
+          "label": "延保三年",
+          "fact": "延保 3 年 5000 元（电车三电系统本身多有 8 年质保）",
+          "item": {
+            "id": "warranty",
+            "emoji": "📜",
+            "name": "延保三年",
+            "price": 5000
+          }
+        },
+        {
+          "id": "adas",
+          "emoji": "🤖",
+          "label": "高阶智驾",
+          "fact": "高阶智能驾驶选装 20000 元，高速通勤多才值得",
+          "item": {
+            "id": "adas",
+            "emoji": "🤖",
+            "name": "高阶智驾",
+            "price": 20000
+          }
+        },
+        {
+          "id": "vent",
+          "emoji": "🪑",
+          "label": "座椅通风",
+          "fact": "座椅通风 3000 元，南方夏天体感明显",
+          "item": {
+            "id": "vent",
+            "emoji": "🪑",
+            "name": "座椅通风",
+            "price": 3000
+          }
+        },
+        {
+          "id": "wallbox",
+          "emoji": "🔌",
+          "label": "装桩服务",
+          "fact": "家用充电桩安装费 2000 元（有的品牌送桩不送安装）",
+          "item": {
+            "id": "wallbox",
+            "emoji": "🔌",
+            "name": "充电桩安装",
+            "price": 2000
+          }
+        }
+      ]
+    },
+    {
+      "type": "chain",
+      "id": "month",
+      "title": "提车后第一个月",
+      "emoji": "📅",
+      "cards": [
+        {
+          "id": "c_queue",
+          "who": "ajie",
+          "say": "公共桩排了四十分钟，后面还有三辆。",
+          "emoji": "⏳",
+          "if": {
+            "any": [
+              "no_spot",
+              "street_park"
+            ]
+          },
+          "left": {
+            "id": "c_queue_wait",
+            "emoji": "🪑",
+            "label": "接着等",
+            "fact": "愿意排队等公共充电桩",
+            "score": {
+              "easy": -20
+            }
+          },
+          "right": {
+            "id": "c_queue_fast",
+            "emoji": "⚡",
+            "label": "去远的快充",
+            "fact": "愿意多花钱、多跑路去快充站",
+            "score": {
+              "easy": -5,
+              "good": 5
+            }
+          }
+        },
+        {
+          "id": "c_trip",
+          "who": "wang",
+          "say": "国庆回老家，服务区充电排了一小时吧？",
+          "emoji": "🛣️",
+          "if": {
+            "any": [
+              "longtrip"
+            ]
+          },
+          "left": {
+            "id": "c_trip_wait",
+            "emoji": "😮‍💨",
+            "label": "忍着排",
+            "fact": "长途充电排队也能忍",
+            "score": {
+              "easy": -20,
+              "good": -5
+            }
+          },
+          "right": {
+            "id": "c_trip_hybrid",
+            "emoji": "🔀",
+            "label": "下次开混动",
+            "fact": "长途想用插混/增程，不想排队",
+            "set": [
+              "want_hybrid"
+            ],
+            "score": {
+              "easy": 10
+            }
+          }
+        },
+        {
+          "id": "c_care",
+          "who": "daliu",
+          "say": "首保来店，顺便做个六百的养护套餐？",
+          "emoji": "🧴",
+          "left": {
+            "id": "c_care_no",
+            "emoji": "🙅",
+            "label": "不做",
+            "fact": "拒绝首保推销的养护套餐",
+            "score": {
+              "easy": -5
+            }
+          },
+          "right": {
+            "id": "c_care_yes",
+            "emoji": "👌",
+            "label": "做了",
+            "fact": "做了 600 元养护套餐",
+            "price": 600,
+            "score": {
+              "easy": 10
+            }
+          }
+        },
+        {
+          "id": "c_scratch",
+          "who": "mei",
+          "say": "我开出去，把保险杠刮了。",
+          "emoji": "💥",
+          "left": {
+            "id": "c_scratch_self",
+            "emoji": "💸",
+            "label": "自己掏钱修",
+            "fact": "小剐蹭自己掏钱修，不走保险",
+            "score": {
+              "good": -5
+            }
+          },
+          "right": {
+            "id": "c_scratch_ins",
+            "emoji": "🛡️",
+            "label": "走保险",
+            "fact": "小剐蹭走保险，明年保费会涨",
+            "score": {
+              "easy": 10,
+              "safe": -5
+            }
+          }
+        },
+        {
+          "id": "c_snow",
+          "who": "wang",
+          "say": "下雪了，续航只剩一半。明天还开吗？",
+          "emoji": "❄️",
+          "left": {
+            "id": "c_snow_go",
+            "emoji": "🚗",
+            "label": "照开",
+            "fact": "冬天续航打折也照常开",
+            "score": {
+              "safe": -15
+            }
+          },
+          "right": {
+            "id": "c_snow_metro",
+            "emoji": "🚇",
+            "label": "坐地铁",
+            "fact": "冬天续航不够就改坐地铁",
+            "score": {
+              "easy": -10
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "boss",
+      "id": "boss",
+      "q": "春节回老家！",
+      "emoji": "🧧",
+      "problem": "八百公里回老家",
+      "options": [
+        {
+          "id": "b_plan",
+          "emoji": "🗺️",
+          "label": "规划充电错峰",
+          "fact": "出发前规划好充电点、错峰出发",
+          "tip": "凌晨出发，服务区不排队",
+          "score": {
+            "safe": 10,
+            "easy": -5
+          }
+        },
+        {
+          "id": "b_train",
+          "emoji": "🚄",
+          "label": "长途坐高铁",
+          "fact": "过年长途坐高铁，车留在城市",
+          "price": 1200,
+          "tip": "一家人往返高铁约一千二",
+          "score": {
+            "easy": 15
+          }
+        },
+        {
+          "id": "b_hybrid",
+          "emoji": "🔀",
+          "label": "换插混/增程",
+          "fact": "选插电混动/增程，长途用油不排队",
+          "set": [
+            "hybrid"
+          ],
+          "add": [
+            {
+              "id": "car",
+              "emoji": "🚙",
+              "name": "插混/增程车",
+              "price": 145000,
+              "spec": "短途用电、长途用油"
+            }
+          ],
+          "tip": "长短途都兼顾",
+          "score": {
+            "easy": 15,
+            "safe": 5
+          }
+        }
+      ],
+      "gamble": {
+        "label": "直接开",
+        "fact": "春节不做规划直接开电车回老家",
+        "crash_if": [
+          "no_spot",
+          "longtrip"
+        ],
+        "crash": "服务区排了三小时，年夜饭没赶上",
+        "loss": 0,
+        "ok": "一路顺利，充电没排队"
+      }
+    }
+  ],
+  "secret": "先看车位能不能装桩，再决定油车还是电车"
+}
