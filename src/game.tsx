@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import { sfx } from './fx/fx';
 import { hush } from './fx/voice';
+import { jingle } from './fx/music';
 import { detectLang, money, pickCheer, setLocale, t } from './i18n';
 import { gambleCrashes, optionsOf, play, revealsProblem, type Answer, type Crash, type Meter, type Played, type Replies } from './lesson/engine';
 import type { FixRound, Lesson, Round } from './lesson/schema';
@@ -188,6 +189,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const g = round.gamble;
       if (gambleCrashes(g, played.flags)) {
         sfx.crash();
+        setTimeout(() => jingle.lose(), 500);
         setHearts((h) => Math.max(0, h - 1));
         setStreak(0);
         setCrashes((c) => [...c, { round: round.id, msg: `${round.problem} → 「${g.label}」: ${g.crash}`, loss: g.loss }]);

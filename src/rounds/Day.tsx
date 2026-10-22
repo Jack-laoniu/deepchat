@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { Character, type Act } from '../chars/Character';
 import { sfx } from '../fx/fx';
+import { playMusic } from '../fx/music';
 import { useGame } from '../game';
 import type { DayRound } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
@@ -42,8 +43,9 @@ export function Day({ round }: { round: DayRound }) {
     }
   }, [done]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 每个时刻的环境声：早上鸟叫，夜里虫鸣
+  // 每个时刻的环境声：早上鸟叫，夜里虫鸣；音乐换成这个时段的配器
   useEffect(() => {
+    playMusic(`day_${m.at}`);
     const id = setTimeout(() => (m.at === 'morning' ? sfx.birds() : m.at === 'night' ? sfx.crickets() : undefined), 500);
     return () => clearTimeout(id);
   }, [m.id]); // eslint-disable-line react-hooks/exhaustive-deps

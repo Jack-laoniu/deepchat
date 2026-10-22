@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { playMusic } from '../fx/music';
 import { useGame } from '../game';
 import { SAMPLES } from '../lessons';
 import { generatorPrompt } from '../lesson/prompt';
@@ -14,6 +15,7 @@ import { loadCode, requestLesson, saveCode, useCanGenerate } from '../api';
 type GenState = { phase: 'idle' } | { phase: 'loading'; started: number } | { phase: 'error'; msg: string };
 
 export function Home() {
+  useEffect(() => playMusic('home'), []);
   const g = useGame();
   const lang = detectLang();
   const cfg = useCanGenerate();

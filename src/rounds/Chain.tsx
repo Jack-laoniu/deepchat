@@ -2,6 +2,7 @@ import { AnimatePresence, animate, motion, useMotionValue, useMotionValueEvent, 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Character } from '../chars/Character';
 import { sfx } from '../fx/fx';
+import { jingle } from '../fx/music';
 import { speak } from '../fx/voice';
 import { useGame } from '../game';
 import { t, type MsgKey } from '../i18n';
@@ -87,7 +88,7 @@ export function Chain({ round }: { round: ChainRound }) {
   useEffect(() => {
     if (!finished) return;
     setCheer(true);
-    sfx.chime();
+    jingle.level();
   }, [finished]);
 
   const decide = (side: 'left' | 'right') => {

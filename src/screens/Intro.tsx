@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useEffect } from 'react';
+import { playMusic } from '../fx/music';
 import { useGame } from '../game';
 import { sfx } from '../fx/fx';
 import { yuan } from '../lesson/output';
@@ -9,6 +10,7 @@ import { t } from '../i18n';
 
 /** 盲猜亮相：物品一个个飞进来，总价跟着往上跳 */
 export function Intro() {
+  useEffect(() => playMusic('home'), []);
   const g = useGame();
   const l = g.lesson!;
   const total = l.guess.items.reduce((s, i) => s + i.price, 0);

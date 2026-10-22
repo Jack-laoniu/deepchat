@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { useGame } from '../game';
 import { celebrate } from '../fx/fx';
+import { jingle, playMusic } from '../fx/music';
 import { hostFollowUp, inHost } from '../host';
 import { superPrompt, yuan } from '../lesson/output';
 import { Emoji } from '../ui/Emoji';
@@ -56,6 +57,11 @@ export function Win() {
 
   useEffect(() => {
     celebrate();
+    // 通关：先停下背景音乐放胜利号角，再回到轻快的首页曲
+    playMusic(null);
+    jingle.win();
+    const id = setTimeout(() => playMusic('home'), 2600);
+    return () => clearTimeout(id);
   }, []);
 
   const [sharing, setSharing] = useState(false);

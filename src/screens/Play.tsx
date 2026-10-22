@@ -1,4 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect } from 'react';
+import { playMusic, type Theme } from '../fx/music';
 import { useGame } from '../game';
 import type { Round } from '../lesson/schema';
 import { Pick } from '../rounds/Pick';
@@ -42,11 +44,32 @@ function RoundView({ round }: { round: Round }) {
   }
 }
 
+/** 每种回合配什么音乐 */
+function themeFor(r: Round): Theme {
+  switch (r.type) {
+    case 'talk':
+      return 'story';
+    case 'chain':
+    case 'fix':
+      return 'tension';
+    case 'day':
+      return `day_${r.moments[0].at}`;
+    case 'boss':
+      return 'boss';
+    default:
+      return 'explore';
+  }
+}
+
 export function Play() {
   const g = useGame();
   const p = g.played!;
   const crashed = g.feedback?.tone === 'crash';
   const current = g.feedback?.round ?? p.current;
+
+  useEffect(() => {
+    if (current) playMusic(themeFor(current));
+  }, [current?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <motion.div animate={crashed ? { x: [0, -14, 14, -10, 10, -4, 0] } : { x: 0 }} transition={{ duration: 0.5 }} className="flex h-full flex-col">

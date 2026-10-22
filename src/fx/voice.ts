@@ -1,6 +1,7 @@
 import { getLang, LOCALE } from '../i18n';
 import { loadCode, serverConfig } from '../api';
 import { ac, isMuted } from './fx';
+import { duck } from './music';
 
 /** 浏览器自带朗读：每个角色用不同音高/语速，像听力故事一样把台词念出来 */
 
@@ -125,6 +126,8 @@ export function speakNow(text: string, opts: Opts = {}): Promise<void> {
 
 function next() {
   current = queue.shift() ?? null;
+  // 有人说话时把背景音乐压低，都说完了再恢复
+  duck(!!current);
   if (!current) return;
   if (engine === 'server') void playServer(current, false);
   else if (browserLacksLang()) void playServer(current, true);
@@ -303,6 +306,7 @@ export function hush() {
   }
   cur?.done();
   pending.forEach((j) => j.done());
+  duck(false);
 }
 
 // ---- 语音输入（Chrome / Edge / Safari 支持；嵌入环境可能被禁用） ----
