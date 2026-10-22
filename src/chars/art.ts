@@ -1,4 +1,5 @@
 import type { Mood } from './library';
+import RIG from './rig.json';
 
 /**
  * 手绘角色素材（从角色设定图切出来的透明底 webp，用 scripts/cut_art.py 生成）。
@@ -42,7 +43,13 @@ const DEFS: Record<string, Def> = {
   wang: { faces: STD, poses: { idle: 0, greet: 2, point: 2, angry: 3, think: 3, sit: 4, walk: 5, worry: 6, cheer: 2 }, walkFaces: 'left' },
 };
 
-export type Art = { face: (m: Mood | 'talk') => string; pose: (p: Pose) => string; walkFaces?: 'left' | 'right' };
+/** 走路骨架：把全身像在胯部（hip，占身高比例）横切，两腿在 split（占宽度比例）竖切，两条腿绕胯部交替摆动 */
+export type Rig = { hip: number; split: number; ratio: number };
+
+/** 这个人能做的「小动作」，NPC 闲着时随机挑一个演 */
+export const ACTIONS: Pose[] = ['point', 'think', 'cheer', 'worry', 'angry', 'sit'];
+
+export type Art = { face: (m: Mood | 'talk') => string; pose: (p: Pose) => string; has: (p: Pose) => boolean; rig: Rig; walkFaces?: 'left' | 'right' };
 
 const cache = new Map<string, Art | null>();
 export function artFor(id: string | undefined): Art | null {
@@ -54,6 +61,8 @@ export function artFor(id: string | undefined): Art | null {
       ? {
           face: (m) => url(`${id}_face${d.faces[m] ?? d.faces.neutral ?? 0}`),
           pose: (p) => url(`${id}_pose${d.poses[p] ?? 0}`),
+          has: (p) => d.poses[p] !== undefined,
+          rig: (RIG as Record<string, Rig>)[id] ?? { hip: 0.62, split: 0.5, ratio: 0.38 },
           walkFaces: d.walkFaces,
         }
       : null;

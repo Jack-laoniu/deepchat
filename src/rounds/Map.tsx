@@ -1,6 +1,8 @@
 import { animate, AnimatePresence, motion, useMotionValue, useTransform } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { ACTIONS, artFor, type Pose } from '../chars/art';
 import { Character, type Act } from '../chars/Character';
+import { charById } from '../chars/library';
 import { sfx } from '../fx/fx';
 import { useGame } from '../game';
 import { t } from '../i18n';
@@ -88,6 +90,8 @@ function Ground({ spots }: { spots: MapRound['spots'] }) {
 }
 /** 地图上走一个百分点要多少秒 */
 const PACE = 0.045;
+/** 每个小动作头顶冒的气泡 */
+const EMOTE: Partial<Record<Pose, string>> = { point: '❗', think: '💭', cheer: '✨', worry: '💦', angry: '💢', sit: '😌' };
 /** 离 NPC 多近（百分点）算「走到跟前」 */
 const NEAR = 13;
 const clampX = (x: number) => Math.min(95, Math.max(5, x));
@@ -99,38 +103,66 @@ function Npc({ id, home, near, done, name, onTap, onMove }: { id: string; home: 
   const side = home.x > 50 ? -13 : 13;
   const [pos, setPos] = useState<Pt>({ x: home.x + side, y: home.y + 10 });
   const [act, setAct] = useState<Act>('idle');
+  const [pose, setPose] = useState<Pose | undefined>();
+  const [emote, setEmote] = useState<string | undefined>();
   const [facing, setFacing] = useState<'left' | 'right'>('left');
   const [dur, setDur] = useState(0.3);
-  const alive = useRef(true);
+  const art = artFor(charById(id)?.id);
+  const actions = art ? ACTIONS.filter((a) => art.has(a)) : [];
 
   useEffect(() => onMove(pos), [pos]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // NPC 自己过日子：溜达一段 → 站一会儿 → 随机演一个自己的招牌动作（冒个气泡）→ 再溜达
   useEffect(() => {
-    alive.current = true;
+    let alive = true;
+    let timer: ReturnType<typeof setTimeout>;
+    const wait = (ms: number) => new Promise<void>((r) => (timer = setTimeout(r, ms)));
+    setPose(undefined);
     if (near) {
       setAct('wave');
+      setEmote('👋');
       setFacing(pos.x > 50 ? 'left' : 'right');
-      return;
+      return () => {
+        clearTimeout(timer);
+        setEmote(undefined);
+      };
     }
     setAct('idle');
-    let timer: ReturnType<typeof setTimeout>;
-    const wander = () => {
-      timer = setTimeout(() => {
-        if (!alive.current) return;
-        const target = { x: home.x + side + (Math.random() * 8 - 4) * Math.sign(side), y: home.y + 8 + Math.random() * 6 };
+    setEmote(undefined);
+    (async () => {
+      await wait(400 + Math.random() * 1500);
+      while (alive) {
+        // 溜达
+        const target = { x: home.x + side + (Math.random() * 14 - 7), y: home.y + 6 + Math.random() * 12 };
+        let d = 0;
         setPos((p) => {
-          const d = Math.hypot(target.x - p.x, target.y - p.y);
+          d = Math.hypot(target.x - p.x, target.y - p.y);
           setFacing(target.x < p.x ? 'left' : 'right');
-          setDur(d * PACE * 1.6);
-          setAct('walk');
-          setTimeout(() => alive.current && setAct('idle'), d * PACE * 1600);
           return target;
         });
-        wander();
-      }, 2600 + Math.random() * 3200);
-    };
-    wander();
+        const t = Math.max(0.6, d * PACE * 2.2);
+        setDur(t);
+        setAct('walk');
+        await wait(t * 1000);
+        if (!alive) return;
+        setAct('idle');
+        await wait(700 + Math.random() * 1200);
+        if (!alive) return;
+        // 演个小动作
+        if (actions.length && Math.random() < 0.8) {
+          const a = actions[Math.floor(Math.random() * actions.length)];
+          setPose(a);
+          setEmote(EMOTE[a]);
+          await wait(2200 + Math.random() * 1600);
+          if (!alive) return;
+          setPose(undefined);
+          setEmote(undefined);
+          await wait(500 + Math.random() * 1000);
+        }
+      }
+    })();
     return () => {
-      alive.current = false;
+      alive = false;
       clearTimeout(timer);
     };
   }, [near, home.x, home.y]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -146,7 +178,7 @@ function Npc({ id, home, near, done, name, onTap, onMove }: { id: string; home: 
       style={{ zIndex: Math.round(pos.y) }}
     >
       <span className="block" style={{ filter: SHADOW }}>
-        <Character id={id} size={Math.round(64 * depth(pos.y))} act={act} facing={facing} mood={done || near ? 'happy' : 'neutral'} />
+        <Character id={id} size={Math.round(64 * depth(pos.y))} act={act} pose={act === 'walk' ? undefined : pose} emote={emote} facing={facing} mood={done || near ? 'happy' : 'neutral'} />
       </span>
       <AnimatePresence>
         {near && !done && (
