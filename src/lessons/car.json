@@ -8,7 +8,7 @@
   "currency": "CNY",
   "cast": [
     {
-      "id": "ajie",
+      "id": "xiaoting",
       "as": "刚提电车的同事"
     },
     {
@@ -16,16 +16,12 @@
       "as": "楼下老司机"
     },
     {
-      "id": "daliu",
+      "id": "xiaobei",
       "as": "4S店销售"
     },
     {
-      "id": "xiaobei",
-      "as": "物业经理"
-    },
-    {
       "id": "mei",
-      "as": "另一半"
+      "as": "物业经理"
     },
     {
       "id": "ayi",
@@ -81,7 +77,7 @@
       "beats": [
         {
           "who": "narrator",
-          "say": "晚上八点，小区楼下。阿杰刚提了电车，老王凑过来看。",
+          "say": "晚上八点，小区楼下。小婷刚提了电车，老王凑过来看。",
           "mood": "neutral"
         },
         {
@@ -90,7 +86,7 @@
           "mood": "smug"
         },
         {
-          "who": "ajie",
+          "who": "xiaoting",
           "say": "王哥，我算过：家里充一度三毛，一公里不到五分钱。",
           "mood": "happy"
         },
@@ -100,7 +96,7 @@
           "mood": "smug"
         },
         {
-          "who": "ajie",
+          "who": "xiaoting",
           "say": "……冬天是掉得多。我上周开暖风，确实掉了快三成。",
           "mood": "worried"
         },
@@ -110,7 +106,7 @@
           "mood": "angry"
         },
         {
-          "who": "ajie",
+          "who": "xiaoting",
           "say": "这倒是。我们楼没车位的同事，天天半夜去抢公共桩。",
           "mood": "thinking"
         },
@@ -121,7 +117,7 @@
         },
         {
           "id": "use",
-          "who": "ajie",
+          "who": "xiaoting",
           "q": "你呢？车主要拿来干嘛？",
           "options": [
             {
@@ -134,7 +130,7 @@
               ],
               "reply": [
                 {
-                  "who": "ajie",
+                  "who": "xiaoting",
                   "say": "通勤？那电车省下的钱最多。",
                   "mood": "happy"
                 }
@@ -171,7 +167,7 @@
                   "mood": "smug"
                 },
                 {
-                  "who": "ajie",
+                  "who": "xiaoting",
                   "say": "……也不一定。",
                   "mood": "worried"
                 }
@@ -218,7 +214,7 @@
                 "fact": "每天通勤",
                 "reply": [
                   {
-                    "who": "ajie",
+                    "who": "xiaoting",
                     "say": "通勤族，电车最划算。",
                     "mood": "happy"
                   }
@@ -227,7 +223,7 @@
             ],
             "reply": [
               {
-                "who": "ajie",
+                "who": "xiaoting",
                 "say": "记下了。",
                 "mood": "neutral"
               }
@@ -265,7 +261,7 @@
               ],
               "reply": [
                 {
-                  "who": "ajie",
+                  "who": "xiaoting",
                   "say": "这个关键看你能不能装桩，等会儿去问问物业。",
                   "mood": "thinking"
                 }
@@ -297,7 +293,7 @@
               ],
               "reply": [
                 {
-                  "who": "ajie",
+                  "who": "xiaoting",
                   "say": "我第一年保险就六千多，比我想的贵。",
                   "mood": "worried"
                 }
@@ -322,7 +318,7 @@
           }
         },
         {
-          "who": "ajie",
+          "who": "xiaoting",
           "say": "反正别听销售吹，先把自己的情况想清楚。",
           "mood": "neutral"
         }
@@ -338,28 +334,28 @@
           "id": "wuye",
           "emoji": "🏢",
           "label": "物业",
-          "who": "xiaobei",
+          "who": "mei",
           "x": 22,
           "y": 28,
           "beats": [
             {
-              "who": "xiaobei",
+              "who": "mei",
               "say": "充电桩的事啊，这个月第五个来问的了。",
               "mood": "neutral"
             },
             {
-              "who": "xiaobei",
+              "who": "mei",
               "say": "上个月三栋有人从家里拉电线下来充，被罚了两百。",
               "mood": "worried"
             },
             {
-              "who": "xiaobei",
+              "who": "mei",
               "say": "装桩要车位产权或租赁合同，再加物业签字、电力报装。",
               "mood": "neutral"
             },
             {
               "id": "spot",
-              "who": "xiaobei",
+              "who": "mei",
               "q": "你的车位，是买的还是租的？",
               "options": [
                 {
@@ -372,7 +368,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "xiaobei",
+                      "who": "mei",
                       "say": "那装桩没问题，两周能批。",
                       "mood": "happy"
                     }
@@ -388,7 +384,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "xiaobei",
+                      "who": "mei",
                       "say": "得车位主人签字。他要是不同意……",
                       "mood": "worried"
                     }
@@ -404,7 +400,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "xiaobei",
+                      "who": "mei",
                       "say": "那就装不了。只能用公共桩。",
                       "mood": "worried"
                     }
@@ -413,7 +409,7 @@
               ]
             },
             {
-              "who": "xiaobei",
+              "who": "mei",
               "say": "对了，小区那六个公共桩，晚上九点以后基本排满。",
               "mood": "thinking"
             }
@@ -423,28 +419,28 @@
           "id": "dian",
           "emoji": "🚘",
           "label": "4S店",
-          "who": "daliu",
+          "who": "xiaobei",
           "x": 76,
           "y": 26,
           "beats": [
             {
-              "who": "daliu",
+              "who": "xiaobei",
               "say": "这款卖爆了！今天定，脚垫贴膜全送！",
               "mood": "happy"
             },
             {
-              "who": "daliu",
+              "who": "xiaobei",
               "say": "我跟您说实话，月底冲量，这几天价格最好谈。",
               "mood": "smug"
             },
             {
-              "who": "daliu",
+              "who": "xiaobei",
               "say": "贷款首付只要三万，就收个四千服务费。",
               "mood": "smug"
             },
             {
               "id": "pay",
-              "who": "daliu",
+              "who": "xiaobei",
               "q": "您是全款还是贷款？",
               "options": [
                 {
@@ -454,7 +450,7 @@
                   "fact": "全款购车，不办贷款",
                   "reply": [
                     {
-                      "who": "daliu",
+                      "who": "xiaobei",
                       "say": "全款啊……那、那精品包您得看看。",
                       "mood": "worried"
                     }
@@ -479,7 +475,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "daliu",
+                      "who": "xiaobei",
                       "say": "明智！我这就给您办。",
                       "mood": "smug"
                     }
@@ -495,7 +491,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "daliu",
+                      "who": "xiaobei",
                       "say": "呃……这个，大家都交的嘛。",
                       "mood": "worried"
                     }
@@ -505,7 +501,7 @@
             },
             {
               "id": "when",
-              "who": "daliu",
+              "who": "xiaobei",
               "q": "您打算什么时候提车？",
               "options": [
                 {
@@ -515,7 +511,7 @@
                   "fact": "想尽快提车，议价空间小",
                   "reply": [
                     {
-                      "who": "daliu",
+                      "who": "xiaobei",
                       "say": "现车就有！今天就能签！",
                       "mood": "happy"
                     }
@@ -531,7 +527,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "daliu",
+                      "who": "xiaobei",
                       "say": "……您是懂行的。",
                       "mood": "worried"
                     }
@@ -544,7 +540,7 @@
                   "fact": "还想多比较几家店和几款车",
                   "reply": [
                     {
-                      "who": "daliu",
+                      "who": "xiaobei",
                       "say": "行，留个微信，有优惠我第一个告诉您。",
                       "mood": "neutral"
                     }
@@ -558,38 +554,38 @@
           "id": "home",
           "emoji": "🏠",
           "label": "家里",
-          "who": "mei",
+          "who": "ayi",
           "x": 50,
           "y": 62,
           "beats": [
             {
-              "who": "mei",
-              "say": "先说好，我也要开。我可不会倒车入库。",
-              "mood": "neutral"
-            },
-            {
-              "who": "mei",
-              "say": "我同事去年买车，光第一年保险就八千多，还没算停车费。",
+              "who": "ayi",
+              "say": "买车啊？妈跟你说，你表哥前年买了个电车……",
               "mood": "worried"
             },
             {
+              "who": "ayi",
+              "say": "过年回来在服务区排了两个钟头，到家饺子都凉了。",
+              "mood": "angry"
+            },
+            {
               "id": "who",
-              "who": "mei",
-              "q": "这车，以后谁开得多？",
+              "who": "ayi",
+              "q": "这车以后谁开得多？",
               "options": [
                 {
                   "id": "w_both",
                   "emoji": "👫",
-                  "label": "两个人都开",
-                  "fact": "两人都会开，需要好开、好停、有倒车辅助",
+                  "label": "一家人轮着开",
+                  "fact": "家里几个人都会开，需要好开、好停、有倒车辅助",
                   "set": [
                     "shared"
                   ],
                   "reply": [
                     {
-                      "who": "mei",
-                      "say": "那倒车影像和雷达必须有。",
-                      "mood": "thinking"
+                      "who": "ayi",
+                      "say": "那倒车影像得有，你爸倒车老蹭墙。",
+                      "mood": "worried"
                     }
                   ]
                 },
@@ -600,17 +596,22 @@
                   "fact": "主要自己开",
                   "reply": [
                     {
-                      "who": "mei",
-                      "say": "行。那钱这块我来盯。",
-                      "mood": "smug"
+                      "who": "ayi",
+                      "say": "行，那你自己开稳当点。",
+                      "mood": "happy"
                     }
                   ]
                 }
               ]
             },
             {
+              "who": "ayi",
+              "say": "隔壁小李买车，第一年保险就八千多，还没算停车费。",
+              "mood": "worried"
+            },
+            {
               "id": "monthly",
-              "who": "mei",
+              "who": "ayi",
               "q": "每个月养车，最多能接受多少？",
               "options": [
                 {
@@ -623,8 +624,8 @@
                   ],
                   "reply": [
                     {
-                      "who": "mei",
-                      "say": "那油钱电费就得算细点了。",
+                      "who": "ayi",
+                      "say": "那油钱电费可得算细点。",
                       "mood": "thinking"
                     }
                   ]
@@ -636,7 +637,7 @@
                   "fact": "每月养车费可接受 1000–2000 元",
                   "reply": [
                     {
-                      "who": "mei",
+                      "who": "ayi",
                       "say": "嗯，这个还行。",
                       "mood": "happy"
                     }
@@ -649,8 +650,8 @@
                   "fact": "还没算过每月养车费",
                   "reply": [
                     {
-                      "who": "mei",
-                      "say": "那我回头帮你算，别买得起养不起。",
+                      "who": "ayi",
+                      "say": "那妈帮你算，别买得起养不起。",
                       "mood": "smug"
                     }
                   ]
@@ -658,9 +659,40 @@
               ]
             },
             {
-              "who": "mei",
-              "say": "还有，妈说了，过年得开车回去，让她在村里有面子。",
-              "mood": "smug"
+              "id": "mom_help",
+              "who": "ayi",
+              "q": "要不要妈给你添点？",
+              "options": [
+                {
+                  "id": "mh_no",
+                  "emoji": "🙅",
+                  "label": "不用妈",
+                  "fact": "不需要父母出钱，自己承担",
+                  "reply": [
+                    {
+                      "who": "ayi",
+                      "say": "行，有出息。",
+                      "mood": "happy"
+                    }
+                  ]
+                },
+                {
+                  "id": "mh_yes",
+                  "emoji": "🙏",
+                  "label": "添一点",
+                  "fact": "父母可能补贴一部分购车款，预算可略放宽",
+                  "set": [
+                    "family_help"
+                  ],
+                  "reply": [
+                    {
+                      "who": "ayi",
+                      "say": "那就买个安全点的，别图便宜。",
+                      "mood": "smug"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -1021,7 +1053,7 @@
       "cards": [
         {
           "id": "c_queue",
-          "who": "ajie",
+          "who": "xiaoting",
           "say": "公共桩排了四十分钟，后面还有三辆。",
           "emoji": "⏳",
           "if": {
@@ -1085,7 +1117,7 @@
         },
         {
           "id": "c_care",
-          "who": "daliu",
+          "who": "xiaobei",
           "say": "首保来店，顺便做个六百的养护套餐？",
           "emoji": "🧴",
           "left": {
@@ -1110,7 +1142,7 @@
         },
         {
           "id": "c_scratch",
-          "who": "mei",
+          "who": "ayi",
           "say": "我开出去，把保险杠刮了。",
           "emoji": "💥",
           "left": {
@@ -1161,31 +1193,31 @@
     },
     {
       "type": "talk",
-      "id": "mom_call",
+      "id": "tip_call",
       "style": "chat",
-      "with": "ayi",
-      "title": "妈的电话",
-      "emoji": "📞",
+      "with": "xiaoting",
+      "title": "同事的真心话",
+      "emoji": "📱",
       "beats": [
         {
-          "who": "ayi",
-          "say": "听说你要买车了？妈跟你说几句。",
+          "who": "xiaoting",
+          "say": "提车三个月啦，跟你说点销售不会说的。",
           "mood": "happy"
         },
         {
-          "who": "ayi",
-          "say": "你表哥前年买了个电车，过年回来在服务区排了两个钟头。",
+          "who": "xiaoting",
+          "say": "国庆回老家，我在服务区排了一个多小时队。",
           "mood": "worried"
         },
         {
-          "who": "ayi",
-          "say": "到家饺子都凉了，你大舅说了他一晚上。",
-          "mood": "angry"
+          "who": "xiaoting",
+          "say": "不过平时上下班，一个月电费才一百多，真香。",
+          "mood": "happy"
         },
         {
           "id": "home_far",
           "who": "ayi",
-          "q": "从你那开回老家，多远来着？",
+          "q": "你老家离这儿多远？",
           "options": [
             {
               "id": "hf_near",
@@ -1194,8 +1226,8 @@
               "fact": "老家在 300 公里以内，一箱电/油可以到",
               "reply": [
                 {
-                  "who": "ayi",
-                  "say": "那还好，半天就到了。",
+                  "who": "xiaoting",
+                  "say": "那还好，一次电就到了。",
                   "mood": "happy"
                 }
               ]
@@ -1210,9 +1242,9 @@
               ],
               "reply": [
                 {
-                  "who": "ayi",
-                  "say": "那路上得充一两回吧？可得算好了。",
-                  "mood": "worried"
+                  "who": "xiaoting",
+                  "say": "路上得补一两次电，记得错峰出发。",
+                  "mood": "thinking"
                 }
               ]
             },
@@ -1226,8 +1258,8 @@
               ],
               "reply": [
                 {
-                  "who": "ayi",
-                  "say": "那么远！妈可不想你大过年在服务区等。",
+                  "who": "xiaoting",
+                  "say": "那么远……我劝你认真看看混动。",
                   "mood": "worried"
                 }
               ]
@@ -1243,53 +1275,17 @@
             ],
             "reply": [
               {
-                "who": "ayi",
-                "say": "好好，妈记住了。",
+                "who": "xiaoting",
+                "say": "好，这个很关键，记下了。",
                 "mood": "happy"
               }
             ]
           }
         },
         {
-          "who": "ayi",
-          "say": "钱够不够？不够妈这还有点。别太省，安全第一。",
-          "mood": "thinking"
-        },
-        {
-          "id": "mom_help",
-          "who": "ayi",
-          "q": "要不要妈给你添点？",
-          "options": [
-            {
-              "id": "mh_no",
-              "emoji": "🙅",
-              "label": "不用妈",
-              "fact": "不需要父母出钱，自己承担",
-              "reply": [
-                {
-                  "who": "ayi",
-                  "say": "行，有出息。",
-                  "mood": "happy"
-                }
-              ]
-            },
-            {
-              "id": "mh_yes",
-              "emoji": "🙏",
-              "label": "添一点",
-              "fact": "父母可能补贴一部分购车款，预算可略放宽",
-              "set": [
-                "family_help"
-              ],
-              "reply": [
-                {
-                  "who": "ayi",
-                  "say": "那就买个安全点的，别图便宜。",
-                  "mood": "smug"
-                }
-              ]
-            }
-          ]
+          "who": "xiaoting",
+          "say": "反正别全听销售的，你自己的情况最重要。加油！",
+          "mood": "happy"
         }
       ]
     },

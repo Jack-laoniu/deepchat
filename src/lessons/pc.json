@@ -8,10 +8,10 @@
   "currency": "CNY",
   "cast": [
     {
-      "id": "ajie"
+      "id": "xiaobei"
     },
     {
-      "id": "daliu",
+      "id": "wang",
       "as": "电脑城老板"
     }
   ],
@@ -74,23 +74,23 @@
           "say": "装机交流群里，两个人吵起来了。"
         },
         {
-          "who": "ajie",
+          "who": "xiaobei",
           "say": "4060 打黑神话够了，别听奸商的！",
           "mood": "angry"
         },
         {
-          "who": "daliu",
+          "who": "wang",
           "say": "够啥够，跑 AI 大模型 8G 直接爆！",
           "mood": "smug"
         },
         {
-          "who": "ajie",
+          "who": "xiaobei",
           "say": "人家又不一定跑 AI……",
           "mood": "thinking"
         },
         {
           "id": "use",
-          "who": "ajie",
+          "who": "xiaobei",
           "q": "你到底拿来干嘛？",
           "options": [
             {
@@ -103,7 +103,7 @@
               ],
               "reply": [
                 {
-                  "who": "ajie",
+                  "who": "xiaobei",
                   "say": "看吧，我就说！",
                   "mood": "happy"
                 }
@@ -119,7 +119,7 @@
               ],
               "reply": [
                 {
-                  "who": "daliu",
+                  "who": "wang",
                   "say": "嘿，我说对了吧。",
                   "mood": "smug"
                 }
@@ -136,7 +136,7 @@
               ],
               "reply": [
                 {
-                  "who": "ajie",
+                  "who": "xiaobei",
                   "say": "……行吧，那确实得好好配。"
                 }
               ]
@@ -181,7 +181,7 @@
                 ],
                 "reply": [
                   {
-                    "who": "daliu",
+                    "who": "wang",
                     "say": "跑 AI 的话显存是关键。"
                   }
                 ]
@@ -196,7 +196,7 @@
                 "fact": "有视频剪辑需求",
                 "reply": [
                   {
-                    "who": "ajie",
+                    "who": "xiaobei",
                     "say": "剪视频也吃显卡和内存。"
                   }
                 ]
@@ -204,14 +204,14 @@
             ],
             "reply": [
               {
-                "who": "ajie",
+                "who": "xiaobei",
                 "say": "明白了，按你说的配。"
               }
             ]
           }
         },
         {
-          "who": "daliu",
+          "who": "wang",
           "say": "跑 AI 的话，得看模型多大。",
           "if": {
             "all": [
@@ -221,7 +221,7 @@
         },
         {
           "id": "model",
-          "who": "daliu",
+          "who": "wang",
           "q": "想跑多大的模型？",
           "if": {
             "all": [
@@ -236,7 +236,7 @@
               "fact": "只跑 7B 左右小模型或 SD 画图",
               "reply": [
                 {
-                  "who": "ajie",
+                  "who": "xiaobei",
                   "say": "那 8G 显存勉强够。"
                 }
               ]
@@ -251,7 +251,7 @@
               ],
               "reply": [
                 {
-                  "who": "ajie",
+                  "who": "xiaobei",
                   "say": "这个……确实得换卡。"
                 }
               ]
@@ -278,12 +278,12 @@
           }
         },
         {
-          "who": "ajie",
+          "who": "xiaobei",
           "say": "听见没？按需买，别被忽悠！",
           "mood": "angry"
         },
         {
-          "who": "daliu",
+          "who": "wang",
           "say": "我这叫专业建议！",
           "mood": "surprised"
         }
@@ -466,16 +466,16 @@
       "style": "chat",
       "title": "电脑城砍价",
       "emoji": "🧔‍♂️",
-      "with": "daliu",
+      "with": "wang",
       "beats": [
         {
-          "who": "daliu",
+          "who": "wang",
           "say": "兄弟，这套 i9 水冷，今天特价！",
           "mood": "smug"
         },
         {
           "id": "cpu",
-          "who": "daliu",
+          "who": "wang",
           "q": "这么好的 CPU，要不要？",
           "options": [
             {
@@ -494,7 +494,7 @@
               ],
               "reply": [
                 {
-                  "who": "daliu",
+                  "who": "wang",
                   "say": "……行家啊。",
                   "mood": "surprised"
                 }
@@ -507,7 +507,7 @@
               "fact": "保留旗舰 CPU",
               "reply": [
                 {
-                  "who": "daliu",
+                  "who": "wang",
                   "say": "爽快！"
                 }
               ]
@@ -516,7 +516,7 @@
         },
         {
           "id": "care",
-          "who": "daliu",
+          "who": "wang",
           "q": "你最在意啥？",
           "options": [
             {
@@ -580,7 +580,7 @@
           }
         },
         {
-          "who": "daliu",
+          "who": "wang",
           "say": "怕吵的话，水冷泵其实也有声。",
           "if": {
             "all": [
@@ -591,7 +591,7 @@
         },
         {
           "id": "cooler",
-          "who": "daliu",
+          "who": "wang",
           "q": "水冷换成风冷？",
           "options": [
             {
@@ -613,7 +613,7 @@
               },
               "reply": [
                 {
-                  "who": "daliu",
+                  "who": "wang",
                   "say": "风冷便宜，还不怕漏液。"
                 }
               ]
@@ -625,7 +625,7 @@
               "fact": "保留 360 水冷",
               "reply": [
                 {
-                  "who": "daliu",
+                  "who": "wang",
                   "say": "好看就完事了！"
                 }
               ]
@@ -633,7 +633,7 @@
           ]
         },
         {
-          "who": "daliu",
+          "who": "wang",
           "say": "行，给你开单！",
           "mood": "happy"
         }

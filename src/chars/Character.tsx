@@ -1,5 +1,6 @@
 import { motion, type TargetAndTransition } from 'framer-motion';
 import { useEffect, useId, useState } from 'react';
+import { artFor, type Art, type Pose } from './art';
 import { charById, MOODS, type Accessory, type Look, type Mood } from './library';
 
 /**
@@ -348,6 +349,84 @@ function Leg({ look, x, anim }: { look: Look; x: number; anim: TargetAndTransiti
   );
 }
 
+// ---------------- 手绘角色 ----------------
+
+/** 说话时在「当前表情」和「张嘴」两张图之间切，节奏比矢量的嘴慢一点，像手绘动画 */
+function useTalkFrame(talking: boolean) {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!talking) return setOpen(false);
+    let t: ReturnType<typeof setTimeout>;
+    const loop = () => {
+      t = setTimeout(() => {
+        setOpen((o) => !o);
+        loop();
+      }, 140 + Math.random() * 160);
+    };
+    loop();
+    return () => clearTimeout(t);
+  }, [talking]);
+  return open;
+}
+
+function poseOf(act: Act, mood: Mood, pose?: Pose): Pose {
+  if (pose) return pose;
+  if (act === 'walk') return 'walk';
+  if (act === 'wave') return 'greet';
+  if (act === 'party') return 'cheer';
+  if (mood === 'thinking') return 'think';
+  if (mood === 'worried' || mood === 'sad') return 'worry';
+  if (mood === 'angry') return 'angry';
+  return 'idle';
+}
+
+function ArtCharacter({ art, name, size, mood, talking, act, facing, bust, pose }: { art: Art; name: string; size: number; mood: Mood; talking: boolean; act: Act; facing: 'left' | 'right'; bust: boolean; pose?: Pose }) {
+  const open = useTalkFrame(talking);
+  if (bust) {
+    const h = size * (108 / 96);
+    return (
+      <span className="relative block overflow-hidden rounded-[22%] bg-white ring-2 ring-white" style={{ width: size, height: h }} aria-label={name}>
+        {/* 两张都叠着放，只切换透明度：换表情不闪 */}
+        <img src={art.face(mood)} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover object-top" style={{ opacity: open ? 0 : 1 }} />
+        {talking && <img src={art.face('talk')} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover object-top" style={{ opacity: open ? 1 : 0 }} />}
+      </span>
+    );
+  }
+  const p = poseOf(act, mood, pose);
+  const h = size * (200 / 120);
+  // 走路图本来有朝向；其它姿势基本正面，只有走路时才翻转
+  const flip = p === 'walk' && !!art.walkFaces && art.walkFaces !== facing;
+  const anim: TargetAndTransition =
+    act === 'jump' || act === 'party'
+      ? { y: [0, -h * 0.12, 0], transition: { repeat: Infinity, duration: 0.6, ease: 'easeOut' } }
+      : act === 'walk'
+        ? { y: [0, -h * 0.03, 0], rotate: [-2, 2, -2], transition: { repeat: Infinity, duration: 0.5 } }
+        : talking
+          ? { rotate: [-1.5, 1.5, -1.5], y: [0, -1.5, 0], transition: { repeat: Infinity, duration: 0.9 } }
+          : mood === 'happy'
+            ? { y: [0, -h * 0.025, 0], transition: { repeat: Infinity, duration: 0.8 } }
+            : { scaleY: [1, 1.012, 1], transition: { repeat: Infinity, duration: 2.6 } };
+  return (
+    <span className="relative block" style={{ width: size, height: h }} aria-label={name}>
+      <span className="absolute bottom-[1%] left-1/2 h-[5%] w-[70%] -translate-x-1/2 rounded-[50%] bg-black/15" />
+      {/* 外层负责呼吸 / 走路摇摆这些循环动作，内层只在换姿势时淡入一次（循环的 transition 不能带上透明度） */}
+      <motion.span className="absolute inset-0 block" animate={anim} style={{ originY: 1 }}>
+        <motion.img
+          key={p}
+          src={art.pose(p)}
+          alt=""
+          draggable={false}
+          initial={{ opacity: 0.4, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.18 }}
+          className="pointer-events-none absolute bottom-[3%] left-1/2 h-[97%] w-auto max-w-none select-none"
+          style={{ x: '-50%', scaleX: flip ? -1 : 1, originY: 1 }}
+        />
+      </motion.span>
+    </span>
+  );
+}
+
 // ---------------- 角色 ----------------
 
 export function Character({
@@ -359,6 +438,8 @@ export function Character({
   facing = 'right',
   bust = false,
   gaze = 0,
+  pose,
+  vector = false,
 }: {
   id: string;
   /** 宽度（像素） */
@@ -371,7 +452,18 @@ export function Character({
   bust?: boolean;
   /** 眼睛往左(-)/右(+)看 */
   gaze?: number;
+  /** 手绘角色：直接指定全身姿势（不指定就按 act / mood 选） */
+  pose?: Pose;
+  /** 强制用矢量小人 */
+  vector?: boolean;
 }) {
+  const def = charById(id);
+  const art = vector ? null : artFor(def?.id);
+  if (def && art) return <ArtCharacter art={art} name={def.name.en} size={size} mood={mood} talking={talking} act={act} facing={facing} bust={bust} pose={pose} />;
+  return <VectorCharacter id={id} size={size} mood={mood} talking={talking} act={act} facing={facing} bust={bust} gaze={gaze} />;
+}
+
+function VectorCharacter({ id, size, mood, talking, act, facing, bust, gaze }: { id: string; size: number; mood: Mood; talking: boolean; act: Act; facing: 'left' | 'right'; bust: boolean; gaze: number }) {
   const def = charById(id);
   const closed = useBlink();
   const open = useMouthFlap(talking);

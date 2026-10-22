@@ -8,7 +8,7 @@
   "currency": "USD",
   "cast": [
     {
-      "id": "daliu",
+      "id": "mei",
       "as": "Pet shop owner"
     },
     {
@@ -16,7 +16,7 @@
       "as": "Grandma"
     },
     {
-      "id": "ajie",
+      "id": "xiaoting",
       "as": "Roommate"
     },
     {
@@ -263,7 +263,7 @@
           "say": "Saturday morning at the dog park."
         },
         {
-          "who": "daliu",
+          "who": "mei",
           "say": "A husky! Perfect for anyone, trust me.",
           "mood": "smug"
         },
@@ -370,7 +370,7 @@
           }
         },
         {
-          "who": "ajie",
+          "who": "xiaoting",
           "say": "Alone all day? It'll howl and the neighbors will hate us.",
           "mood": "worried",
           "if": {
@@ -380,7 +380,7 @@
           }
         },
         {
-          "who": "daliu",
+          "who": "mei",
           "say": "Then just buy a second dog! Two for one!",
           "mood": "smug",
           "if": {
@@ -630,7 +630,7 @@
       "cards": [
         {
           "id": "c_rain",
-          "who": "ajie",
+          "who": "xiaoting",
           "say": "It's pouring and the puppy needs a walk. You're on a call.",
           "emoji": "🌧️",
           "left": {
@@ -708,7 +708,7 @@
         },
         {
           "id": "c_trip",
-          "who": "daliu",
+          "who": "mei",
           "say": "Weekend trip with friends! Boarding is $80 a night.",
           "emoji": "🏕️",
           "left": {
@@ -744,18 +744,18 @@
           "id": "shop",
           "emoji": "🏪",
           "label": "Pet shop",
-          "who": "daliu",
+          "who": "mei",
           "x": 24,
           "y": 26,
           "beats": [
             {
-              "who": "daliu",
+              "who": "mei",
               "say": "Welcome! Puppies on sale today!",
               "mood": "happy"
             },
             {
               "id": "source",
-              "who": "daliu",
+              "who": "mei",
               "q": "Puppy, or an older dog?",
               "options": [
                 {
@@ -768,7 +768,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "daliu",
+                      "who": "mei",
                       "say": "Excellent choice!",
                       "mood": "smug"
                     }
@@ -796,7 +796,7 @@
                   },
                   "reply": [
                     {
-                      "who": "daliu",
+                      "who": "mei",
                       "say": "Uh… shelters are, um, fine too.",
                       "mood": "worried"
                     }
@@ -805,7 +805,7 @@
               ]
             },
             {
-              "who": "daliu",
+              "who": "mei",
               "say": "Puppies need training though. Classes are extra!",
               "mood": "smug",
               "if": {
@@ -895,18 +895,18 @@
           "id": "home",
           "emoji": "🛋️",
           "label": "Home",
-          "who": "ajie",
+          "who": "xiaoting",
           "x": 50,
           "y": 72,
           "beats": [
             {
-              "who": "ajie",
+              "who": "xiaoting",
               "say": "Dude, did you even check the lease?",
               "mood": "surprised"
             },
             {
               "id": "lease",
-              "who": "ajie",
+              "who": "xiaoting",
               "q": "Does our lease allow dogs?",
               "options": [
                 {
@@ -922,7 +922,7 @@
                   "fact": "Unknown whether the lease allows dogs — must check with landlord before adopting",
                   "reply": [
                     {
-                      "who": "ajie",
+                      "who": "xiaoting",
                       "say": "Check BEFORE the dog shows up.",
                       "mood": "angry"
                     }
@@ -932,7 +932,7 @@
             },
             {
               "id": "travel",
-              "who": "ajie",
+              "who": "xiaoting",
               "q": "Who takes the dog when you travel?",
               "free": {
                 "placeholder": "e.g. a pet hotel",
@@ -951,7 +951,7 @@
                     ],
                     "reply": [
                       {
-                        "who": "ajie",
+                        "who": "xiaoting",
                         "say": "Me?! …Fine. You owe me pizza.",
                         "mood": "smug"
                       }
@@ -968,7 +968,7 @@
                 ],
                 "reply": [
                   {
-                    "who": "ajie",
+                    "who": "xiaoting",
                     "say": "Okay, as long as it's not me.",
                     "mood": "happy"
                   }

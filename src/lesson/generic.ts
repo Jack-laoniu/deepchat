@@ -26,7 +26,7 @@ const T = {
       ['night', '🌙', [['📱', '手机办', '希望在手机上就能搞定'], ['🧑‍🔧', '找人办', '希望有人上门/代办']]],
     ],
     chainT: '真到做的时候', chain: [
-      ['daliu', '贵一点的更省心，要不要加钱？', '💸', ['不加钱', '不愿为省心多花钱', { easy: -15 }], ['加钱', '愿意为省心多花钱', { easy: 15, good: 5 }]],
+      ['wang', '贵一点的更省心，要不要加钱？', '💸', ['不加钱', '不愿为省心多花钱', { easy: -15 }], ['加钱', '愿意为省心多花钱', { easy: 15, good: 5 }]],
       ['mei', '等打折能便宜两成，但要等一个月', '🏷️', ['等打折', '愿意等一等换便宜', { good: -10, easy: -5 }], ['马上办', '不想等，马上办', { easy: 10 }]],
       ['xiaobei', '便宜的那家口碑一般，要赌一把吗？', '🎲', ['赌一把', '愿意为便宜冒点风险', { safe: -25 }], ['选靠谱', '宁可贵也选靠谱的', { safe: 15 }]],
     ],
@@ -50,7 +50,7 @@ const T = {
       ['night', '🌙', [['📱', 'Phone', 'Wants to handle it on the phone'], ['🧑‍🔧', 'Someone', 'Wants someone to come and do it']]],
     ],
     chainT: 'When it gets real', chain: [
-      ['daliu', 'The pricier one is less hassle. Pay more?', '💸', ['Keep cheap', 'Will not pay extra for convenience', { easy: -15 }], ['Pay more', 'Will pay extra for convenience', { easy: 15, good: 5 }]],
+      ['wang', 'The pricier one is less hassle. Pay more?', '💸', ['Keep cheap', 'Will not pay extra for convenience', { easy: -15 }], ['Pay more', 'Will pay extra for convenience', { easy: 15, good: 5 }]],
       ['mei', 'Wait a month and it is 20% off.', '🏷️', ['Wait', 'Will wait to save money', { good: -10, easy: -5 }], ['Now', 'Wants it now', { easy: 10 }]],
       ['xiaobei', 'The cheap one has so-so reviews. Risk it?', '🎲', ['Risk it', 'Will take a risk to save money', { safe: -25 }], ['Go safe', 'Prefers the reliable option', { safe: 15 }]],
     ],
@@ -72,7 +72,7 @@ const TIME = {
     cards: [['⏱️', '花的时间', '每天要花多少时间'], ['⭐', '效果', '效果'], ['🧘', '轻松', '不累、不痛苦'], ['⚡', '见效快', '尽快看到变化'], ['👫', '有人陪', '有人一起做/监督'], ['😌', '省心', '省心、少操心']],
     budgetQ: '每天能挤出多久？', budgetFact: '每天最多能投入 {v} 分钟',
     chain: [
-      ['daliu', '多花半小时效果翻倍，加不加？', '⏳', ['不加', '不愿再多花时间', { easy: 10, good: -10 }], ['加', '愿意多花时间换效果', { easy: -15, good: 15 }]],
+      ['wang', '多花半小时效果翻倍，加不加？', '⏳', ['不加', '不愿再多花时间', { easy: 10, good: -10 }], ['加', '愿意多花时间换效果', { easy: -15, good: 15 }]],
       ['mei', '周末想睡懒觉，要不要破例？', '🛌', ['破例', '周末会放松一下', { easy: 10, good: -10 }], ['照旧', '周末也坚持', { easy: -10, good: 10 }]],
       ['xiaobei', '朋友约你熬夜，去不去？', '🌙', ['去', '偶尔会被打乱', { safe: -20, easy: 10 }], ['不去', '为计划推掉', { safe: 10, easy: -10 }]],
     ],
@@ -85,7 +85,7 @@ const TIME = {
     cards: [['⏱️', 'Time', 'How much time it takes each day'], ['⭐', 'Results', 'Results'], ['🧘', 'Painless', 'Not exhausting or painful'], ['⚡', 'Quick wins', 'Sees changes soon'], ['👫', 'Buddy', 'Someone to do it with / keep them on track'], ['😌', 'Easy', 'Low effort, no hassle']],
     budgetQ: 'Minutes a day?', budgetFact: 'Can spare at most {v} minutes a day',
     chain: [
-      ['daliu', 'Thirty more minutes doubles the results. Add it?', '⏳', ['No', 'Will not spend more time', { easy: 10, good: -10 }], ['Add it', 'Will spend more time for results', { easy: -15, good: 15 }]],
+      ['wang', 'Thirty more minutes doubles the results. Add it?', '⏳', ['No', 'Will not spend more time', { easy: 10, good: -10 }], ['Add it', 'Will spend more time for results', { easy: -15, good: 15 }]],
       ['mei', 'Sleep in this weekend?', '🛌', ['Sleep in', 'Relaxes at weekends', { easy: 10, good: -10 }], ['Keep going', 'Sticks to it at weekends too', { easy: -10, good: 10 }]],
       ['xiaobei', 'Friends want a late night out. Go?', '🌙', ['Go', 'Plans get broken sometimes', { safe: -20, easy: 10 }], ['Skip', 'Turns it down for the plan', { safe: 10, easy: -10 }]],
     ],
@@ -106,7 +106,7 @@ export function genericLesson(need: string, lang: 'zh' | 'en'): LessonT {
     lang,
     currency: lang === 'zh' ? 'CNY' : 'USD',
     ...(timeBased ? { goal: TIME[lang].goal } : {}),
-    cast: [{ id: 'daliu' }, { id: 'mei' }, { id: 'xiaobei' }],
+    cast: [{ id: 'wang' }, { id: 'mei' }, { id: 'xiaobei' }],
     guess: {
       line: d.guess,
       items: [

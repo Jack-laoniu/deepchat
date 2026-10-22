@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { animate, AnimatePresence, motion, useMotionValue, useTransform } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Character, type Act } from '../chars/Character';
 import { sfx } from '../fx/fx';
@@ -88,74 +88,110 @@ function Ground({ spots }: { spots: MapRound['spots'] }) {
 }
 /** 地图上走一个百分点要多少秒 */
 const PACE = 0.045;
+/** 离 NPC 多近（百分点）算「走到跟前」 */
+const NEAR = 13;
+const clampX = (x: number) => Math.min(95, Math.max(5, x));
+const clampY = (y: number) => Math.min(96, Math.max(16, y));
 
-/** 会自己溜达的 NPC：在自己的地点附近来回走，玩家走近时转身挥手 */
-function Npc({ id, home, greeting, done }: { id: string; home: Pt; greeting: boolean; done: boolean }) {
+/** 会自己溜达的 NPC：在自己的地点附近来回走；玩家走近时转过来打招呼，头上冒「聊聊」 */
+function Npc({ id, home, near, done, name, onTap, onMove }: { id: string; home: Pt; near: boolean; done: boolean; name: string; onTap: () => void; onMove: (p: Pt) => void }) {
   // 站在建筑朝地图中间的那一侧，不挡住地点名字
   const side = home.x > 50 ? -13 : 13;
-  const [pos, setPos] = useState<Pt>({ x: home.x + side, y: home.y + 8 });
+  const [pos, setPos] = useState<Pt>({ x: home.x + side, y: home.y + 10 });
   const [act, setAct] = useState<Act>('idle');
   const [facing, setFacing] = useState<'left' | 'right'>('left');
   const [dur, setDur] = useState(0.3);
   const alive = useRef(true);
 
+  useEffect(() => onMove(pos), [pos]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     alive.current = true;
-    if (greeting) {
+    if (near) {
       setAct('wave');
       setFacing(pos.x > 50 ? 'left' : 'right');
       return;
     }
+    setAct('idle');
     let timer: ReturnType<typeof setTimeout>;
     const wander = () => {
       timer = setTimeout(() => {
         if (!alive.current) return;
-        const target = { x: home.x + side + (Math.random() * 8 - 4) * Math.sign(side), y: home.y + 6 + Math.random() * 6 };
+        const target = { x: home.x + side + (Math.random() * 8 - 4) * Math.sign(side), y: home.y + 8 + Math.random() * 6 };
         setPos((p) => {
           const d = Math.hypot(target.x - p.x, target.y - p.y);
           setFacing(target.x < p.x ? 'left' : 'right');
-          setDur(d * PACE);
+          setDur(d * PACE * 1.6);
           setAct('walk');
-          setTimeout(() => alive.current && setAct('idle'), d * PACE * 1000);
+          setTimeout(() => alive.current && setAct('idle'), d * PACE * 1600);
           return target;
         });
         wander();
-      }, 1800 + Math.random() * 2600);
+      }, 2600 + Math.random() * 3200);
     };
     wander();
     return () => {
       alive.current = false;
       clearTimeout(timer);
     };
-  }, [greeting, home.x, home.y]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [near, home.x, home.y]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <motion.div
-      className="pointer-events-none absolute -translate-x-1/2 -translate-y-full"
+    <motion.button
+      data-npc={id}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={onTap}
+      className="absolute -translate-x-1/2 -translate-y-full"
       animate={{ left: `${pos.x}%`, top: `${pos.y}%` }}
       transition={{ duration: dur, ease: 'linear' }}
       style={{ zIndex: Math.round(pos.y) }}
     >
-      <Character id={id} size={46} act={act} facing={facing} mood={done ? 'happy' : greeting ? 'happy' : 'neutral'} />
-    </motion.div>
+      <span className="block" style={{ filter: SHADOW }}>
+        <Character id={id} size={Math.round(64 * depth(pos.y))} act={act} facing={facing} mood={done || near ? 'happy' : 'neutral'} />
+      </span>
+      <AnimatePresence>
+        {near && !done && (
+          <motion.span
+            initial={{ opacity: 0, y: 8, scale: 0.6 }}
+            animate={{ opacity: 1, y: [0, -4, 0], scale: 1 }}
+            exit={{ opacity: 0, scale: 0.6 }}
+            transition={{ y: { repeat: Infinity, duration: 0.9 } }}
+            className="absolute -top-9 left-1/2 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-2xl border-2 border-b-4 border-green-600 bg-green-500 px-2.5 py-1 text-sm font-black text-white shadow-lg"
+          >
+            💬 {t('talkTo', { name })}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </motion.button>
   );
 }
 
-/** 地图关：点地点，自己的小人走过去，和那里的人聊完打勾；全部聊完才能出发 */
+/**
+ * 地图关：玩家自己操控小人——点哪走哪，或者按住拖动像摇杆一样一直走。
+ * 走到人跟前，那人转过来打招呼、头上冒「聊聊」，点一下开聊；直接点人也会走过去聊。全部聊完才能出发。
+ */
 export function MapQuest({ round }: { round: MapRound }) {
   const g = useGame();
   const who = useCast();
   const [done, setDone] = useState<Record<string, Replies>>({});
-  const [me, setMe] = useState<Pt>({ x: 50, y: 58 });
+  const mx = useMotionValue(50);
+  const my = useMotionValue(88);
+  const left = useTransform(mx, (v) => `${v}%`);
+  const top = useTransform(my, (v) => `${v}%`);
+  const [meY, setMeY] = useState(88);
   const [walking, setWalking] = useState(false);
-  const [walkDur, setWalkDur] = useState(0.3);
   const [facing, setFacing] = useState<'left' | 'right'>('right');
-  const [target, setTarget] = useState<string | null>(null);
+  const [moved, setMoved] = useState(false);
+  const [near, setNear] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null);
+  const [stick, setStick] = useState<{ x: number; y: number; dx: number; dy: number } | null>(null);
+  const box = useRef<HTMLDivElement>(null);
+  const npcPos = useRef<Record<string, Pt>>({});
+  const anims = useRef<{ stop: () => void }[]>([]);
+  const arrive = useRef<(() => void) | null>(null);
+  const press = useRef<{ x: number; y: number; id: number; drag: boolean } | null>(null);
   const spot = round.spots.find((s) => s.id === open);
   const allDone = round.spots.every((s) => done[s.id]);
   const next = round.spots.find((s) => !done[s.id]);
-  const firstSpot = next ? { x: next.x, y: next.y } : { x: 50, y: 50 };
 
   const flags = useMemo(() => {
     let f = g.played!.flags;
@@ -163,22 +199,95 @@ export function MapQuest({ round }: { round: MapRound }) {
     return f;
   }, [done, g.played, round.spots]);
 
-  const go = (id: string) => {
-    const s = round.spots.find((x) => x.id === id)!;
-    if (done[id] || walking || open) return;
-    const dest = { x: s.x + (s.x > 50 ? -16 : 16), y: s.y + 22 };
-    const dist = Math.hypot(dest.x - me.x, dest.y - me.y);
-    sfx.whoosh();
-    setTarget(id);
-    setFacing(dest.x < me.x ? 'left' : 'right');
+  /** 看看离谁最近 */
+  const check = () => {
+    const me = { x: mx.get(), y: my.get() };
+    let best: string | null = null;
+    let bd = NEAR;
+    for (const s of round.spots) {
+      const p = npcPos.current[s.id];
+      if (!p || done[s.id]) continue;
+      const d = Math.hypot(p.x - me.x, (p.y - me.y) * 0.8);
+      if (d < bd) (bd = d), (best = s.id);
+    }
+    setNear(best);
+    setMeY(me.y);
+  };
+
+  const stopWalk = () => {
+    anims.current.forEach((a) => a.stop());
+    anims.current = [];
+    arrive.current = null;
+  };
+
+  /** 直线走到某点；到了之后可以接着做事（比如开聊） */
+  const walkTo = (dest: Pt, then?: () => void) => {
+    if (open) return;
+    stopWalk();
+    const to = { x: clampX(dest.x), y: clampY(dest.y) };
+    const dist = Math.hypot(to.x - mx.get(), to.y - my.get());
+    setMoved(true);
+    if (dist < 0.5) return then?.();
+    setFacing(to.x < mx.get() ? 'left' : 'right');
     setWalking(true);
-    setWalkDur(dist * PACE);
-    setMe(dest);
-    setTimeout(() => {
-      setWalking(false);
-      setFacing(s.x < dest.x ? 'left' : 'right');
-      setTimeout(() => setOpen(id), 450);
-    }, dist * PACE * 1000);
+    arrive.current = then ?? null;
+    const duration = dist * PACE;
+    const ax = animate(mx, to.x, { duration, ease: 'linear', onUpdate: check });
+    const ay = animate(my, to.y, {
+      duration,
+      ease: 'linear',
+      onComplete: () => {
+        setWalking(false);
+        check();
+        const f = arrive.current;
+        arrive.current = null;
+        f?.();
+      },
+    });
+    anims.current = [ax, ay];
+  };
+
+  const talk = (id: string) => {
+    if (done[id] || open) return;
+    const p = npcPos.current[id];
+    const s = round.spots.find((x) => x.id === id)!;
+    const at = p ?? { x: s.x, y: s.y + 12 };
+    // 站到 NPC 朝地图中间的那一侧
+    const dest = { x: at.x + (at.x > 50 ? -9 : 9), y: at.y + 1 };
+    sfx.whoosh();
+    walkTo(dest, () => {
+      setFacing(at.x < mx.get() ? 'left' : 'right');
+      setTimeout(() => setOpen(id), 250);
+    });
+  };
+
+  // 摇杆：按住拖动时按方向一直走
+  useEffect(() => {
+    if (!stick) return;
+    let raf = 0;
+    let last = performance.now();
+    const rect = box.current!.getBoundingClientRect();
+    const tick = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const len = Math.hypot(stick.dx, stick.dy);
+      if (len > 4) {
+        const k = Math.min(1, len / 50);
+        // 屏幕上的速度一致：按像素算，再换回百分比
+        const speedPx = (k * rect.width) / (100 * PACE);
+        mx.set(clampX(mx.get() + ((stick.dx / len) * speedPx * dt * 100) / rect.width));
+        my.set(clampY(my.get() + ((stick.dy / len) * speedPx * dt * 100) / rect.height));
+        check();
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [stick]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const pct = (e: { clientX: number; clientY: number }) => {
+    const r = box.current!.getBoundingClientRect();
+    return { x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 };
   };
 
   return (
@@ -190,17 +299,58 @@ export function MapQuest({ round }: { round: MapRound }) {
 
       <div className="mb-2 flex flex-wrap gap-2">
         {round.spots.map((s) => (
-          <span key={s.id} className={`rounded-full px-2.5 py-1 text-xs font-black ${done[s.id] ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+          <button key={s.id} onClick={() => talk(s.id)} className={`rounded-full px-2.5 py-1 text-xs font-black ${done[s.id] ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
             {done[s.id] ? '✅' : '⬜'} {t('find', { name: who(s.who).as ?? who(s.who).name })}
-          </span>
+          </button>
         ))}
       </div>
 
       {/* overflow: clip 而不是 hidden：飘出边界的云影不能让地图被滚动错位 */}
-      <div className="relative flex-1 overflow-hidden rounded-[28px] border-2 border-b-[6px] border-green-400 shadow-inner" style={{ overflow: 'clip' }}>
+      <div
+        ref={box}
+        className="relative flex-1 touch-none select-none overflow-hidden rounded-[28px] border-2 border-b-[6px] border-green-400 shadow-inner"
+        style={{ overflow: 'clip' }}
+        onPointerDown={(e) => {
+          if (open) return;
+          press.current = { x: e.clientX, y: e.clientY, id: e.pointerId, drag: false };
+          (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+        }}
+        onPointerMove={(e) => {
+          const p = press.current;
+          if (!p || p.id !== e.pointerId) return;
+          const dx = e.clientX - p.x;
+          const dy = e.clientY - p.y;
+          if (!p.drag && Math.hypot(dx, dy) > 12) {
+            p.drag = true;
+            stopWalk();
+            setMoved(true);
+            setWalking(true);
+          }
+          if (p.drag) {
+            const r = box.current!.getBoundingClientRect();
+            setStick({ x: ((p.x - r.left) / r.width) * 100, y: ((p.y - r.top) / r.height) * 100, dx, dy });
+            if (Math.abs(dx) > 4) setFacing(dx < 0 ? 'left' : 'right');
+          }
+        }}
+        onPointerUp={(e) => {
+          const p = press.current;
+          press.current = null;
+          if (!p) return;
+          if (p.drag) {
+            setStick(null);
+            setWalking(false);
+            check();
+          } else walkTo(pct(e));
+        }}
+        onPointerCancel={() => {
+          press.current = null;
+          setStick(null);
+          setWalking(false);
+        }}
+      >
         <Ground spots={round.spots} />
         {DECOR.map((d, i) => (
-          <span key={i} className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${d.x}%`, top: `${d.y}%`, filter: SHADOW }}>
+          <span key={i} className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${d.x}%`, top: `${d.y}%`, filter: SHADOW }}>
             <Emoji e={d.e} size={Math.round(28 * depth(d.y))} />
           </span>
         ))}
@@ -208,7 +358,8 @@ export function MapQuest({ round }: { round: MapRound }) {
         {round.spots.map((s) => (
           <button
             key={s.id}
-            onClick={() => go(s.id)}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => talk(s.id)}
             className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
             style={{ left: `${s.x}%`, top: `${s.y}%`, zIndex: 1 }}
           >
@@ -238,25 +389,47 @@ export function MapQuest({ round }: { round: MapRound }) {
         ))}
 
         {round.spots.map((s) => (
-          <Npc key={s.id} id={s.who} home={{ x: s.x, y: s.y }} greeting={target === s.id && !walking && !done[s.id]} done={!!done[s.id]} />
+          <Npc
+            key={s.id}
+            id={s.who}
+            home={{ x: s.x, y: s.y }}
+            near={near === s.id && !walking && !open}
+            done={!!done[s.id]}
+            name={who(s.who).as ?? who(s.who).name}
+            onTap={() => (near === s.id && !walking ? setOpen(s.id) : talk(s.id))}
+            onMove={(p) => {
+              npcPos.current[s.id] = p;
+            }}
+          />
         ))}
 
-        <motion.div
-          className="pointer-events-none absolute -translate-x-1/2 -translate-y-full"
-          animate={{ left: `${me.x}%`, top: `${me.y}%` }}
-          transition={{ duration: walkDur, ease: 'linear' }}
-          style={{ zIndex: Math.round(me.y) + 1 }}
-        >
+        <motion.div className="pointer-events-none absolute -translate-x-1/2 -translate-y-full" style={{ left, top, zIndex: Math.round(meY) + 1 }}>
           <span className="block" style={{ filter: SHADOW }}>
-            <Character id="me" size={Math.round(52 * depth(me.y))} act={walking ? 'walk' : allDone ? 'jump' : 'idle'} facing={facing} mood={allDone ? 'happy' : 'neutral'} />
+            <Character id="me" size={Math.round(50 * depth(meY))} act={walking ? 'walk' : allDone ? 'jump' : 'idle'} facing={facing} mood={allDone ? 'happy' : 'neutral'} />
           </span>
+          {/* 脚下一圈光：一眼认出哪个是自己 */}
+          <motion.span
+            className="absolute -bottom-1 left-1/2 h-3 w-12 -translate-x-1/2 rounded-[50%] border-2 border-yellow-200/90"
+            animate={{ opacity: [0.5, 1, 0.5], scale: [0.9, 1.1, 0.9] }}
+            transition={{ repeat: Infinity, duration: 1.4 }}
+          />
         </motion.div>
 
-        {/* 还一个都没去过：手指示范点哪里；去过之后只留一行提示 */}
-        <HandHint show={!Object.keys(done).length && !open && !walking && !target} mode="tap" from={{ x: 50, y: 70 }} to={firstSpot} label={t('tapToGo')} />
-        {Object.keys(done).length > 0 && !allDone && !open && !walking && (
-          <div className="absolute bottom-3 left-1/2 z-[200] -translate-x-1/2 whitespace-nowrap rounded-2xl border-2 border-b-4 border-amber-400 bg-amber-50 px-4 py-1.5 text-base font-black text-amber-800 shadow-lg">
-            {t('tapToGo')}
+        {/* 摇杆：按下的位置出现一个圈，小圆点跟着手指 */}
+        {stick && (
+          <div className="pointer-events-none absolute z-[240] h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-white/70 bg-white/25" style={{ left: `${stick.x}%`, top: `${stick.y}%` }}>
+            <span
+              className="absolute left-1/2 top-1/2 h-10 w-10 rounded-full border-2 border-b-4 border-green-600 bg-green-400 shadow-lg"
+              style={{ transform: `translate(calc(-50% + ${Math.max(-36, Math.min(36, stick.dx))}px), calc(-50% + ${Math.max(-36, Math.min(36, stick.dy))}px))` }}
+            />
+          </div>
+        )}
+
+        {/* 还没动过：手指示范点地面走路 */}
+        <HandHint show={!moved && !open} mode="tap" from={{ x: 50, y: 82 }} to={next ? { x: next.x + (next.x > 50 ? -13 : 13), y: next.y + 6 } : { x: 50, y: 50 }} label={t('tapToGo')} />
+        {moved && !allDone && !open && !near && !stick && !walking && (
+          <div className="pointer-events-none absolute bottom-3 left-1/2 z-[200] -translate-x-1/2 whitespace-nowrap rounded-2xl border-2 border-b-4 border-amber-400 bg-amber-50 px-4 py-1.5 text-base font-black text-amber-800 shadow-lg">
+            {t('walkNear')}
           </div>
         )}
       </div>
@@ -289,7 +462,7 @@ export function MapQuest({ round }: { round: MapRound }) {
                     sfx.fix();
                     setDone((d) => ({ ...d, [spot.id]: r }));
                     setOpen(null);
-                    setTarget(null);
+                    setNear(null);
                   }}
                 />
               </div>

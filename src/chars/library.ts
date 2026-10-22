@@ -48,7 +48,7 @@ export const CHARACTERS: CharacterDef[] = [
   {
     id: 'xiaofang',
     name: { zh: '小芳', en: 'Fang', ja: 'ファン', es: 'Fang' },
-    persona: '向导。元气满满，有点冲动，很会照顾人；永远站在用户这边，会替用户吐槽不靠谱的人，兴奋了会跳起来比耶。',
+    persona: '向导。开朗热心，有点小迷糊；背着大背包、扎着发带，永远站在用户这边，会替用户吐槽不靠谱的人，口头禅「别担心，我会一直在你身边」。',
     roles: '向导、主持人、闺蜜/好朋友（每关都可用）',
     voice: { pitch: 1.25, rate: 1.1, gender: 'f' },
     look: { skin: '#F6CFB0', hair: { style: 'bun', color: '#6B3E26' }, top: '#F27C9A', accent: '#FBD3DE', bottom: '#2D2D3A', outfit: 'hoodie', acc: ['freckles'] },
@@ -56,15 +56,15 @@ export const CHARACTERS: CharacterDef[] = [
   {
     id: 'mei',
     name: { zh: '美姐', en: 'Mei', ja: 'メイ', es: 'Mei' },
-    persona: '理性又温柔，细心爱操心，说话有点毒舌；精打细算，一针见血地问「值不值」，习惯推一下眼镜。',
-    roles: '伴侣、姐姐、家里管钱的人、合伙人',
+    persona: '聪明细心，有点小爱较真但很热心；丸子头、眼镜、挂着工牌，干练，一针见血地问「值不值」，习惯推一下眼镜。',
+    roles: '伴侣、姐姐、家里管钱的人、合伙人、物业/行政、办事员',
     voice: { pitch: 1.1, rate: 1.0, gender: 'f' },
     look: { skin: '#F7D2B6', hair: { style: 'long', color: '#3B2A20' }, top: '#B9A2E0', accent: '#E9DDFB', bottom: '#E8DCC4', outfit: 'shirt', acc: ['glasses', 'earrings'] },
   },
   {
     id: 'wang',
     name: { zh: '老王', en: 'Old Wang', ja: '王さん', es: 'Don Wang' },
-    persona: '嘴上不饶人，心地善良，关键时刻靠得住；过来人，爱讲自己踩过的坑，背着手「啧」一声。',
+    persona: '随和靠谱，有点小吐槽；中年微胖，过来人，爱讲自己踩过的坑，背着手「啧」一声：「别太较真嘛，总会有办法的」。',
     roles: '过来人、老邻居、父亲/长辈、老师傅',
     voice: { pitch: 0.8, rate: 0.95, gender: 'm' },
     look: { skin: '#E2B48C', hair: { style: 'short', color: '#1F1F1F' }, top: '#2E3F5C', accent: '#4A5D80', bottom: '#3D3D3D', outfit: 'shirt', acc: ['wrinkles'] },
@@ -80,8 +80,8 @@ export const CHARACTERS: CharacterDef[] = [
   {
     id: 'xiaoting',
     name: { zh: '小婷', en: 'Ting', ja: 'ティン', es: 'Ting' },
-    persona: '温暖治愈，爱生活，喜欢小动物；关心感受和氛围，会问「你开心吗」「这样过日子舒服吗」。',
-    roles: '朋友、室友、妹妹、用户的另一半、有经验的同龄人',
+    persona: '开朗热情，有行动力，有点小马虎；高马尾、粉色外套、背包，爱运动拍照美食，竖大拇指喊「加油！我们一定可以的！」。',
+    roles: '朋友、室友、同事、妹妹、用户的另一半、有经验的同龄人',
     voice: { pitch: 1.3, rate: 1.0, gender: 'f' },
     look: { skin: '#F8D5BC', hair: { style: 'long', color: '#7A4A2A' }, top: '#F28C38', accent: '#FFD2A8', bottom: '#5A6B8C', outfit: 'hoodie', acc: [] },
   },
@@ -96,16 +96,16 @@ export const CHARACTERS: CharacterDef[] = [
   {
     id: 'ayi',
     name: { zh: '阿姨', en: 'Auntie', ja: 'おばさん', es: 'Tía' },
-    persona: '热心肠，话不多但很有主意；心疼人，最怕不安全、怕你吃亏，笑眯眯地拿主意。',
-    roles: '妈妈/长辈、热心邻居、房东、家里的老人',
+    persona: '热心开朗，爱操心，有点唠叨但很温暖；中年微胖、围裙、拎着菜篮，最怕不安全、怕你吃亏：「别担心，有我在」。',
+    roles: '妈妈/长辈、热心邻居、房东、小店老板娘、家里的老人',
     voice: { pitch: 1.15, rate: 0.92, gender: 'f' },
     look: { skin: '#F0C9A6', hair: { style: 'bun', color: '#4A3326' }, top: '#5E8A55', accent: '#F4EFE6', bottom: '#4A4A55', outfit: 'cardigan', acc: ['headscarf', 'wrinkles'], hatColor: '#D9824A' },
   },
   {
     id: 'xiaobei',
     name: { zh: '小北', en: 'Bei', ja: 'ベイ', es: 'Bei' },
-    persona: '温和理性，喜欢思考，可靠但有点社恐；讲数据和标准，专门提醒风险和隐患，常拿着咖啡沉思。',
-    roles: '专家、顾问、医生、律师、老师、工程师',
+    persona: '沉稳靠谱，逻辑强，有点小严肃；西装眼镜、拿着平板，讲数据和标准，专门提醒风险和隐患，习惯扶一下眼镜。',
+    roles: '专家、顾问、销售/中介、医生、律师、老师、工程师、懂技术的朋友',
     voice: { pitch: 0.9, rate: 1, gender: 'm' },
     look: { skin: '#F2C9A0', hair: { style: 'short', color: '#2A2420' }, top: '#C9B08A', accent: '#EFE6D6', bottom: '#2E3440', outfit: 'cardigan', acc: ['glasses'] },
   },
@@ -136,6 +136,9 @@ export const CHARACTER_IDS = CHARACTERS.map((c) => c.id) as [string, ...string[]
 export const GUIDE = 'xiaofang';
 export const charById = (id: string) => (id === 'me' ? ME : CHARACTERS.find((c) => c.id === (LEGACY_IDS[id] ?? id)));
 
+/** 已经有手绘素材的角色；新生成的关卡只从这些人里挑（其他人等素材到了再放开） */
+export const DRAWN = ['xiaofang', 'mei', 'wang', 'xiaoting', 'ayi', 'xiaobei'];
+
 /** 给大模型的角色清单 */
 export const characterCatalog = () =>
-  CHARACTERS.map((c) => `- ${c.id}（${c.name.zh} / ${c.name.en}）：${c.persona} 适合：${c.roles}`).join('\n');
+  CHARACTERS.filter((c) => DRAWN.includes(c.id) && c.id !== GUIDE).map((c) => `- ${c.id}（${c.name.zh} / ${c.name.en}）：${c.persona} 适合：${c.roles}`).join('\n');

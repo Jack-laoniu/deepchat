@@ -21,7 +21,7 @@
       "as": "晨练老王"
     },
     {
-      "id": "ajie",
+      "id": "xiaobei",
       "as": "同事"
     },
     {
@@ -247,12 +247,12 @@
           "mood": "worried"
         },
         {
-          "who": "ajie",
+          "who": "xiaobei",
           "say": "我上个月也说要六点起，周一到周三都做到了。",
           "mood": "thinking"
         },
         {
-          "who": "ajie",
+          "who": "xiaobei",
           "say": "周四加班到十一点，周五直接睡到九点，全盘崩了。",
           "mood": "worried"
         },
@@ -262,7 +262,7 @@
           "mood": "angry"
         },
         {
-          "who": "ajie",
+          "who": "xiaobei",
           "say": "后来我发现，不是起不来，是睡前那一小时管不住。",
           "mood": "thinking"
         },
@@ -297,7 +297,7 @@
               ],
               "reply": [
                 {
-                  "who": "ajie",
+                  "who": "xiaobei",
                   "say": "下一集自动播放，最要命。",
                   "mood": "worried"
                 }
@@ -313,7 +313,7 @@
               ],
               "reply": [
                 {
-                  "who": "ajie",
+                  "who": "xiaobei",
                   "say": "那得先跟工作划条线。",
                   "mood": "thinking"
                 }
@@ -357,7 +357,7 @@
                 "fact": "家里有孩子，睡前要陪孩子",
                 "reply": [
                   {
-                    "who": "ajie",
+                    "who": "xiaobei",
                     "say": "有娃的话，时间真不由自己。",
                     "mood": "worried"
                   }
@@ -376,7 +376,7 @@
                 "fact": "睡前常被工作占用",
                 "reply": [
                   {
-                    "who": "ajie",
+                    "who": "xiaobei",
                     "say": "先跟工作划条线吧。",
                     "mood": "thinking"
                   }
@@ -502,23 +502,23 @@
           "id": "office",
           "emoji": "🏢",
           "label": "公司",
-          "who": "ajie",
+          "who": "xiaobei",
           "x": 76,
           "y": 28,
           "beats": [
             {
-              "who": "ajie",
+              "who": "xiaobei",
               "say": "我们组有人下午三点后不喝咖啡，说晚上睡得明显好。",
               "mood": "thinking"
             },
             {
-              "who": "ajie",
+              "who": "xiaobei",
               "say": "我试了一周，十一点半真的就困了。",
               "mood": "happy"
             },
             {
               "id": "start",
-              "who": "ajie",
+              "who": "xiaobei",
               "q": "你几点得到公司/出门？",
               "options": [
                 {
@@ -531,7 +531,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "ajie",
+                      "who": "xiaobei",
                       "say": "羡慕！那更要自己定规矩。",
                       "mood": "happy"
                     }
@@ -544,7 +544,7 @@
                   "fact": "每天九点左右到岗",
                   "reply": [
                     {
-                      "who": "ajie",
+                      "who": "xiaobei",
                       "say": "七点起就很从容了。",
                       "mood": "happy"
                     }
@@ -560,7 +560,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "ajie",
+                      "who": "xiaobei",
                       "say": "那十一点前必须睡，没得商量。",
                       "mood": "worried"
                     }
@@ -1024,7 +1024,7 @@
       "cards": [
         {
           "id": "c_dinner",
-          "who": "ajie",
+          "who": "xiaobei",
           "say": "周五部门聚餐，要续摊去唱歌，来不来？",
           "emoji": "🎤",
           "left": {
@@ -1141,7 +1141,7 @@
         },
         {
           "id": "c_work",
-          "who": "ajie",
+          "who": "xiaobei",
           "say": "老板十一点发消息：明早要方案。",
           "emoji": "💼",
           "left": {

@@ -11,8 +11,8 @@
       "id": "wang"
     },
     {
-      "id": "daliu",
-      "as": "农资店老板"
+      "id": "ayi",
+      "as": "农资店老板娘"
     },
     {
       "id": "mei",
@@ -265,7 +265,7 @@
           "mood": "smug"
         },
         {
-          "who": "daliu",
+          "who": "ayi",
           "say": "那套是我卖的，质量杠杠的！",
           "mood": "happy"
         },
@@ -325,7 +325,7 @@
               ],
               "reply": [
                 {
-                  "who": "daliu",
+                  "who": "ayi",
                   "say": "有起伏就按坡地算，稳妥。"
                 }
               ]
@@ -333,7 +333,7 @@
           ]
         },
         {
-          "who": "daliu",
+          "who": "ayi",
           "say": "后来我还给他加了过滤器，你猜为啥？",
           "mood": "smug"
         },
@@ -344,7 +344,7 @@
         },
         {
           "id": "water",
-          "who": "daliu",
+          "who": "ayi",
           "q": "你家浇地用的什么水？",
           "options": [
             {
@@ -363,7 +363,7 @@
               },
               "reply": [
                 {
-                  "who": "daliu",
+                  "who": "ayi",
                   "say": "自来水不用水泵，省一笔！"
                 }
               ]
@@ -419,7 +419,7 @@
                 "fact": "水源可能含泥沙杂质",
                 "reply": [
                   {
-                    "who": "daliu",
+                    "who": "ayi",
                     "say": "这种水得过滤，记下了。"
                   }
                 ]
@@ -448,7 +448,7 @@
           "mood": "thinking"
         },
         {
-          "who": "daliu",
+          "who": "ayi",
           "say": "嘿！我可是实在人！",
           "mood": "surprised"
         }
@@ -797,7 +797,7 @@
         },
         {
           "id": "c_clog",
-          "who": "daliu",
+          "who": "ayi",
           "say": "喷头堵了一排，换新的还是自己通？",
           "emoji": "🔧",
           "left": {
@@ -884,17 +884,17 @@
           "id": "shop",
           "emoji": "🏪",
           "label": "农资店",
-          "who": "daliu",
+          "who": "ayi",
           "x": 24,
           "y": 26,
           "beats": [
             {
-              "who": "daliu",
+              "who": "ayi",
               "say": "哟，又来了！今天想问点啥？"
             },
             {
               "id": "ctrl",
-              "who": "daliu",
+              "who": "ayi",
               "q": "想手机遥控，还是手动开关？",
               "if": {
                 "none": [
@@ -923,7 +923,7 @@
                   },
                   "reply": [
                     {
-                      "who": "daliu",
+                      "who": "ayi",
                       "say": "好嘞，给你配个智能控制器。"
                     }
                   ]
@@ -937,7 +937,7 @@
               ]
             },
             {
-              "who": "daliu",
+              "who": "ayi",
               "say": "你不是说人常不在家？手动可不行哦。",
               "if": {
                 "all": [
@@ -951,7 +951,7 @@
             },
             {
               "id": "who_runs",
-              "who": "daliu",
+              "who": "ayi",
               "q": "装好以后，平时谁来管？",
               "options": [
                 {
@@ -970,7 +970,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "daliu",
+                      "who": "ayi",
                       "say": "那得选按钮大、操作简单的。"
                     }
                   ]
