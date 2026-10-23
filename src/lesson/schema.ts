@@ -316,11 +316,15 @@ export const DayRound = z.object({
   id,
   title: short(14),
   emoji,
+  /** 场景：daily 平常的一天；road 路上（高速、堵车、服务区）；outdoor 户外；home 家里 */
+  scene: z.enum(['daily', 'road', 'outdoor', 'home']).default('daily'),
   moments: z
     .array(
       z.object({
         id,
         at: z.enum(['morning', 'noon', 'evening', 'night']),
+        /** 钟上显示的时间，如 04:30（不填按早中晚夜给默认时间） */
+        time: z.string().regex(/^\d{1,2}:\d{2}$/).optional(),
         /** 这个时刻场景里的道具 */
         emoji,
         options: z.array(Option).min(2).max(3),

@@ -82,9 +82,12 @@ export function Day({ round }: { round: DayRound }) {
     <div className="flex h-full flex-col">
       {/* 顶部：数字时钟 + 一天的进度（不用读字） */}
       <div className="mb-2 flex flex-col items-center">
-        <motion.div key={m.at} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex items-center gap-2 rounded-full bg-slate-800 px-4 py-1 font-black tabular-nums text-white shadow">
+        <div className="mb-1 flex items-center gap-1.5 text-lg font-black text-slate-700">
+          <Emoji e={round.emoji} size={24} /> {round.title}
+        </div>
+        <motion.div key={m.id} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex items-center gap-2 rounded-full bg-slate-800 px-4 py-1 font-black tabular-nums text-white shadow">
           <Emoji e={TIME_ICON[m.at]} size={22} />
-          <span className="text-xl">{CLOCK[m.at]}</span>
+          <span className="text-xl">{m.time ?? CLOCK[m.at]}</span>
         </motion.div>
         <div className="mt-1.5 flex gap-1.5">
           {round.moments.map((x, i) => (
@@ -95,10 +98,15 @@ export function Day({ round }: { round: DayRound }) {
 
       <div ref={stage} className="relative flex-1 rounded-[28px] border-2 border-b-[6px] border-slate-300" style={{ overflow: 'clip' }}>
         <Sky at={m.at} />
-        <DayLife at={m.at} />
+        {round.scene === 'road' ? <RoadLife at={m.at} /> : <DayLife at={m.at} />}
         {/* 场景道具 + 小人：站在小路上，带影子 */}
         <div className="absolute inset-x-0 bottom-[10%] flex items-end justify-center gap-5">
           <motion.div ref={meRef} key={m.id} initial={{ x: -90, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.9 }} className="relative" style={{ filter: 'drop-shadow(4px 8px 4px rgba(0,0,0,.35))' }}>
+            {round.scene === 'road' && (
+              <span className="absolute -left-[88px] bottom-0" style={{ transform: 'scaleX(-1)' }}>
+                <Emoji e="🚙" size={84} />
+              </span>
+            )}
             <Character id="me" size={96} act={act} facing="right" mood={busy ? 'happy' : 'neutral'} />
             {/* 选中的那个冒成头顶的想法泡泡 */}
             <AnimatePresence>
@@ -154,4 +162,49 @@ export function Day({ round }: { round: DayRound }) {
 }
 
 const CLOCK = { morning: '07:30', noon: '12:30', evening: '18:30', night: '22:00' } as const;
+
+/**
+ * 路上：远山、高速路、一长串堵着的车（走走停停，傍晚和夜里亮刹车灯）。
+ * 用在「回家过年那天」这种真正难熬的一天，而不是平常的通勤。
+ */
+function RoadLife({ at }: { at: DayRound['moments'][number]['at'] }) {
+  const dark = at === 'evening' || at === 'night';
+  const cars = ['🚗', '🚙', '🚐', '🚕', '🚗', '🚚', '🚙', '🚗'];
+  return (
+    <div className="pointer-events-none absolute inset-0">
+      {/* 远山 */}
+      <svg className="absolute inset-x-0 top-[34%] h-[30%] w-full" viewBox="0 0 400 100" preserveAspectRatio="none">
+        <path d="M0 70 L60 30 L110 60 L170 20 L240 62 L300 28 L360 58 L400 40 L400 100 L0 100 Z" fill={dark ? '#2B3A55' : '#8DB7D8'} opacity={0.9} />
+        <path d="M0 85 L80 55 L150 80 L220 50 L300 82 L370 60 L400 70 L400 100 L0 100 Z" fill={dark ? '#24324A' : '#6FA48A'} />
+      </svg>
+      {/* 高速路面 */}
+      <div className="absolute inset-x-0 top-[58%] h-[30%]" style={{ background: dark ? '#2F3640' : '#5B6470' }}>
+        <div className="absolute inset-x-0 top-0 h-1.5 bg-slate-300" />
+        <div className="absolute inset-x-0 bottom-0 h-1.5 bg-slate-300" />
+        <motion.div
+          className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2"
+          style={{ backgroundImage: 'repeating-linear-gradient(90deg,#F8FAFC 0 22px,transparent 22px 44px)' }}
+          animate={{ backgroundPositionX: ['0px', '-44px'] }}
+          transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
+        />
+      </div>
+      {/* 堵成一串的车：一点一点往前挪 */}
+      <div className="absolute inset-x-0 top-[58%] flex h-[15%] items-end gap-1 overflow-hidden px-1">
+        {cars.map((c, i) => (
+          <motion.span
+            key={i}
+            className="relative shrink-0"
+            animate={{ x: [0, -6, -6, 0] }}
+            transition={{ repeat: Infinity, duration: 3.2, times: [0, 0.2, 0.8, 1], delay: i * 0.25 }}
+          >
+            <Emoji e={c} size={34} />
+            {dark && <span className="absolute bottom-2 right-0 h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_8px_3px_rgba(239,68,68,.8)]" />}
+          </motion.span>
+        ))}
+      </div>
+      {/* 近处路肩 */}
+      <div className="absolute inset-x-0 bottom-0 h-[12%]" style={{ background: dark ? '#3B4A3A' : '#8BC06A' }} />
+    </div>
+  );
+}
 const RING = ['#f59e0b', '#38bdf8', '#f472b6'];

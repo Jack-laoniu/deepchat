@@ -157,9 +157,13 @@ export function Dialogue({
   const npcSpeaker = lastSpeaker && lastSpeaker !== 'me' && lastSpeaker !== 'narrator' ? lastSpeaker : null;
   const mood: Mood = last?.kind === 'line' && last.mood ? last.mood : waitingAsk ? 'thinking' : 'neutral';
 
-  // 新台词：朗读，嘴巴跟着动，滚动到底
+  // 新台词：朗读，嘴巴跟着动，滚动到底。
+  // 同一句只念一次：念到最后一句后 shown 还会再加（点「继续」/答题），但最后一句没变，不能再念一遍
+  const spoken = useRef<string | null>(null);
   useEffect(() => {
     scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: 'smooth' });
+    if (last && spoken.current === last.key) return;
+    spoken.current = last?.key ?? null;
     if (!last || !npcSpeaker) {
       setTalking(false); // 轮到「我」或旁白：上一句的嘴型别卡住（聊天模式要等它结束才出下一句）
       return;

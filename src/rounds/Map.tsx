@@ -9,9 +9,9 @@ import type { Gift, MapRound } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
 import { Btn } from '../ui/kit';
 import { HandHint } from '../ui/Hint';
-import { canTalk, COLS, findPath, key, layoutMap, ROWS, type Cell, type Placed } from './adventure/layout';
+import { canTalk, COLS, findPath, key, layoutMap, type Cell, type Placed } from './adventure/layout';
 import { PROP_SIZE, PropArt } from './adventure/props';
-import { Dialogue, useCast } from './Talk';
+import { Dialogue } from './Talk';
 
 /**
  * 地图关（借鉴多邻国 Adventures）：一块立体的小场地，从斜上方看下去。
@@ -65,7 +65,7 @@ const THEMES: Record<MapRound['scene'], Theme> = {
  * 立在场地上的东西（道具、人）：底边贴着地面，竖起来朝向镜头。
  * top 是头顶上方的空间（放招牌、气泡）——3D 里超出盒子的部分会被后面的东西挡住，所以要算进盒子里。
  */
-function Stand({ x, y, w, h, z = 0, top = 0, above, children, onClick, data }: { x: number; y: number; w: number; h: number; z?: number; top?: number; above?: ReactNode; children: ReactNode; onClick?: () => void; data?: string }) {
+function Stand({ x, y, w, h, z = 0, top = 0, above, align = 'center', children, onClick, data }: { x: number; y: number; w: number; h: number; z?: number; top?: number; above?: ReactNode; align?: 'start' | 'center' | 'end'; children: ReactNode; onClick?: () => void; data?: string }) {
   return (
     <div
       data-npc={data}
@@ -73,7 +73,11 @@ function Stand({ x, y, w, h, z = 0, top = 0, above, children, onClick, data }: {
       className={`absolute ${onClick ? 'cursor-pointer' : 'pointer-events-none'}`}
       style={{ left: x, top: y - h - top, width: w, height: h + top, transformOrigin: '50% 100%', transform: `translateZ(${z}px) rotateX(${-TILT}deg)` }}
     >
-      {above && <div className="absolute inset-x-0 top-0 flex items-end justify-center" style={{ height: top }}>{above}</div>}
+      {above && (
+        <div className={`absolute inset-x-0 top-0 flex items-end px-1 ${align === 'start' ? 'justify-start' : align === 'end' ? 'justify-end' : 'justify-center'}`} style={{ height: top }}>
+          {above}
+        </div>
+      )}
       <div className="absolute inset-x-0 bottom-0" style={{ height: h }}>
         {children}
       </div>
@@ -123,7 +127,6 @@ type Flying = { id: string; emoji: string; label: string; delta: number; from: {
 
 export function MapQuest({ round }: { round: MapRound }) {
   const g = useGame();
-  const who = useCast();
   const layout = useMemo(() => layoutMap(round), [round]);
   const theme = THEMES[round.scene] ?? THEMES.street;
   const [done, setDone] = useState<Record<string, Replies>>({});
@@ -154,12 +157,22 @@ export function MapQuest({ round }: { round: MapRound }) {
     return () => ro.disconnect();
   }, []);
 
-  // 格子大小：宽度放得下 7 格 + 两边围栏，高度放得下倒下去的场地 + 后排高高的道具
-  const T = Math.max(24, Math.min(size.w / (COLS + 1.1), size.h / (ROWS * Math.cos((TILT * Math.PI) / 180) + 2.4)));
+  // 格子按宽度撑满（人物要大，看得清表情）；场地比屏幕高时，镜头跟着人上下走
+  const ROWS = layout.rows;
+  const cos = Math.cos((TILT * Math.PI) / 180);
+  const T = Math.max(30, Math.min(size.w / (COLS + 0.7), size.h / (5.2 * cos + 2.2)));
   const BW = COLS * T;
   const BH = ROWS * T;
   const boardLeft = (size.w - BW) / 2;
-  const boardTop = size.h - BH - T * 0.35;
+  // 场地底边贴住画框底部时的位置（最低），和场地顶部（连后墙）刚好露出时的位置（最高）
+  const bottomTop = size.h - BH - T * 0.3;
+  const topTop = T * 1.9 - BH * (1 - cos);
+  const fits = bottomTop >= topTop;
+  const camTop = useTransform(my, (r) => {
+    if (fits) return bottomTop;
+    const want = size.h * 0.6 - BH + (BH - (r + 0.9) * T) * cos;
+    return Math.min(topTop, Math.max(bottomTop, want));
+  });
 
   const flags = useMemo(() => {
     let f = g.played!.flags;
@@ -172,7 +185,7 @@ export function MapQuest({ round }: { round: MapRound }) {
   /** 沿格子一步一步走过去 */
   const walk = async (to: Cell, then?: () => void) => {
     if (open) return;
-    const path = findPath(me, to, layout.blocked);
+    const path = findPath(me, to, layout.blocked, ROWS);
     if (!path) return;
     const id = ++walkId.current;
     setMoved(true);
@@ -252,21 +265,14 @@ export function MapQuest({ round }: { round: MapRound }) {
   };
 
   const saved = bag.reduce((s, b) => s + b.delta, 0);
-  const charW = T * 0.92;
+  const charW = T * 1.2;
   const charH = charW * (200 / 120);
 
   return (
     <div className="flex h-full flex-col">
-      <div className="mb-2 flex items-center gap-2">
-        <Emoji e={round.emoji} size={34} loop />
-        <h2 className="text-2xl font-black text-slate-700">{round.title}</h2>
-      </div>
-      <div className="mb-2 flex flex-wrap gap-1.5">
-        {round.spots.map((s) => (
-          <span key={s.id} className={`rounded-full px-2.5 py-1 text-xs font-black ${done[s.id] ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
-            {done[s.id] ? '✅' : '⬜'} {t('find', { name: who(s.who).as ?? who(s.who).name })}
-          </span>
-        ))}
+      <div className="mb-1.5 flex items-center gap-2">
+        <Emoji e={round.emoji} size={28} loop />
+        <h2 className="text-xl font-black text-slate-700">{round.title}</h2>
       </div>
 
       <div
@@ -275,9 +281,9 @@ export function MapQuest({ round }: { round: MapRound }) {
         style={{ background: theme.outside, borderColor: theme.edge, perspective: `${BH * 2.4}px`, perspectiveOrigin: '50% 10%' }}
       >
         {/* 场地：整块往后倒，里面的东西再竖起来 */}
-        <div
+        <motion.div
           className="absolute"
-          style={{ left: boardLeft, top: boardTop, width: BW, height: BH, transformStyle: 'preserve-3d', transformOrigin: '50% 100%', transform: `rotateX(${TILT}deg)` }}
+          style={{ left: boardLeft, top: camTop, width: BW, height: BH, transformStyle: 'preserve-3d', transformOrigin: '50% 100%', rotateX: TILT }}
         >
           {/* 围栏外的边（草坪 / 墙脚），再铺地砖 */}
           <div className="absolute" style={{ left: -T * 0.45, top: -T * 0.45, width: BW + T * 0.9, height: BH + T * 0.6, background: theme.edge, borderRadius: T * 0.3 }} />
@@ -376,6 +382,8 @@ export function MapQuest({ round }: { round: MapRound }) {
                   onClick={() => talkTo(p)}
                   // 招牌：一般挂在道具上方；人站在后面的（柜台、小摊、书桌）就钉在正面板上，免得挡住脸
                   above={p.behind ? undefined : sign}
+                  // 招牌挂在离 NPC 远的那一头，不被他头顶的气泡挡住
+                  align={p.w < 2 ? 'center' : p.npc.c === p.c ? 'end' : 'start'}
                 >
                   <PropArt kind={p.kind} />
                   {p.behind && <div className="absolute inset-x-0 bottom-[12%] flex justify-center">{sign}</div>}
@@ -431,7 +439,7 @@ export function MapQuest({ round }: { round: MapRound }) {
             <motion.div className="absolute bottom-[-6%] left-1/2 h-[12%] w-[95%] -translate-x-1/2 rounded-[50%] border-[3px] border-yellow-300" animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.4 }} />
             <Character id="me" size={charW} act={walking ? 'walk' : allDone ? 'jump' : 'idle'} facing={facing} back={back} mood={allDone ? 'happy' : 'neutral'} />
           </Walker>
-        </div>
+        </motion.div>
 
         {/* 背包：拿到的道具都在这，显示一共省了多少 */}
         <div className="absolute right-2 top-2 z-[260] flex items-center gap-1 rounded-2xl border-2 border-b-4 border-amber-500 bg-amber-50 px-2 py-1 shadow-lg" data-bag>

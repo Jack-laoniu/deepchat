@@ -2,12 +2,13 @@ import type { MapRound, MapSpot } from '../../lesson/schema';
 import { BEHIND, PROP_SIZE, type DecorKind, type PropKind } from './props';
 
 /**
- * 把地图关的几个地点摆进一块 7×9 的格子场地：每个地点一件大道具 + 一个 NPC + 一块「说话站位」，
+ * 把地图关的几个地点摆进一块 6×8 的格子场地：每个地点一件大道具 + 一个 NPC + 一块「说话站位」，
  * 再按场景撒点树、灯、盆栽，保证从入口走得到每一个 NPC。纯函数，方便测。
  */
 
-export const COLS = 7;
-export const ROWS = 9;
+export const COLS = 6;
+/** 行数随地点多少变：3 个以内 8 行，多一个地点加一行（场地比屏幕高时镜头跟着人走） */
+export const rowsFor = (spots: number) => 8 + Math.max(0, spots - 3);
 export type Cell = { c: number; r: number };
 export const key = (c: number, r: number) => `${c},${r}`;
 
@@ -30,6 +31,7 @@ export type Layout = {
   decor: { kind: DecorKind | 'shelf'; c: number; r: number }[];
   blocked: Set<string>;
   start: Cell;
+  rows: number;
 };
 
 const BY_EMOJI: [string, PropKind][] = [
@@ -69,12 +71,12 @@ function rng(seed: string) {
   };
 }
 
-const inside = (c: number, r: number) => c >= 0 && c < COLS && r >= 0 && r < ROWS;
+const inside = (c: number, r: number, rows: number) => c >= 0 && c < COLS && r >= 0 && r < rows;
 
 /** 宽度优先找路（上下左右走），返回不含起点的格子序列；走不到返回 null */
-export function findPath(from: Cell, to: Cell, blocked: Set<string>): Cell[] | null {
+export function findPath(from: Cell, to: Cell, blocked: Set<string>, rows: number): Cell[] | null {
   if (from.c === to.c && from.r === to.r) return [];
-  if (blocked.has(key(to.c, to.r)) || !inside(to.c, to.r)) return null;
+  if (blocked.has(key(to.c, to.r)) || !inside(to.c, to.r, rows)) return null;
   const prev = new Map<string, string>();
   const seen = new Set([key(from.c, from.r)]);
   const q: Cell[] = [from];
@@ -83,7 +85,7 @@ export function findPath(from: Cell, to: Cell, blocked: Set<string>): Cell[] | n
     for (const [dc, dr] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
       const n = { c: cur.c + dc, r: cur.r + dr };
       const k = key(n.c, n.r);
-      if (!inside(n.c, n.r) || blocked.has(k) || seen.has(k)) continue;
+      if (!inside(n.c, n.r, rows) || blocked.has(k) || seen.has(k)) continue;
       seen.add(k);
       prev.set(k, key(cur.c, cur.r));
       if (n.c === to.c && n.r === to.r) {
@@ -103,6 +105,7 @@ export function findPath(from: Cell, to: Cell, blocked: Set<string>): Cell[] | n
 }
 
 export function layoutMap(round: MapRound): Layout {
+  const ROWS = rowsFor(round.spots.length);
   const blocked = new Set<string>();
   const reserved = new Set<string>();
   const start = { c: Math.floor(COLS / 2), r: ROWS - 1 };
@@ -127,12 +130,12 @@ export function layoutMap(round: MapRound): Layout {
       // 道具四周留一圈（左右各一格）不和别的道具挤在一起
       const halo = [{ c: at.c - 1, r: at.r }, { c: at.c + w, r: at.r }];
       const need = [...foot, npc, talk];
-      if (!need.every((x) => inside(x.c, x.r) && !blocked.has(key(x.c, x.r)) && !reserved.has(key(x.c, x.r)))) continue;
+      if (!need.every((x) => inside(x.c, x.r, ROWS) && !blocked.has(key(x.c, x.r)) && !reserved.has(key(x.c, x.r)))) continue;
       if (halo.some((x) => blocked.has(key(x.c, x.r)))) continue;
       const cells = [...foot, npc].map((x) => key(x.c, x.r));
       cells.forEach((k) => blocked.add(k));
       // 放下以后，之前的 NPC 和这个 NPC 都还得走得到
-      if (![...placed.map((p) => p.talk), talk].every((t) => findPath(start, t, blocked))) {
+      if (![...placed.map((p) => p.talk), talk].every((t) => findPath(start, t, blocked, ROWS))) {
         cells.forEach((k) => blocked.delete(k));
         continue;
       }
@@ -153,7 +156,7 @@ export function layoutMap(round: MapRound): Layout {
     const edge = (x: Cell) => (x.c === 0 || x.c === COLS - 1 || x.r === 0 ? 0 : 1);
     return edge(a) - edge(b) || rand() - 0.5;
   });
-  const reachable = () => placed.every((p) => findPath(start, p.talk, blocked) !== null);
+  const reachable = () => placed.every((p) => findPath(start, p.talk, blocked, ROWS) !== null);
   for (const cell of free) {
     if (decor.length >= kinds.length) break;
     // 不挨着 NPC 的说话站位，免得挡路
@@ -167,7 +170,7 @@ export function layoutMap(round: MapRound): Layout {
     }
     decor.push({ kind: kinds[decor.length], c: cell.c, r: cell.r });
   }
-  return { placed, decor, blocked, start };
+  return { placed, decor, blocked, start, rows: ROWS };
 }
 
 /** 玩家站在这里能不能和这个 NPC 说话 */

@@ -19,7 +19,7 @@ describe('adventure map layout', () => {
       const L = layoutMap(m);
       expect(L.placed.length).toBe(m.spots.length);
       for (const p of L.placed) {
-        const path = findPath(L.start, p.talk, L.blocked);
+        const path = findPath(L.start, p.talk, L.blocked, L.rows);
         expect(path, `${m.id}/${p.spot.id}`).not.toBeNull();
         expect(canTalk(p, p.talk)).toBe(true);
       }
@@ -31,6 +31,6 @@ describe('adventure map layout', () => {
     const crowded = { ...base, spots: Array.from({ length: 5 }, (_, i) => ({ ...base.spots[0], id: `s${i}`, x: 10, y: 20 })) };
     const L = layoutMap(crowded);
     expect(L.placed.length).toBe(5);
-    for (const p of L.placed) expect(findPath(L.start, p.talk, L.blocked)).not.toBeNull();
+    for (const p of L.placed) expect(findPath(L.start, p.talk, L.blocked, L.rows)).not.toBeNull();
   });
 });

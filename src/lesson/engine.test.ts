@@ -302,8 +302,8 @@ describe('benchmark quest: first car', () => {
     { round: 'quarrel', talk: { use: { option: 'u_commute' } } },
     { round: 'ask', map: { wuye: { spot: { option: spot } }, dian: { pay: { option: 'p_full' } }, home: { who: { option: 'w_me' } } } },
     { round: 'budget', value: 200000 },
-    { round: 'routine', day: { m_am: 'm_am_car', m_noon: 'm_noon_stay', m_eve: 'm_eve_home', m_night: 'm_night_charge' } },
-    { round: 'park', place: { car: 'street', charger: 'office' } },
+    { round: 'spring', day: { d_go: 'd_go_early', d_sa: 'd_sa_eat', d_jam: 'd_jam_ac', d_home: 'd_home_yard' } },
+    { round: 'park', place: { car: spot === 's_own' ? 'own' : 'street', charger: 'office' } },
     ...extra,
   ];
 

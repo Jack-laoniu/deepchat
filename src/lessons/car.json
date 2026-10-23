@@ -705,92 +705,133 @@
     },
     {
       "type": "day",
-      "id": "routine",
-      "title": "你的一天",
-      "emoji": "🗓️",
+      "id": "spring",
+      "title": "回家过年那天",
+      "emoji": "🧧",
+      "scene": "road",
       "moments": [
         {
-          "id": "m_am",
-          "at": "morning",
-          "emoji": "⏰",
-          "options": [
-            {
-              "id": "m_am_car",
-              "emoji": "🚗",
-              "label": "开车",
-              "fact": "每天早上开车上班",
-              "set": [
-                "drive_commute"
-              ]
-            },
-            {
-              "id": "m_am_metro",
-              "emoji": "🚇",
-              "label": "地铁",
-              "fact": "早上坐地铁上班，车不常开"
-            }
-          ]
-        },
-        {
-          "id": "m_noon",
-          "at": "noon",
-          "emoji": "🏢",
-          "options": [
-            {
-              "id": "m_noon_stay",
-              "emoji": "💺",
-              "label": "在公司",
-              "fact": "白天车一直停着"
-            },
-            {
-              "id": "m_noon_run",
-              "emoji": "🚗",
-              "label": "出去跑",
-              "fact": "白天经常开车外出办事",
-              "set": [
-                "daytime_drive"
-              ]
-            }
-          ]
-        },
-        {
-          "id": "m_eve",
-          "at": "evening",
-          "emoji": "🌇",
-          "options": [
-            {
-              "id": "m_eve_kid",
-              "emoji": "🧒",
-              "label": "接娃",
-              "fact": "傍晚开车接孩子、买菜"
-            },
-            {
-              "id": "m_eve_home",
-              "emoji": "🏠",
-              "label": "回家",
-              "fact": "下班直接回家"
-            }
-          ]
-        },
-        {
-          "id": "m_night",
+          "id": "d_go",
           "at": "night",
-          "emoji": "🌙",
+          "time": "04:30",
+          "emoji": "🧳",
           "options": [
             {
-              "id": "m_night_charge",
-              "emoji": "🔌",
-              "label": "楼下充",
-              "fact": "晚上把车停在楼下能充电的地方"
+              "id": "d_go_early",
+              "emoji": "🌙",
+              "label": "凌晨走",
+              "fact": "春节回家愿意凌晨出发错峰，避开高速高峰",
+              "set": [
+                "early_bird"
+              ]
             },
             {
-              "id": "m_night_street",
-              "emoji": "🅿️",
-              "label": "停路边",
-              "fact": "晚上只能停路边",
+              "id": "d_go_late",
+              "emoji": "☀️",
+              "label": "睡醒再走",
+              "fact": "春节回家习惯早上睡醒再出发，正好赶上出城高峰",
               "set": [
-                "street_park"
+                "peak_trip"
               ]
+            },
+            {
+              "id": "d_go_train",
+              "emoji": "🚄",
+              "label": "坐高铁",
+              "fact": "春节回家宁可坐高铁，不开车",
+              "set": [
+                "train_home"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "d_sa",
+          "at": "noon",
+          "time": "12:30",
+          "emoji": "🛣️",
+          "options": [
+            {
+              "id": "d_sa_queue",
+              "emoji": "🔌",
+              "label": "排队充电",
+              "fact": "在服务区排队充电也能接受（春节常要排 1–2 小时）"
+            },
+            {
+              "id": "d_sa_fast",
+              "emoji": "⛽",
+              "label": "五分钟就走",
+              "fact": "在服务区只想五分钟补完能就走，不想排队",
+              "set": [
+                "hate_queue"
+              ]
+            },
+            {
+              "id": "d_sa_eat",
+              "emoji": "🍜",
+              "label": "边吃边等",
+              "fact": "可以趁吃饭充电，等 40 分钟左右"
+            }
+          ]
+        },
+        {
+          "id": "d_jam",
+          "at": "evening",
+          "time": "18:00",
+          "emoji": "🚦",
+          "options": [
+            {
+              "id": "d_jam_ac",
+              "emoji": "❄️",
+              "label": "开着暖风",
+              "fact": "堵车时一直开暖风/空调，电量掉得快"
+            },
+            {
+              "id": "d_jam_worry",
+              "emoji": "🔋",
+              "label": "盯着电量",
+              "fact": "堵车时会一直担心剩余电量够不够",
+              "set": [
+                "range_anxiety"
+              ]
+            },
+            {
+              "id": "d_jam_kid",
+              "emoji": "👶",
+              "label": "娃在哭",
+              "fact": "车上有老人孩子，堵车等不了",
+              "set": [
+                "family_full"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "d_home",
+          "at": "night",
+          "time": "22:30",
+          "emoji": "🏡",
+          "options": [
+            {
+              "id": "d_home_pile",
+              "emoji": "🔌",
+              "label": "村里有桩",
+              "fact": "老家附近有充电桩或能装桩"
+            },
+            {
+              "id": "d_home_none",
+              "emoji": "🚫",
+              "label": "没地方充",
+              "fact": "老家没有地方充电",
+              "set": [
+                "home_no_charger"
+              ]
+            },
+            {
+              "id": "d_home_yard",
+              "emoji": "🏠",
+              "label": "院子拉线",
+              "fact": "老家院子能停车，可以拉电线慢充"
             }
           ]
         }
@@ -932,7 +973,7 @@
         "label": "靠公共桩",
         "fact": "打算全靠公共充电桩",
         "crash_if": [
-          "drive_commute"
+          "commute"
         ],
         "crash": "天天通勤，排桩排到崩溃",
         "loss": 0,
@@ -1052,7 +1093,7 @@
           "if": {
             "any": [
               "no_spot",
-              "street_park"
+              "car_street"
             ]
           },
           "left": {
@@ -1159,26 +1200,41 @@
           }
         },
         {
-          "id": "c_snow",
+          "id": "c_home",
           "who": "wang",
-          "say": "下雪了，续航只剩一半。明天还开吗？",
-          "emoji": "❄️",
+          "say": "老家没桩，过年借邻居家插座充？",
+          "emoji": "🔌",
+          "if": {
+            "any": [
+              "home_no_charger"
+            ]
+          },
           "left": {
-            "id": "c_snow_go",
-            "emoji": "🚗",
-            "label": "照开",
-            "fact": "冬天续航打折也照常开",
+            "id": "c_home_borrow",
+            "emoji": "🙏",
+            "label": "借插座",
+            "fact": "回老家借邻居插座充电，一晚上只能充一点",
             "score": {
-              "safe": -15
+              "safe": -10,
+              "easy": -10
             }
           },
           "right": {
-            "id": "c_snow_metro",
-            "emoji": "🚇",
-            "label": "坐地铁",
-            "fact": "冬天续航不够就改坐地铁",
+            "id": "c_home_cable",
+            "emoji": "🔋",
+            "label": "买随车充",
+            "fact": "买一个便携随车充，回老家能用家用插座慢充",
+            "add": [
+              {
+                "id": "portable",
+                "emoji": "🔋",
+                "name": "便携随车充",
+                "price": 1500,
+                "spec": "家用插座慢充，回老家用（估算）"
+              }
+            ],
             "score": {
-              "easy": -10
+              "easy": 10
             }
           }
         }
@@ -1321,37 +1377,37 @@
     {
       "type": "boss",
       "id": "boss",
-      "q": "春节回老家！",
-      "emoji": "🧧",
-      "problem": "八百公里回老家",
+      "q": "寒潮来了！",
+      "emoji": "🥶",
+      "problem": "零下十五度",
       "options": [
         {
-          "id": "b_plan",
-          "emoji": "🗺️",
-          "label": "规划充电错峰",
-          "fact": "出发前规划好充电点、错峰出发",
-          "tip": "凌晨出发，服务区不排队",
+          "id": "b_preheat",
+          "emoji": "🔥",
+          "label": "预约预热",
+          "fact": "出门前插着电预约预热电池和座舱，减少冬季掉电",
+          "tip": "插着电预热，路上更耐跑",
           "score": {
             "safe": 10,
             "easy": -5
           }
         },
         {
-          "id": "b_train",
-          "emoji": "🚄",
-          "label": "长途坐高铁",
-          "fact": "过年长途坐高铁，车留在城市",
-          "price": 1200,
-          "tip": "一家人往返高铁约一千二",
+          "id": "b_metro",
+          "emoji": "🚇",
+          "label": "这几天坐地铁",
+          "fact": "寒潮几天改坐地铁，车放着",
+          "tip": "特别冷的几天让车歇歇",
           "score": {
-            "easy": 15
+            "easy": -10,
+            "safe": 10
           }
         },
         {
           "id": "b_hybrid",
           "emoji": "🔀",
           "label": "换插混/增程",
-          "fact": "选插电混动/增程，长途用油不排队",
+          "fact": "选插电混动/增程，冬天没电还能烧油",
           "set": [
             "hybrid"
           ],
@@ -1364,7 +1420,7 @@
               "spec": "短途用电、长途用油"
             }
           ],
-          "tip": "长短途都兼顾",
+          "tip": "冬天也不怕没电",
           "score": {
             "easy": 15,
             "safe": 5
@@ -1372,15 +1428,17 @@
         }
       ],
       "gamble": {
-        "label": "直接开",
-        "fact": "春节不做规划直接开电车回老家",
+        "emoji": "🎲",
+        "label": "照常开",
+        "fact": "寒潮天不做准备照常开电车上班",
         "crash_if": [
           "no_spot",
-          "longtrip"
+          "hate_queue",
+          "range_anxiety"
         ],
-        "crash": "服务区排了三小时，年夜饭没赶上",
+        "crash": "半路电量见底，叫了拖车",
         "loss": 0,
-        "ok": "一路顺利，充电没排队"
+        "ok": "电够用，暖风开着到公司"
       }
     }
   ],
