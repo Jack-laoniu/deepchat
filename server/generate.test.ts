@@ -295,4 +295,13 @@ describe('OpenAI-compatible provider', () => {
     expect(r.ok).toBe(true);
     expect(bodies[1].messages.at(-1).content).toContain('FLAT array');
   });
+
+  it('hands the remembered earlier quests to the model as data', async () => {
+    const bodies: any[] = [];
+    vi.stubGlobal('fetch', async (_u: string, init: RequestInit) => (bodies.push(JSON.parse(init.body as string)), sse(JSON.stringify(farm))));
+    await generateLesson(openAiChat({ baseUrl: 'https://mem.example/v1', apiKey: 'k', model: 'm' }), '怎么加油最省钱', 'zh', '', Infinity, '- 3 days ago: 「第一辆车」\n  choices: 最后，你想走哪条路？：插混/增程');
+    const user = bodies[0].messages.at(-1).content as string;
+    expect(user).toContain('USER MEMORY');
+    expect(user).toContain('插混/增程');
+  });
 });

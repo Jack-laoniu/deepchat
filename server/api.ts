@@ -10,7 +10,7 @@ import { chatFromConfig, discussNeed, generateLesson, reactLine, UpstreamError, 
 /**
  * 网页版的生成接口：
  *   GET  /api/config    → { generate, needCode, configError? }（服务器配了 API key 才能在线生成）
- *   POST /api/generate  { need, lang, context? } → { lesson } | { error }（context：再玩一轮时带上上一关的结果）
+ *   POST /api/generate  { need, lang, context?, memory? } → { lesson } | { error }（context：再玩一轮时带上上一关的结果；memory：用户以前闯过的需求）
  *   POST /api/react     { need, who, as, q, options, text, recent, lang } → { say, mood }（角色回应用户自己打的字）
  *   POST /api/discuss   { plan, history, message, lang } → { reply } | { error }（结算后继续聊需求）
  *   POST /api/clientlog { message, stack, title, round } → 204（某一回合在浏览器里渲染出错，记进日志）
@@ -134,7 +134,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
   if (!client) return void json(res, 503, { error: 'disabled' }), true;
 
-  let body: { need?: unknown; lang?: unknown; code?: unknown; context?: unknown; avoid?: unknown };
+  let body: { need?: unknown; lang?: unknown; code?: unknown; context?: unknown; avoid?: unknown; memory?: unknown };
   try {
     body = (await readBody(req, 32_000)) as typeof body;
   } catch {
@@ -147,7 +147,9 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
 
   const context = typeof body?.context === 'string' ? body.context.slice(0, MAX_PLAN_CHARS) : '';
   const avoid = Array.isArray(body?.avoid) ? body.avoid.filter((x): x is string => typeof x === 'string').slice(0, 60).map((x) => x.slice(0, 60)) : [];
-  const key = `${lang}:${need}:${context}`;
+  // 这台设备记住的、用户以前闯过的需求：交给模型，让角色记得
+  const memory = typeof body?.memory === 'string' ? body.memory.slice(0, 4000) : '';
+  const key = `${lang}:${need}:${context}:${memory}`;
   if (cache.has(key)) return void (console.error(`generate: cache hit (${lang}) ${need.slice(0, 40)}`), json(res, 200, { lesson: cache.get(key) })), true;
 
   const verdict = allow(clientIp(req), cfg.perIpPerHour, cfg.perDay);
@@ -157,14 +159,14 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   running++;
   const t0 = Date.now();
   const secs = () => `${Math.round((Date.now() - t0) / 1000)}s`;
-  console.error(`generate: start (${lang}${context ? ', follow-up' : ''}) ${need.slice(0, 40)}`);
+  console.error(`generate: start (${lang}${context ? ', follow-up' : ''}${memory ? ', with memory' : ''}) ${need.slice(0, 40)}`);
   // 用户关掉页面/断网：记下来，方便区分「接口慢」和「前端放弃了」
   req.socket.once('close', () => Date.now() - t0 > 1000 && !res.writableEnded && console.error(`generate: client went away after ${secs()}`));
   // 降级链：主模型 → 备用模型（配了的话）→ 兜底的通用关卡。任何一步都不让用户只看到一个报错
   const deadline = t0 + cfg.budgetMs;
   const attempt = async (start: StartChat, label: string): Promise<GenerateResult | { ok: false; error: string; detail: string }> => {
     try {
-      return await generateLesson(start, need, lang, context, deadline);
+      return await generateLesson(start, need, lang, context, deadline, memory);
     } catch (e) {
       const detail = e instanceof Anthropic.APIError || e instanceof UpstreamError ? `HTTP ${e.status}` : (e as Error)?.name ?? 'error';
       console.error(`generate: ${label} failed after ${secs()}:`, e instanceof Error ? e.message : e);
@@ -215,7 +217,7 @@ async function discuss(req: IncomingMessage, res: ServerResponse, cfg: ReturnTyp
   if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
   if (!cfg.client) return void json(res, 503, { error: 'disabled' }), true;
 
-  let body: { plan?: unknown; history?: unknown; message?: unknown; lang?: unknown; code?: unknown };
+  let body: { plan?: unknown; history?: unknown; message?: unknown; lang?: unknown; code?: unknown; memory?: unknown };
   try {
     body = (await readBody(req, 32_000)) as typeof body;
   } catch {
@@ -239,7 +241,8 @@ async function discuss(req: IncomingMessage, res: ServerResponse, cfg: ReturnTyp
 
   running++;
   try {
-    const reply = await discussNeed(cfg.client, { plan, history, message, lang });
+    const memory = typeof body?.memory === 'string' ? body.memory.slice(0, 4000) : '';
+    const reply = await discussNeed(cfg.client, { plan, history, message, lang, memory });
     if (!reply) return void json(res, 422, { error: 'refused' }), true;
     json(res, 200, { reply });
   } catch (e) {

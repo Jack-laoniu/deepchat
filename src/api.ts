@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getLang, t, type MsgKey } from './i18n';
 import { parseLesson, type Lesson } from './lesson/schema';
+import { memoryText } from './memory';
 
 export type ServerConfig = { generate: boolean; needCode: boolean; tts: boolean };
 
@@ -55,7 +56,8 @@ export async function requestLesson(
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ need, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode(), context: opts.context, avoid: opts.avoid }),
+      // memory：这台设备上记住的、用户以前闯过的需求（角色会记得）
+      body: JSON.stringify({ need, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode(), context: opts.context, avoid: opts.avoid, memory: memoryText(need) || undefined }),
       signal: ctrl.signal,
     });
     const data = (await res.json().catch(() => ({}))) as { lesson?: unknown; error?: string; detail?: string };

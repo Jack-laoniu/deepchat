@@ -5,6 +5,7 @@ import { celebrate } from '../fx/fx';
 import { jingle, playMusic } from '../fx/music';
 import { hostFollowUp, inHost } from '../host';
 import { superPrompt, yuan } from '../lesson/output';
+import { remember } from '../memory';
 import { filledOf, puzzleOf } from '../lesson/puzzle';
 import { PuzzleBoard } from '../ui/Puzzle';
 import { Emoji } from '../ui/Emoji';
@@ -56,6 +57,9 @@ export function Win() {
   );
   const guessTotal = l.guess.items.reduce((s, i) => s + i.price, 0);
   const saved = guessTotal - p.total;
+
+  // 记住这一局：下次生成新关卡时，角色会记得用户的情况
+  useEffect(() => remember(l, p), []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     celebrate();

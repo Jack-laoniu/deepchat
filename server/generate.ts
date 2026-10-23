@@ -3,7 +3,7 @@ import type { Config } from './config';
 import { dropNulls, lessonJsonSchema } from './jsonSchema';
 import { keep } from './store';
 import { charById, MOODS } from '../src/chars/library';
-import { GENERATOR_RULES } from '../src/lesson/prompt';
+import { GENERATOR_RULES, memoryBlock } from '../src/lesson/prompt';
 import { dedupeLesson, salvage, explainIssues, type Salvaged } from '../src/lesson/salvage';
 import { fixInnerQuotes, parseLesson, type Lesson } from '../src/lesson/schema';
 import dog from '../src/lessons/dog.json';
@@ -245,7 +245,7 @@ export function extractJson(text: string): string {
  * context：「再玩一轮」时带上上一关的结果（方案、用户原话、结算后聊的内容、用户觉得没说清的地方），
  * 让新关卡去挖还不清楚的部分，而不是把问过的再问一遍。
  */
-export async function generateLesson(startChat: StartChat, need: string, lang: 'zh' | 'en', context = '', deadline = Infinity): Promise<GenerateResult> {
+export async function generateLesson(startChat: StartChat, need: string, lang: 'zh' | 'en', context = '', deadline = Infinity, memory = ''): Promise<GenerateResult> {
   const example = lang === 'zh' ? farm : dog;
   // 生成整关要把结构想清楚：推理强度用 medium（配置里的 reasoningEffort 优先）
   const chat = startChat(GENERATOR_RULES, [], { json: { name: 'need_quest_level', schema: lessonJsonSchema(true) }, effort: 'medium' });
@@ -254,7 +254,8 @@ export async function generateLesson(startChat: StartChat, need: string, lang: '
       `Design a NEW level that digs into what is still unclear or was never covered (especially anything the user says is still unclear). ` +
       `Do not re-ask questions that are already answered; build on the settled facts, budget and items instead of contradicting them. Use different scenes and, where it fits, different characters.`
     : '';
-  let prompt = `Example level (a different need):\n${JSON.stringify(example)}\n\nWrite ALL text in ${LANG_NAME[lang]}. Keep the whole JSON under about 22000 characters (it gets cut off beyond that).\n\nThe user's need:\n${need}${followUp}`;
+  const remembered = memory ? `\n\n${memoryBlock(memory)}` : '';
+  let prompt = `Example level (a different need):\n${JSON.stringify(example)}\n\nWrite ALL text in ${LANG_NAME[lang]}. Keep the whole JSON under about 22000 characters (it gets cut off beyond that).\n\nThe user's need:\n${need}${followUp}${remembered}`;
 
   // 重修过的（删了卡片/回合）先留着，模型一直改不好时用它
   let fallback: Salvaged | null = null;
@@ -376,8 +377,8 @@ and end with ONE short question that digs deeper into their real situation (budg
 Keep every reply short (under 90 words, or under 150 Chinese characters), warm and plain. No markdown headings or tables; a short list is fine.
 Reply in the same language as the plan (zh = Simplified Chinese, en = English).`;
 
-export async function discussNeed(startChat: StartChat, input: { plan: string; history: Turn[]; message: string; lang: 'zh' | 'en' }): Promise<string | null> {
-  const chat = startChat(`${DISCUSS_RULES}\n\nLanguage: ${input.lang}\n\nThe plan:\n${input.plan}`, input.history);
+export async function discussNeed(startChat: StartChat, input: { plan: string; history: Turn[]; message: string; lang: 'zh' | 'en'; memory?: string }): Promise<string | null> {
+  const chat = startChat(`${DISCUSS_RULES}\n\nLanguage: ${input.lang}\n\nThe plan:\n${input.plan}${input.memory ? `\n\n${memoryBlock(input.memory)}` : ''}`, input.history);
   const reply = await chat.send(input.message);
   return 'refused' in reply ? null : reply.text.trim();
 }

@@ -8,6 +8,8 @@ import { speak, speakNow } from '../fx/voice';
 import { hostFollowUp, inHost } from '../host';
 import { getLang, t, type MsgKey } from '../i18n';
 import { copyText } from '../ui/copy';
+import { useGame } from '../game';
+import { memoryText } from '../memory';
 
 /**
  * 结算后「和小芳继续聊聊」：用户可以就方案继续追问，小芳回答并再追问一个细节，把需求挖得更深。
@@ -22,6 +24,7 @@ const ERR: Record<string, MsgKey> = { code: 'genCode', rate_ip: 'genRate', rate_
 
 export function Discuss({ plan, turns, setTurns }: { plan: string; turns: Turn[]; setTurns: (f: (t: Turn[]) => Turn[]) => void }) {
   const cfg = useCanGenerate();
+  const g = useGame();
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState('');
@@ -55,7 +58,7 @@ export function Discuss({ plan, turns, setTurns }: { plan: string; turns: Turn[]
       const r = await fetch('/api/discuss', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ plan, history, message: q, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode() }),
+        body: JSON.stringify({ plan, history, message: q, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode(), memory: memoryText(g.lesson?.need) || undefined }),
       });
       const d = (await r.json().catch(() => ({}))) as { reply?: string; error?: string };
       if (!d.reply) throw new Error(d.error ?? 'fail');

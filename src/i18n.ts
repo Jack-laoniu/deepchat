@@ -5,6 +5,13 @@ import type { Lang } from './chars/library';
  */
 
 const zh = {
+  welcomeBack: '欢迎回来！还记得上次的「{title}」{pick}～',
+  welcomePick: '，你选了「{x}」',
+  memTitle: '🧠 小芳记得你',
+  memNote: '只存在这台设备上；生成新关卡时，大家会记得你的情况，不再重复问',
+  memForget: '忘掉',
+  memOff: '不用记住我',
+  memOn: '记住我的情况',
   finaleTag: '终章',
   finaleRecap: '到这里，我们已经弄清楚了：',
   finaleMissing: '还差 {n} 块，最后一起补上 👇',
@@ -183,6 +190,13 @@ const zh = {
 type Dict = typeof zh;
 
 const en: Dict = {
+  welcomeBack: 'Welcome back! Remember “{title}”{pick}?',
+  welcomePick: ' — you picked “{x}”',
+  memTitle: '🧠 Fang remembers you',
+  memNote: 'Stored only on this device. New levels use it so nobody asks you the same thing twice.',
+  memForget: 'Forget',
+  memOff: 'Don’t remember me',
+  memOn: 'Remember me',
   finaleTag: 'FINALE',
   finaleRecap: "Here's what we've figured out so far:",
   finaleMissing: '{n} pieces to go — let’s finish them 👇',
@@ -360,6 +374,13 @@ const en: Dict = {
 };
 
 const ja: Dict = {
+  welcomeBack: 'おかえり！前回の「{title}」{pick}覚えてる？',
+  welcomePick: '（「{x}」を選んだね）',
+  memTitle: '🧠 ファンは覚えてる',
+  memNote: 'この端末だけに保存。新しいステージで同じことを聞き直さない',
+  memForget: '忘れる',
+  memOff: '覚えなくていい',
+  memOn: '覚えておいて',
   handoffTitle: '✅ ニーズがはっきりした',
   handoffNote: 'ここではニーズを掘り下げて整理するだけ。このリストをいつもの AI に渡せば、あなたに合ったプランを作ってくれる。',
   finaleTag: '最終章',
@@ -537,6 +558,13 @@ const ja: Dict = {
 };
 
 const es: Dict = {
+  welcomeBack: '¡Bienvenido de nuevo! ¿Recuerdas «{title}»{pick}?',
+  welcomePick: ' (elegiste «{x}»)',
+  memTitle: '🧠 Fang te recuerda',
+  memNote: 'Solo en este dispositivo. Los nuevos niveles lo usan para no repetir preguntas.',
+  memForget: 'Olvidar',
+  memOff: 'No me recuerdes',
+  memOn: 'Recuérdame',
   handoffTitle: '✅ Tu necesidad ya está clara',
   handoffNote: 'Aquí solo aclaramos lo que de verdad necesitas. Pasa esta lista a tu IA y te hará un plan a tu medida.',
   finaleTag: 'FINAL',

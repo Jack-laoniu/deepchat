@@ -11,6 +11,7 @@ import { copyText } from '../ui/copy';
 import { Generating } from './Generating';
 import { detectLang, t } from '../i18n';
 import { loadCode, requestLesson, saveCode, useCanGenerate } from '../api';
+import { forget, memories, memoryOn, memoryText, setMemoryOn, type QuestMemory } from '../memory';
 
 type GenState = { phase: 'idle' } | { phase: 'loading'; started: number } | { phase: 'error'; msg: string };
 
@@ -88,6 +89,8 @@ export function Home() {
         </Btn>
       </div>
 
+      <MemoryCard onPick={(m) => setNeed(m.need)} />
+
       {samples.length > 0 && <div className="mt-6 text-sm font-black text-slate-400">{t('orTry')}</div>}
       <div className="mt-2 space-y-3">
         {samples.map((l, i) => (
@@ -119,6 +122,57 @@ export function Home() {
   );
 }
 
+/** 「小芳记得你」：这台设备记住的以前闯过的需求，可以逐条忘掉，或者整个关掉 */
+function MemoryCard({ onPick }: { onPick: (m: QuestMemory) => void }) {
+  const [list, setList] = useState(memories);
+  const [on, setOn] = useState(memoryOn);
+  if (!on && !list.length)
+    return (
+      <button onClick={() => (setMemoryOn(true), setOn(true))} className="mt-4 text-left text-xs font-black text-slate-300">
+        🧠 {t('memOn')}
+      </button>
+    );
+  if (!list.length) return null;
+  return (
+    <div className="mt-5 rounded-3xl border-2 border-violet-200 bg-violet-50 p-3">
+      <div className="flex items-center justify-between">
+        <span className="text-base font-black text-violet-700">{t('memTitle')}</span>
+        <button
+          onClick={() => {
+            setMemoryOn(false);
+            setOn(false);
+            setList([]);
+          }}
+          className="text-xs font-black text-violet-400"
+        >
+          {t('memOff')}
+        </button>
+      </div>
+      <div className="mt-2 space-y-1.5">
+        {list.slice(0, 4).map((m) => (
+          <div key={m.key} className="flex items-center gap-2 rounded-2xl bg-white px-2.5 py-1.5">
+            <Emoji e={m.emoji} size={26} />
+            <button onClick={() => onPick(m)} className="min-w-0 flex-1 text-left">
+              <div className="truncate text-sm font-black text-slate-700">{m.title}</div>
+              <div className="truncate text-xs font-bold text-slate-400">{m.picks.length ? `→ ${m.picks.at(-1)!.split('：').slice(1).join('：')}` : m.need}</div>
+            </button>
+            <button
+              onClick={() => {
+                forget(m.key);
+                setList(memories());
+              }}
+              className="shrink-0 rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-black text-slate-400"
+            >
+              {t('memForget')}
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="mt-2 text-[11px] font-bold leading-snug text-violet-500/80">{t('memNote')}</div>
+    </div>
+  );
+}
+
 function Studio({ initialNeed, onClose, onLoad }: { initialNeed: string; onClose: () => void; onLoad: (l: Lesson) => void }) {
   const [need, setNeed] = useState(initialNeed);
   const [json, setJson] = useState('');
@@ -146,7 +200,7 @@ function Studio({ initialNeed, onClose, onLoad }: { initialNeed: string; onClose
           tone="blue"
           disabled={!need.trim()}
           onClick={async () => {
-            if (await copyText(generatorPrompt(need.trim(), detectLang()))) {
+            if (await copyText(generatorPrompt(need.trim(), detectLang(), memoryText(need.trim())))) {
               setCopied(true);
               setTimeout(() => setCopied(false), 1600);
             }
