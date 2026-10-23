@@ -49,10 +49,11 @@ describe('generateLesson', () => {
   });
 });
 
-/** 把文字切成 SSE 片段，模拟 OpenAI 兼容接口的流式回复 */
-function sse(text: string) {
+/** 把文字切成 SSE 片段，模拟 OpenAI 兼容接口的流式回复；finish 是最后一片的 finish_reason */
+function sse(text: string, finish = 'stop') {
   const chunks = text.match(/[\s\S]{1,50}/g) ?? [];
-  const body = chunks.map((c) => `data: ${JSON.stringify({ choices: [{ delta: { content: c } }] })}\n\n`).join('') + 'data: [DONE]\n\n';
+  const body =
+    chunks.map((c, i) => `data: ${JSON.stringify({ choices: [{ delta: { content: c }, finish_reason: i === chunks.length - 1 ? finish : null }] })}\n\n`).join('') + 'data: [DONE]\n\n';
   return new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream' } });
 }
 
@@ -89,8 +90,8 @@ describe('OpenAI-compatible provider', () => {
       return sse('hello');
     });
     const start = openAiChat({ baseUrl: 'https://api.example/v1', apiKey: 'k', model: 'gpt-x' });
-    expect(await start('sys').send('hi')).toEqual({ text: 'hello' });
-    expect(await start('sys').send('again')).toEqual({ text: 'hello' });
+    expect(await start('sys').send('hi')).toMatchObject({ text: 'hello' });
+    expect(await start('sys').send('again')).toMatchObject({ text: 'hello' });
     expect(bodies.map((b) => ('max_tokens' in b ? 'max_tokens' : 'max_completion_tokens'))).toEqual(['max_tokens', 'max_completion_tokens', 'max_completion_tokens']);
   });
 
@@ -225,5 +226,33 @@ describe('OpenAI-compatible provider', () => {
   it('extracts JSON from chatty replies', () => {
     expect(extractJson('Sure! Here it is:\n```json\n{"a":1}\n```\nEnjoy')).toBe('{"a":1}');
     expect(extractJson('blah {"a":{"b":2}} blah')).toBe('{"a":{"b":2}}');
+  });
+
+  it('asks for a shorter level when the reply is cut off at the output limit, instead of patching the stump', async () => {
+    const full = JSON.stringify(farm);
+    const bodies: any[] = [];
+    vi.stubGlobal('fetch', async (_u: string, init: RequestInit) => {
+      bodies.push(JSON.parse(init.body as string));
+      return bodies.length === 1 ? sse(full.slice(0, 9000), 'length') : sse(full);
+    });
+    const r = await generateLesson(openAiChat({ baseUrl: 'https://cut.example/v1', apiKey: 'k', model: 'm' }), '农场浇水', 'zh');
+    expect(r.ok).toBe(true);
+    expect(bodies).toHaveLength(2);
+    expect(bodies[1].messages.at(-1).content).toContain('SHORTER');
+  });
+
+  it('asks reasoning models to think briefly, and drops the parameter for relays that reject it', async () => {
+    const bodies: any[] = [];
+    vi.stubGlobal('fetch', async (_u: string, init: RequestInit) => {
+      const b = JSON.parse(init.body as string);
+      bodies.push(b);
+      if ('reasoning_effort' in b) return new Response(JSON.stringify({ error: { message: 'Unrecognized request argument supplied: reasoning_effort' } }), { status: 400 });
+      return sse(JSON.stringify(farm));
+    });
+    const r = await generateLesson(openAiChat({ baseUrl: 'https://think.example/v1', apiKey: 'k', model: 'gpt-5.4-mini' }), '农场浇水', 'zh');
+    expect(r.ok).toBe(true);
+    expect(bodies[0].reasoning_effort).toBe('low');
+    expect(bodies[0].max_tokens ?? bodies[0].max_completion_tokens).toBe(32000);
+    expect('reasoning_effort' in bodies[1]).toBe(false);
   });
 });

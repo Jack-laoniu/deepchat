@@ -1,5 +1,6 @@
 import type { ZodIssue } from 'zod';
 import { CHARACTER_IDS } from '../chars/library';
+import { genericLesson } from './generic';
 import { Lesson, migrateIds, textWidth, type Lesson as LessonT, type Round } from './schema';
 
 /**
@@ -145,6 +146,29 @@ function fix(root: Record<string, unknown>, issue: ZodIssue, fixes: string[]): {
     const r = value as { min: number; max: number };
     [r.min, r.max] = [Math.min(r.min, r.max), Math.max(r.min, r.max) + (r.min === r.max ? 1 : 0)];
     fixes.push(`修正了 ${path.join('.')} 的 min/max`);
+    return { ok: true, heavy: false };
+  }
+  // 没有 boss：把最后一个「修问题」回合升级成 boss（同样的结构），没有就补一个通用的
+  if (/至少需要一个 boss 回合/.test(msg) && Array.isArray(root.rounds)) {
+    const rounds = root.rounds as Record<string, unknown>[];
+    const lastFix = [...rounds].reverse().find((r) => r?.type === 'fix');
+    if (lastFix) {
+      rounds.splice(rounds.indexOf(lastFix), 1);
+      delete lastFix.if;
+      rounds.push({ ...lastFix, type: 'boss' });
+      fixes.push(`把回合 ${String(lastFix.id)} 改成了 boss`);
+    } else {
+      const lang = root.lang === 'en' ? 'en' : 'zh';
+      const boss = genericLesson(String(root.need ?? ''), lang).rounds.find((r) => r.type === 'boss')!;
+      rounds.push({ ...boss, id: rounds.some((r) => r?.id === 'boss') ? 'boss_end' : 'boss' });
+      fixes.push('补了一个通用 boss');
+    }
+    return { ok: true, heavy: false };
+  }
+  // AI 盲猜的清单不够 2 项 → 补一项「其他」，价格 0
+  if (issue.code === 'too_small' && issue.type === 'array' && path.join('.') === 'guess.items' && Array.isArray(value)) {
+    while (value.length < 2) value.push({ id: `other_${value.length}`, emoji: '📦', name: root.lang === 'en' ? 'Other' : '其他', price: 0 });
+    fixes.push('给 AI 盲猜的清单补了一项');
     return { ok: true, heavy: false };
   }
   // 其余（缺字段、类型不对、数量太少…）→ 删掉出问题的那个元素

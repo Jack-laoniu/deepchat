@@ -478,13 +478,15 @@ export function parseLesson(input: unknown): ParseResult {
     : { ok: false, errors: r.error.issues.map((i) => `${i.path.join('.') || '根'}：${i.message}`), data, issues: r.error.issues };
 }
 
-/** 旧角色 id 换成新阵容（旧关卡、服务器缓存、模型偶尔还用旧名字）；同一个人被映射两次时 cast 去重 */
+/** 旧角色 id 换成新阵容（旧关卡、服务器缓存、模型偶尔还用旧名字）；同一个人被映射两次时 cast 去重；顺手去掉值为 null 的字段 */
 export function migrateIds(data: unknown): unknown {
   const walk = (n: unknown): unknown => {
     if (Array.isArray(n)) return n.map(walk);
     if (!n || typeof n !== 'object') return n;
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(n as Record<string, unknown>)) {
+      // 结构化输出里没填的可选字段会是 null（如 "goal": null），当作没写
+      if (v === null) continue;
       if ((k === 'who' || k === 'with') && typeof v === 'string') out[k] = LEGACY_IDS[v] ?? v;
       else if (k === 'cast' && Array.isArray(v)) {
         const seen = new Set<string>();

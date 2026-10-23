@@ -21,7 +21,8 @@ export type GenerateResult = { ok: true; lesson: Lesson } | { ok: false; error: 
 
 /** 一次多轮对话：每次发一条用户消息，拿回模型的文字回复。历史由实现自己维护（只追加）。 */
 export interface Chat {
-  send(userText: string): Promise<{ text: string } | { refused: true }>;
+  /** truncated：输出写到上限被截断了（finish_reason = length） */
+  send(userText: string): Promise<{ text: string; truncated?: boolean } | { refused: true }>;
 }
 /** 之前的对话轮次（网页上的「继续聊需求」每次把历史带上来） */
 export type Turn = { role: 'user' | 'assistant'; content: string };
@@ -57,7 +58,7 @@ export function claudeChat(client: Anthropic, model = 'claude-opus-5-5', effort:
         // 保留完整回复（含思考块），下一轮原样带回
         messages.push({ role: 'assistant', content: msg.content });
         if (msg.stop_reason === 'refusal') return { refused: true };
-        return { text: msg.content.flatMap((b) => (b.type === 'text' ? [b.text] : [])).join('') };
+        return { text: msg.content.flatMap((b) => (b.type === 'text' ? [b.text] : [])).join(''), truncated: msg.stop_reason === 'max_tokens' };
       },
     };
   };
@@ -68,11 +69,14 @@ export function claudeChat(client: Anthropic, model = 'claude-opus-5-5', effort:
 type OaMessage = { role: 'system' | 'user' | 'assistant'; content: string };
 
 /** 读 SSE 流，拼出完整回复。用流式是为了不被长时间生成拖到 HTTP 超时 */
-async function readSse(res: Response): Promise<string> {
+type Reply = { text: string; finish?: string };
+
+async function readSse(res: Response): Promise<Reply> {
   const reader = res.body!.getReader();
   const decoder = new TextDecoder();
   let buf = '';
   let out = '';
+  let finish: string | undefined;
   for (;;) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -83,14 +87,15 @@ async function readSse(res: Response): Promise<string> {
       const data = line.trim().replace(/^data:\s*/, '');
       if (!data || data === '[DONE]' || !line.trim().startsWith('data:')) continue;
       try {
-        const j = JSON.parse(data) as { choices?: { delta?: { content?: string } }[] };
+        const j = JSON.parse(data) as { choices?: { delta?: { content?: string }; finish_reason?: string | null }[] };
         out += j.choices?.[0]?.delta?.content ?? '';
+        finish = j.choices?.[0]?.finish_reason ?? finish;
       } catch {
         /* 跳过不完整的片段 */
       }
     }
   }
-  return out;
+  return { text: out, finish };
 }
 
 const tokenParam = new Map<string, 'max_tokens' | 'max_completion_tokens' | 'none'>();
@@ -101,22 +106,26 @@ const DOWNGRADE: Record<Mode, Mode> = { schema: 'object', object: 'none', none: 
 const RANK: Record<Mode, number> = { none: 0, object: 1, schema: 2 };
 const rejectsParam = (status: number, body: string) =>
   status === 400 && /max_completion_tokens|max_tokens|max output|maximum/i.test(body) && /unsupported|not supported|invalid|unrecognized|use|too large|exceed|maximum/i.test(body);
+/** 推理模型（gpt-5 系列、o 系列）默认想很久，又把思考算进输出额度；生成关卡用 low 就够，快很多 */
+const noReasoning = new Set<string>();
+const isReasoningModel = (model: string) => /^(gpt-5|o[1-9])/i.test(model.replace(/^.*\//, ''));
+const rejectsReasoning = (status: number, body: string) => status === 400 && /reasoning/i.test(body);
 const rejectsFormat = (status: number, body: string) => (status === 400 || status === 422) && /response_format|json_schema|json_object|json mode|schema|strict/i.test(body);
 
 /** 读回复：正常是 SSE 流；有的中转不支持流式，直接回一个完整 JSON，也认 */
-async function readReply(res: Response): Promise<string> {
+async function readReply(res: Response): Promise<Reply> {
   if (/event-stream/.test(res.headers.get('content-type') ?? '')) return readSse(res);
   const raw = await res.text();
   try {
-    const j = JSON.parse(raw) as { choices?: { message?: { content?: string } }[] };
-    return j.choices?.[0]?.message?.content ?? '';
+    const j = JSON.parse(raw) as { choices?: { message?: { content?: string }; finish_reason?: string }[] };
+    return { text: j.choices?.[0]?.message?.content ?? '', finish: j.choices?.[0]?.finish_reason };
   } catch {
     // 没标 content-type 的 SSE
-    return raw.includes('data:') ? readSse(new Response(raw)) : raw;
+    return raw.includes('data:') ? readSse(new Response(raw)) : { text: raw };
   }
 }
 
-export function openAiChat(opts: { baseUrl: string; apiKey: string; model: string; maxTokens?: number; timeoutMs?: number }): StartChat {
+export function openAiChat(opts: { baseUrl: string; apiKey: string; model: string; maxTokens?: number; timeoutMs?: number; reasoningEffort?: string }): StartChat {
   const url = `${opts.baseUrl.replace(/\/+$/, '')}/chat/completions`;
   const key = `${url}|${opts.model}`;
   const timeout = opts.timeoutMs ?? DEFAULT_CALL_TIMEOUT;
@@ -132,7 +141,9 @@ export function openAiChat(opts: { baseUrl: string; apiKey: string; model: strin
         model: opts.model,
         messages,
         stream: true,
-        ...(param === 'none' ? {} : { [param]: opts.maxTokens ?? 16000 }),
+        // 32000：推理模型的「思考」也算在这个额度里，16000 时长关卡会写到一半被截断
+        ...(param === 'none' ? {} : { [param]: opts.maxTokens ?? 32000 }),
+        ...(isReasoningModel(opts.model) && !noReasoning.has(key) && opts.reasoningEffort !== 'off' ? { reasoning_effort: opts.reasoningEffort || 'low' } : {}),
         ...format(mode, json),
       }),
       signal,
@@ -162,6 +173,13 @@ export function openAiChat(opts: { baseUrl: string; apiKey: string; model: strin
               break;
             }
             const body = await res.text().catch(() => '');
+            // 不认 reasoning_effort：去掉再试
+            if (rejectsReasoning(res.status, body) && !noReasoning.has(key)) {
+              console.error(`${opts.model}: reasoning_effort not accepted, dropping it`);
+              noReasoning.add(key);
+              i--;
+              continue;
+            }
             // 不认这种输出约束：降一级，用同一个长度参数再试
             if (mode !== 'none' && rejectsFormat(res.status, body)) {
               console.error(`${opts.model}: response_format ${mode} not accepted, falling back to ${DOWNGRADE[mode]}`);
@@ -172,9 +190,9 @@ export function openAiChat(opts: { baseUrl: string; apiKey: string; model: strin
             }
             if (!rejectsParam(res.status, body) || i === tries.length - 1) throw new UpstreamError(res.status, body.slice(0, 300));
           }
-          const text = await readReply(res!);
+          const { text, finish } = await readReply(res!);
           messages.push({ role: 'assistant', content: text });
-          return { text };
+          return { text, truncated: finish === 'length' };
         } catch (e) {
           if (signal.aborted) throw new UpstreamError(408, `timeout after ${Math.round(timeout / 1000)}s`);
           throw e;
@@ -197,6 +215,20 @@ export class UpstreamError extends Error {
 
 const LANG_NAME = { zh: '简体中文 (lang "zh", currency CNY unless the need says otherwise)', en: 'English (lang "en", currency USD unless the need says otherwise)' };
 
+const parses = (t: string) => {
+  try {
+    JSON.parse(t);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+/** 整关太长被截断时的重写要求 */
+const SHORTER =
+  'Your JSON was cut off because it was too long. Write the WHOLE level again, complete, but SHORTER: 8–9 rounds, at most 8 beats per talk, ' +
+  '3 map spots with at most 6 beats each, 4 chain cards, 5 sort cards, short "fact" texts (one sentence). It must still end with the boss round. Output the complete JSON only.';
+
 /** 从回复里抠出 JSON：容忍代码块和前后多余文字 */
 export function extractJson(text: string): string {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -218,7 +250,7 @@ export async function generateLesson(startChat: StartChat, need: string, lang: '
       `Design a NEW level that digs into what is still unclear or was never covered (especially anything the user says is still unclear). ` +
       `Do not re-ask questions that are already answered; build on the settled facts, budget and items instead of contradicting them. Use different scenes and, where it fits, different characters.`
     : '';
-  let prompt = `Example level (a different need):\n${JSON.stringify(example)}\n\nWrite ALL text in ${LANG_NAME[lang]}.\n\nThe user's need:\n${need}${followUp}`;
+  let prompt = `Example level (a different need):\n${JSON.stringify(example)}\n\nWrite ALL text in ${LANG_NAME[lang]}. Keep the whole JSON under about 22000 characters (it gets cut off beyond that).\n\nThe user's need:\n${need}${followUp}`;
 
   // 重修过的（删了卡片/回合）先留着，模型一直改不好时用它
   let fallback: Salvaged | null = null;
@@ -232,6 +264,13 @@ export async function generateLesson(startChat: StartChat, need: string, lang: '
     }
     const reply = await chat.send(prompt);
     if ('refused' in reply) return fallback ? done(fallback.lesson) : { ok: false, error: 'refused' };
+    // 写到输出上限被截断：残缺的 JSON 修补出来也是缺胳膊少腿，直接让它整关写短一点重来
+    const cut = reply.truncated || (!/\}\s*(```\s*)?$/.test(reply.text.trim()) && !parses(extractJson(reply.text)));
+    if (cut) {
+      console.error(`generate attempt ${attempt + 1}: output cut off at ${reply.text.length} chars, asking for a shorter level`);
+      prompt = SHORTER;
+      continue;
+    }
     const json = extractJson(reply.text);
     // 结构化输出里可选字段会是 null，我们的校验不认 null
     let parsed: unknown = json;
@@ -332,7 +371,7 @@ export function chatFromConfig(c: Config): ModelChoice | null {
       return null;
     }
     const baseUrl = oa.baseUrl || 'https://api.openai.com/v1';
-    const make = (model: string) => openAiChat({ baseUrl, apiKey: oa.apiKey!, model, maxTokens: oa.maxTokens, timeoutMs: (oa.timeoutSec ?? 150) * 1000 });
+    const make = (model: string) => openAiChat({ baseUrl, apiKey: oa.apiKey!, model, maxTokens: oa.maxTokens, timeoutMs: (oa.timeoutSec ?? 150) * 1000, reasoningEffort: oa.reasoningEffort });
     return {
       start: make(oa.model),
       label: `openai-compatible ${baseUrl} ${oa.model}`,

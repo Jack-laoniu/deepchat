@@ -45,9 +45,6 @@ describe('salvage', () => {
     const s = salvage(l)!;
     expect(s.lesson.rounds.some((r) => r.type === 'chain')).toBe(false);
     expect(s.lesson.rounds.some((r) => r.type === 'boss')).toBe(true);
-    const noBoss = structuredClone(farm) as any;
-    noBoss.rounds = noBoss.rounds.filter((r: any) => r.type !== 'boss');
-    expect(salvage(noBoss)).toBeNull();
   });
 
   it('adds a library character that the model forgot to cast', () => {
@@ -100,5 +97,18 @@ describe('decisions recorded for follow-ups', () => {
     ]);
     expect(p.decisions).toContainEqual({ thing: '远程控制模块', choice: '不要' });
     expect(p.decisions).toContainEqual({ thing: '手机遥控', choice: '不要' });
+  });
+
+  it('turns the last fix into the boss when the model forgot the boss, and pads a short guess list', () => {
+    const l = structuredClone(farm) as any;
+    const bossIdx = l.rounds.findIndex((r: any) => r.type === 'boss');
+    l.rounds.splice(bossIdx, 1);
+    l.guess.items = l.guess.items.slice(0, 1);
+    l.goal = null;
+    const s = salvage(l)!;
+    expect(s).not.toBeNull();
+    expect(s.heavy).toBe(false);
+    expect(s.lesson.rounds.at(-1)!.type).toBe('boss');
+    expect(s.lesson.guess.items).toHaveLength(2);
   });
 });
