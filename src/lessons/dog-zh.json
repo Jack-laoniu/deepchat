@@ -8,7 +8,7 @@
   "currency": "CNY",
   "cast": [
     {
-      "id": "mei",
+      "id": "daliu",
       "as": "宠物店老板"
     },
     {
@@ -16,7 +16,7 @@
       "as": "遛狗奶奶"
     },
     {
-      "id": "xiaoting",
+      "id": "ajie",
       "as": "室友"
     },
     {
@@ -263,7 +263,7 @@
           "say": "周六早上，遛狗公园里。"
         },
         {
-          "who": "mei",
+          "who": "daliu",
           "say": "哈士奇！谁养都合适，信我。",
           "mood": "smug"
         },
@@ -370,7 +370,7 @@
           }
         },
         {
-          "who": "xiaoting",
+          "who": "ajie",
           "say": "一整天没人？它会嚎，邻居要投诉的。",
           "mood": "worried",
           "if": {
@@ -380,7 +380,7 @@
           }
         },
         {
-          "who": "mei",
+          "who": "daliu",
           "say": "那再买一只作伴！两只打折！",
           "mood": "smug",
           "if": {
@@ -553,18 +553,18 @@
           "id": "shop",
           "emoji": "🏪",
           "label": "宠物店",
-          "who": "mei",
+          "who": "daliu",
           "x": 24,
           "y": 26,
           "beats": [
             {
-              "who": "mei",
+              "who": "daliu",
               "say": "欢迎光临！今天幼犬打折！",
               "mood": "happy"
             },
             {
               "id": "source",
-              "who": "mei",
+              "who": "daliu",
               "q": "要幼犬，还是成年狗？",
               "options": [
                 {
@@ -577,7 +577,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "mei",
+                      "who": "daliu",
                       "say": "好眼光！",
                       "mood": "smug"
                     }
@@ -605,7 +605,7 @@
                   },
                   "reply": [
                     {
-                      "who": "mei",
+                      "who": "daliu",
                       "say": "呃……救助站，也、也挺好。",
                       "mood": "worried"
                     }
@@ -614,7 +614,7 @@
               ]
             },
             {
-              "who": "mei",
+              "who": "daliu",
               "say": "不过幼犬要训练哦，训练课另算！",
               "mood": "smug",
               "if": {
@@ -623,7 +623,8 @@
                 ]
               }
             }
-          ]
+          ],
+          "prop": "kiosk"
         },
         {
           "id": "vet",
@@ -698,24 +699,33 @@
                 }
               ]
             }
-          ]
+          ],
+          "prop": "building",
+          "gift": {
+            "id": "g_shelter",
+            "emoji": "🎫",
+            "label": "疫苗券",
+            "fact": "宠物医院给了社区疫苗补贴券：首年疫苗约省 1000 元（估算）",
+            "price": -1000,
+            "say": "社区补贴券，省一千"
+          }
         },
         {
           "id": "home",
           "emoji": "🛋️",
           "label": "家里",
-          "who": "xiaoting",
+          "who": "ajie",
           "x": 50,
           "y": 72,
           "beats": [
             {
-              "who": "xiaoting",
+              "who": "ajie",
               "say": "兄弟，你看过租房合同了吗？",
               "mood": "surprised"
             },
             {
               "id": "lease",
-              "who": "xiaoting",
+              "who": "ajie",
               "q": "合同允许养狗吗？",
               "options": [
                 {
@@ -731,7 +741,7 @@
                   "fact": "不确定合同是否允许养狗，领养前必须先问房东",
                   "reply": [
                     {
-                      "who": "xiaoting",
+                      "who": "ajie",
                       "say": "狗来之前先问清楚！",
                       "mood": "angry"
                     }
@@ -741,7 +751,7 @@
             },
             {
               "id": "travel",
-              "who": "xiaoting",
+              "who": "ajie",
               "q": "你出门时谁照顾狗？",
               "free": {
                 "placeholder": "比如：寄养在宠物店",
@@ -760,7 +770,7 @@
                     ],
                     "reply": [
                       {
-                        "who": "xiaoting",
+                        "who": "ajie",
                         "say": "我？！…行吧，你欠我顿火锅。",
                         "mood": "smug"
                       }
@@ -777,16 +787,18 @@
                 ],
                 "reply": [
                   {
-                    "who": "xiaoting",
+                    "who": "ajie",
                     "say": "行，只要不是我就好。",
                     "mood": "happy"
                   }
                 ]
               }
             }
-          ]
+          ],
+          "prop": "sofa"
         }
-      ]
+      ],
+      "scene": "street"
     },
     {
       "type": "slider",

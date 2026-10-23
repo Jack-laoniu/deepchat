@@ -8,7 +8,7 @@
   "currency": "USD",
   "cast": [
     {
-      "id": "mei",
+      "id": "daliu",
       "as": "Pet shop owner"
     },
     {
@@ -16,7 +16,7 @@
       "as": "Grandma"
     },
     {
-      "id": "xiaoting",
+      "id": "ajie",
       "as": "Roommate"
     },
     {
@@ -263,7 +263,7 @@
           "say": "Saturday morning at the dog park."
         },
         {
-          "who": "mei",
+          "who": "daliu",
           "say": "A husky! Perfect for anyone, trust me.",
           "mood": "smug"
         },
@@ -370,7 +370,7 @@
           }
         },
         {
-          "who": "xiaoting",
+          "who": "ajie",
           "say": "Alone all day? It'll howl and the neighbors will hate us.",
           "mood": "worried",
           "if": {
@@ -380,7 +380,7 @@
           }
         },
         {
-          "who": "mei",
+          "who": "daliu",
           "say": "Then just buy a second dog! Two for one!",
           "mood": "smug",
           "if": {
@@ -630,7 +630,7 @@
       "cards": [
         {
           "id": "c_rain",
-          "who": "xiaoting",
+          "who": "ajie",
           "say": "It's pouring and the puppy needs a walk. You're on a call.",
           "emoji": "🌧️",
           "left": {
@@ -708,7 +708,7 @@
         },
         {
           "id": "c_trip",
-          "who": "mei",
+          "who": "daliu",
           "say": "Weekend trip with friends! Boarding is $80 a night.",
           "emoji": "🏕️",
           "left": {
@@ -744,18 +744,18 @@
           "id": "shop",
           "emoji": "🏪",
           "label": "Pet shop",
-          "who": "mei",
+          "who": "daliu",
           "x": 24,
           "y": 26,
           "beats": [
             {
-              "who": "mei",
+              "who": "daliu",
               "say": "Welcome! Puppies on sale today!",
               "mood": "happy"
             },
             {
               "id": "source",
-              "who": "mei",
+              "who": "daliu",
               "q": "Puppy, or an older dog?",
               "options": [
                 {
@@ -768,7 +768,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "mei",
+                      "who": "daliu",
                       "say": "Excellent choice!",
                       "mood": "smug"
                     }
@@ -796,7 +796,7 @@
                   },
                   "reply": [
                     {
-                      "who": "mei",
+                      "who": "daliu",
                       "say": "Uh… shelters are, um, fine too.",
                       "mood": "worried"
                     }
@@ -805,7 +805,7 @@
               ]
             },
             {
-              "who": "mei",
+              "who": "daliu",
               "say": "Puppies need training though. Classes are extra!",
               "mood": "smug",
               "if": {
@@ -814,7 +814,8 @@
                 ]
               }
             }
-          ]
+          ],
+          "prop": "kiosk"
         },
         {
           "id": "vet",
@@ -889,24 +890,33 @@
                 }
               ]
             }
-          ]
+          ],
+          "prop": "building",
+          "gift": {
+            "id": "g_shelter",
+            "emoji": "🎫",
+            "label": "Vet voucher",
+            "fact": "The vet gives a city vaccine voucher: first-year vaccines about $150 cheaper (estimate)",
+            "price": -150,
+            "say": "City voucher, saves you $150"
+          }
         },
         {
           "id": "home",
           "emoji": "🛋️",
           "label": "Home",
-          "who": "xiaoting",
+          "who": "ajie",
           "x": 50,
           "y": 72,
           "beats": [
             {
-              "who": "xiaoting",
+              "who": "ajie",
               "say": "Dude, did you even check the lease?",
               "mood": "surprised"
             },
             {
               "id": "lease",
-              "who": "xiaoting",
+              "who": "ajie",
               "q": "Does our lease allow dogs?",
               "options": [
                 {
@@ -922,7 +932,7 @@
                   "fact": "Unknown whether the lease allows dogs — must check with landlord before adopting",
                   "reply": [
                     {
-                      "who": "xiaoting",
+                      "who": "ajie",
                       "say": "Check BEFORE the dog shows up.",
                       "mood": "angry"
                     }
@@ -932,7 +942,7 @@
             },
             {
               "id": "travel",
-              "who": "xiaoting",
+              "who": "ajie",
               "q": "Who takes the dog when you travel?",
               "free": {
                 "placeholder": "e.g. a pet hotel",
@@ -951,7 +961,7 @@
                     ],
                     "reply": [
                       {
-                        "who": "xiaoting",
+                        "who": "ajie",
                         "say": "Me?! …Fine. You owe me pizza.",
                         "mood": "smug"
                       }
@@ -968,16 +978,18 @@
                 ],
                 "reply": [
                   {
-                    "who": "xiaoting",
+                    "who": "ajie",
                     "say": "Okay, as long as it's not me.",
                     "mood": "happy"
                   }
                 ]
               }
             }
-          ]
+          ],
+          "prop": "sofa"
         }
-      ]
+      ],
+      "scene": "street"
     },
     {
       "type": "place",

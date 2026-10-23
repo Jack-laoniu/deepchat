@@ -11,8 +11,8 @@
       "id": "wang"
     },
     {
-      "id": "ayi",
-      "as": "农资店老板娘"
+      "id": "daliu",
+      "as": "农资店老板"
     },
     {
       "id": "mei",
@@ -265,7 +265,7 @@
           "mood": "smug"
         },
         {
-          "who": "ayi",
+          "who": "daliu",
           "say": "那套是我卖的，质量杠杠的！",
           "mood": "happy"
         },
@@ -325,7 +325,7 @@
               ],
               "reply": [
                 {
-                  "who": "ayi",
+                  "who": "daliu",
                   "say": "有起伏就按坡地算，稳妥。"
                 }
               ]
@@ -333,7 +333,7 @@
           ]
         },
         {
-          "who": "ayi",
+          "who": "daliu",
           "say": "后来我还给他加了过滤器，你猜为啥？",
           "mood": "smug"
         },
@@ -344,7 +344,7 @@
         },
         {
           "id": "water",
-          "who": "ayi",
+          "who": "daliu",
           "q": "你家浇地用的什么水？",
           "options": [
             {
@@ -363,7 +363,7 @@
               },
               "reply": [
                 {
-                  "who": "ayi",
+                  "who": "daliu",
                   "say": "自来水不用水泵，省一笔！"
                 }
               ]
@@ -419,7 +419,7 @@
                 "fact": "水源可能含泥沙杂质",
                 "reply": [
                   {
-                    "who": "ayi",
+                    "who": "daliu",
                     "say": "这种水得过滤，记下了。"
                   }
                 ]
@@ -448,7 +448,7 @@
           "mood": "thinking"
         },
         {
-          "who": "ayi",
+          "who": "daliu",
           "say": "嘿！我可是实在人！",
           "mood": "surprised"
         }
@@ -797,7 +797,7 @@
         },
         {
           "id": "c_clog",
-          "who": "ayi",
+          "who": "daliu",
           "say": "喷头堵了一排，换新的还是自己通？",
           "emoji": "🔧",
           "left": {
@@ -884,17 +884,17 @@
           "id": "shop",
           "emoji": "🏪",
           "label": "农资店",
-          "who": "ayi",
+          "who": "daliu",
           "x": 24,
           "y": 26,
           "beats": [
             {
-              "who": "ayi",
+              "who": "daliu",
               "say": "哟，又来了！今天想问点啥？"
             },
             {
               "id": "ctrl",
-              "who": "ayi",
+              "who": "daliu",
               "q": "想手机遥控，还是手动开关？",
               "if": {
                 "none": [
@@ -923,7 +923,7 @@
                   },
                   "reply": [
                     {
-                      "who": "ayi",
+                      "who": "daliu",
                       "say": "好嘞，给你配个智能控制器。"
                     }
                   ]
@@ -937,7 +937,7 @@
               ]
             },
             {
-              "who": "ayi",
+              "who": "daliu",
               "say": "你不是说人常不在家？手动可不行哦。",
               "if": {
                 "all": [
@@ -951,7 +951,7 @@
             },
             {
               "id": "who_runs",
-              "who": "ayi",
+              "who": "daliu",
               "q": "装好以后，平时谁来管？",
               "options": [
                 {
@@ -970,7 +970,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "ayi",
+                      "who": "daliu",
                       "say": "那得选按钮大、操作简单的。"
                     }
                   ]
@@ -983,7 +983,8 @@
                 }
               ]
             }
-          ]
+          ],
+          "prop": "kiosk"
         },
         {
           "id": "neighbor",
@@ -1096,7 +1097,24 @@
               "who": "wang",
               "say": "有啥不懂的，随时来问我。"
             }
-          ]
+          ],
+          "prop": "building",
+          "gift": {
+            "id": "g_oldpump",
+            "emoji": "🔧",
+            "label": "老王的旧水泵",
+            "fact": "老王家有一台闲置的二手水泵，便宜转让给用户（约 800 元，估算），代替新买的水泵",
+            "add": [
+              {
+                "id": "pump",
+                "emoji": "🔧",
+                "name": "二手水泵",
+                "price": 800,
+                "spec": "老王家闲置的，能用但没保修"
+              }
+            ],
+            "say": "我家旧泵闲着，便宜给你"
+          }
         },
         {
           "id": "home",
@@ -1174,9 +1192,11 @@
               "say": "行，钱的事一会儿咱俩算算。",
               "mood": "smug"
             }
-          ]
+          ],
+          "prop": "sofa"
         }
-      ]
+      ],
+      "scene": "park"
     },
     {
       "type": "place",

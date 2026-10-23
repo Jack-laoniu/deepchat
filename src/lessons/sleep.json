@@ -21,7 +21,7 @@
       "as": "晨练老王"
     },
     {
-      "id": "xiaobei",
+      "id": "ajie",
       "as": "同事"
     },
     {
@@ -247,12 +247,12 @@
           "mood": "worried"
         },
         {
-          "who": "xiaobei",
+          "who": "ajie",
           "say": "我上个月也说要六点起，周一到周三都做到了。",
           "mood": "thinking"
         },
         {
-          "who": "xiaobei",
+          "who": "ajie",
           "say": "周四加班到十一点，周五直接睡到九点，全盘崩了。",
           "mood": "worried"
         },
@@ -262,7 +262,7 @@
           "mood": "angry"
         },
         {
-          "who": "xiaobei",
+          "who": "ajie",
           "say": "后来我发现，不是起不来，是睡前那一小时管不住。",
           "mood": "thinking"
         },
@@ -297,7 +297,7 @@
               ],
               "reply": [
                 {
-                  "who": "xiaobei",
+                  "who": "ajie",
                   "say": "下一集自动播放，最要命。",
                   "mood": "worried"
                 }
@@ -313,7 +313,7 @@
               ],
               "reply": [
                 {
-                  "who": "xiaobei",
+                  "who": "ajie",
                   "say": "那得先跟工作划条线。",
                   "mood": "thinking"
                 }
@@ -357,7 +357,7 @@
                 "fact": "家里有孩子，睡前要陪孩子",
                 "reply": [
                   {
-                    "who": "xiaobei",
+                    "who": "ajie",
                     "say": "有娃的话，时间真不由自己。",
                     "mood": "worried"
                   }
@@ -376,7 +376,7 @@
                 "fact": "睡前常被工作占用",
                 "reply": [
                   {
-                    "who": "xiaobei",
+                    "who": "ajie",
                     "say": "先跟工作划条线吧。",
                     "mood": "thinking"
                   }
@@ -496,29 +496,38 @@
                 }
               ]
             }
-          ]
+          ],
+          "prop": "bench",
+          "gift": {
+            "id": "g_alarm",
+            "emoji": "⏰",
+            "label": "老王的闹钟法",
+            "fact": "按老王的办法：闹钟放门口、起床先拉窗帘见光，不再反复赖床，每天省下约 10 分钟",
+            "price": -10,
+            "say": "闹钟放门口，赖不了床"
+          }
         },
         {
           "id": "office",
           "emoji": "🏢",
           "label": "公司",
-          "who": "xiaobei",
+          "who": "ajie",
           "x": 76,
           "y": 28,
           "beats": [
             {
-              "who": "xiaobei",
+              "who": "ajie",
               "say": "我们组有人下午三点后不喝咖啡，说晚上睡得明显好。",
               "mood": "thinking"
             },
             {
-              "who": "xiaobei",
+              "who": "ajie",
               "say": "我试了一周，十一点半真的就困了。",
               "mood": "happy"
             },
             {
               "id": "start",
-              "who": "xiaobei",
+              "who": "ajie",
               "q": "你几点得到公司/出门？",
               "options": [
                 {
@@ -531,7 +540,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "xiaobei",
+                      "who": "ajie",
                       "say": "羡慕！那更要自己定规矩。",
                       "mood": "happy"
                     }
@@ -544,7 +553,7 @@
                   "fact": "每天九点左右到岗",
                   "reply": [
                     {
-                      "who": "xiaobei",
+                      "who": "ajie",
                       "say": "七点起就很从容了。",
                       "mood": "happy"
                     }
@@ -560,7 +569,7 @@
                   ],
                   "reply": [
                     {
-                      "who": "xiaobei",
+                      "who": "ajie",
                       "say": "那十一点前必须睡，没得商量。",
                       "mood": "worried"
                     }
@@ -568,7 +577,8 @@
                 }
               ]
             }
-          ]
+          ],
+          "prop": "desk"
         },
         {
           "id": "home",
@@ -640,9 +650,11 @@
                 }
               ]
             }
-          ]
+          ],
+          "prop": "sofa"
         }
-      ]
+      ],
+      "scene": "park"
     },
     {
       "type": "slider",
@@ -1024,7 +1036,7 @@
       "cards": [
         {
           "id": "c_dinner",
-          "who": "xiaobei",
+          "who": "ajie",
           "say": "周五部门聚餐，要续摊去唱歌，来不来？",
           "emoji": "🎤",
           "left": {
@@ -1141,7 +1153,7 @@
         },
         {
           "id": "c_work",
-          "who": "xiaobei",
+          "who": "ajie",
           "say": "老板十一点发消息：明早要方案。",
           "emoji": "💼",
           "left": {

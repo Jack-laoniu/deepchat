@@ -23,7 +23,7 @@ Each line may have "mood": ${MOODS.join(' | ')} — use them, it makes the chara
 
 ROUND TYPES
 - talk: style "story" (narrator + characters) or "chat" (with one character, field "with")
-- map: 2–4 spots (x, y from 0–100; keep y between 20 and 75), each spot has a character ("who") and a chat (beats)
+- map: a little 3D place the player walks around (like Duolingo Adventures). "scene": street | park | home | shop | office. 2–4 spots (x, y from 0–100; keep y between 20 and 75); each spot has a character ("who"), a chat (beats) and a big "prop" the character stands at: building | counter | car | sofa | bench | kiosk | desk | shelf | table | bed. Give at least one spot a "gift": something that character hands over after the chat that SAVES the user money (or goal units) — a coupon (negative "price"), an insider price (same item id, cheaper "add"), or advice that drops an unnecessary item ("remove"). Shape: an option plus optional "say" (≤ 28, what they say when handing it over) and optional "if" (only given when the user answered something smart, e.g. asked about a hidden fee).
 - pick: 2–4 option cards
 - swipe: yes / no
 - slider: drag a number; kind "budget" asks the budget cap; "{v}" in fact is the value

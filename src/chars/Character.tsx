@@ -1,6 +1,5 @@
-import { AnimatePresence, motion, type TargetAndTransition } from 'framer-motion';
+import { motion, type TargetAndTransition } from 'framer-motion';
 import { useEffect, useId, useState } from 'react';
-import { artFor, type Art, type Pose, type Rig } from './art';
 import { charById, MOODS, type Accessory, type Look, type Mood } from './library';
 
 /**
@@ -349,190 +348,6 @@ function Leg({ look, x, anim }: { look: Look; x: number; anim: TargetAndTransiti
   );
 }
 
-// ---------------- 手绘角色 ----------------
-
-/** 说话时在「当前表情」和「张嘴」两张图之间切，节奏比矢量的嘴慢一点，像手绘动画 */
-function useTalkFrame(talking: boolean) {
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    if (!talking) return setOpen(false);
-    let t: ReturnType<typeof setTimeout>;
-    const loop = () => {
-      t = setTimeout(() => {
-        setOpen((o) => !o);
-        loop();
-      }, 140 + Math.random() * 160);
-    };
-    loop();
-    return () => clearTimeout(t);
-  }, [talking]);
-  return open;
-}
-
-function poseOf(act: Act, mood: Mood, pose?: Pose): Pose {
-  if (pose) return pose;
-  if (act === 'walk') return 'walk';
-  if (act === 'wave') return 'greet';
-  if (act === 'party') return 'cheer';
-  if (mood === 'thinking') return 'think';
-  if (mood === 'worried' || mood === 'sad') return 'worry';
-  if (mood === 'angry') return 'angry';
-  return 'idle';
-}
-
-/** 说话时手势轮换（打招呼 → 指点 → 站好），像边说边比划 */
-const TALK_GESTURES: Pose[] = ['greet', 'idle', 'point', 'idle'];
-function useGesture(on: boolean, art: Art) {
-  const [i, setI] = useState(0);
-  useEffect(() => {
-    if (!on) return setI(0);
-    const t = setInterval(() => setI((n) => n + 1), 1300 + Math.random() * 500);
-    return () => clearInterval(t);
-  }, [on]);
-  if (!on) return null;
-  const list = TALK_GESTURES.filter((p) => p === 'idle' || art.has(p));
-  return list[i % list.length];
-}
-
-/** 每个姿势自己的小循环：挥手摇摆、思考晃头、欢呼蹦跳、担心发抖… */
-function loopOf(p: Pose, h: number, talking: boolean, mood: Mood): TargetAndTransition {
-  switch (p) {
-    case 'greet':
-      return { rotate: [0, 4, -2, 4, 0], transition: { repeat: Infinity, duration: 0.9 } };
-    case 'point':
-      return { rotate: [0, 3, 0], x: [0, 2, 0], transition: { repeat: Infinity, duration: 1.2 } };
-    case 'think':
-      return { rotate: [-2.5, 2.5, -2.5], transition: { repeat: Infinity, duration: 2.4, ease: 'easeInOut' } };
-    case 'cheer':
-      return { y: [0, -h * 0.1, 0, 0], scaleY: [1, 1.04, 0.93, 1], transition: { repeat: Infinity, duration: 0.75, times: [0, 0.4, 0.75, 1] } };
-    case 'worry':
-      return { x: [0, -1.5, 1.5, -1, 0], transition: { repeat: Infinity, duration: 0.5, repeatDelay: 0.8 } };
-    case 'angry':
-      return { x: [0, -2, 2, -2, 0], scaleY: [1, 1.03, 1], transition: { repeat: Infinity, duration: 0.35, repeatDelay: 0.6 } };
-    case 'sit':
-      return { scaleY: [1, 1.01, 1], transition: { repeat: Infinity, duration: 3 } };
-    default:
-      return talking
-        ? { rotate: [-1.5, 1.5, -1.5], y: [0, -1.5, 0], transition: { repeat: Infinity, duration: 0.9 } }
-        : mood === 'happy'
-          ? { y: [0, -h * 0.025, 0], transition: { repeat: Infinity, duration: 0.8 } }
-          : { scaleY: [1, 1.015, 1], rotate: [0, 0.6, 0], transition: { repeat: Infinity, duration: 2.8, ease: 'easeInOut' } };
-  }
-}
-
-/** 一张全身像拆成「上半身 + 左腿 + 右腿」三层，腿绕胯部交替摆，上半身随步子上下颠 */
-function Puppet({ src, rig, speed = 0.46 }: { src: string; rig: Rig; speed?: number }) {
-  const hip = rig.hip * 100;
-  const split = rig.split * 100;
-  const img = 'pointer-events-none absolute inset-0 h-full w-full select-none';
-  const swing = (dir: 1 | -1): TargetAndTransition => ({ rotate: [8 * dir, -8 * dir, 8 * dir], transition: { repeat: Infinity, duration: speed, ease: 'easeInOut' } });
-  return (
-    <span className="absolute inset-0 block">
-      <motion.img src={src} alt="" draggable={false} className={img} style={{ clipPath: `polygon(0 ${hip - 2}%, ${split}% ${hip - 2}%, ${split}% 100%, 0 100%)`, transformOrigin: `${split}% ${hip}%` }} animate={swing(1)} />
-      <motion.img src={src} alt="" draggable={false} className={img} style={{ clipPath: `polygon(${split}% ${hip - 2}%, 100% ${hip - 2}%, 100% 100%, ${split}% 100%)`, transformOrigin: `${split}% ${hip}%` }} animate={swing(-1)} />
-      <motion.img
-        src={src}
-        alt=""
-        draggable={false}
-        className={img}
-        style={{ clipPath: `polygon(0 0, 100% 0, 100% ${hip + 4}%, 0 ${hip + 4}%)`, transformOrigin: `${split}% ${hip}%` }}
-        animate={{ y: ['0%', '-2.2%', '0%'], rotate: [-1.5, 1.5, -1.5], transition: { repeat: Infinity, duration: speed / 2, ease: 'easeInOut' } }}
-      />
-    </span>
-  );
-}
-
-/** 头顶的表情气泡（RPG 里的 ❗💭💦） */
-function Emote({ e }: { e?: string }) {
-  return (
-    <AnimatePresence>
-      {e && (
-        <motion.span
-          key={e}
-          initial={{ opacity: 0, scale: 0.3, y: 6 }}
-          animate={{ opacity: 1, scale: [0.3, 1.2, 1], y: 0 }}
-          exit={{ opacity: 0, scale: 0.5 }}
-          transition={{ duration: 0.35 }}
-          className="absolute -top-[2%] left-[62%] z-10 flex h-8 w-8 items-center justify-center rounded-full rounded-bl-none border-2 border-slate-200 bg-white text-lg shadow-md"
-        >
-          {e}
-        </motion.span>
-      )}
-    </AnimatePresence>
-  );
-}
-
-function ArtCharacter({ art, name, size, mood, talking, act, facing, bust, pose, emote }: { art: Art; name: string; size: number; mood: Mood; talking: boolean; act: Act; facing: 'left' | 'right'; bust: boolean; pose?: Pose; emote?: string }) {
-  const open = useTalkFrame(talking);
-  const gesture = useGesture(talking && !bust && !pose && act === 'idle', art);
-  if (bust) {
-    const h = size * (108 / 96);
-    return (
-      <span className="relative block overflow-hidden rounded-[22%] bg-white ring-2 ring-white" style={{ width: size, height: h }} aria-label={name}>
-        {/* 两张都叠着放，只切换透明度：换表情不闪 */}
-        <img src={art.face(mood)} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover object-top" style={{ opacity: open ? 0 : 1 }} />
-        {talking && <img src={art.face('talk')} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover object-top" style={{ opacity: open ? 1 : 0 }} />}
-      </span>
-    );
-  }
-  const p = gesture ?? poseOf(act, mood, pose);
-  const h = size * (200 / 120);
-  const walking = p === 'walk';
-  // 全身像宽高比约 0.35；放进 0.6 的格子里，图按高度撑满、水平居中
-  return (
-    <span className="relative block" style={{ width: size, height: h }} aria-label={name}>
-      <motion.span
-        className="absolute bottom-[1%] left-1/2 h-[5%] w-[70%] -translate-x-1/2 rounded-[50%] bg-black/15"
-        animate={walking ? { scaleX: [1, 0.85, 1], transition: { repeat: Infinity, duration: 0.23 } } : p === 'cheer' ? { scaleX: [1, 0.6, 1, 1], transition: { repeat: Infinity, duration: 0.75, times: [0, 0.4, 0.75, 1] } } : { scaleX: 1 }}
-      />
-      {walking && <Dust facing={facing} />}
-      <span className="absolute bottom-[3%] left-1/2 block h-[97%] -translate-x-1/2" style={{ aspectRatio: String(art.rig.ratio) }}>
-        <AnimatePresence initial={false}>
-          <motion.span
-            key={walking ? 'walk' : p}
-            className="absolute inset-0 block"
-            style={{ originY: 1 }}
-            // 换动作：先压扁再弹起，像动画里的预备动作
-            initial={{ opacity: 0, scaleY: 0.9, scaleX: 1.06 }}
-            animate={{ opacity: 1, scaleY: 1, scaleX: 1, transition: { type: 'spring', stiffness: 500, damping: 14 } }}
-            exit={{ opacity: 0, transition: { duration: 0.12 } }}
-          >
-            <motion.span
-              className="absolute inset-0 block"
-              style={{ originY: 1 }}
-              animate={walking ? { rotate: facing === 'right' ? 3 : -3 } : loopOf(p, h, talking, mood)}
-            >
-              {walking ? (
-                <Puppet src={art.pose('idle')} rig={art.rig} />
-              ) : (
-                <img src={art.pose(p)} alt="" draggable={false} className="pointer-events-none absolute bottom-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2 select-none" />
-              )}
-            </motion.span>
-          </motion.span>
-        </AnimatePresence>
-      </span>
-      <Emote e={emote} />
-    </span>
-  );
-}
-
-/** 走路时脚后跟扬起的小土团 */
-function Dust({ facing }: { facing: 'left' | 'right' }) {
-  const back = facing === 'right' ? -1 : 1;
-  return (
-    <>
-      {[0, 1, 2].map((i) => (
-        <motion.span
-          key={i}
-          className="pointer-events-none absolute bottom-[2%] left-1/2 h-2 w-2 rounded-full bg-amber-100/80"
-          animate={{ x: [0, back * (10 + i * 4)], y: [0, -6 - i * 2], opacity: [0.9, 0], scale: [0.6, 1.4] }}
-          transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.2, ease: 'easeOut' }}
-        />
-      ))}
-    </>
-  );
-}
-
 // ---------------- 角色 ----------------
 
 export function Character({
@@ -544,9 +359,7 @@ export function Character({
   facing = 'right',
   bust = false,
   gaze = 0,
-  pose,
-  vector = false,
-  emote,
+  back = false,
 }: {
   id: string;
   /** 宽度（像素） */
@@ -559,20 +372,9 @@ export function Character({
   bust?: boolean;
   /** 眼睛往左(-)/右(+)看 */
   gaze?: number;
-  /** 手绘角色：直接指定全身姿势（不指定就按 act / mood 选） */
-  pose?: Pose;
-  /** 强制用矢量小人 */
-  vector?: boolean;
-  /** 头顶冒的表情气泡（只有手绘角色有） */
-  emote?: string;
+  /** 背影：往画面里面走时只看到后脑勺 */
+  back?: boolean;
 }) {
-  const def = charById(id);
-  const art = vector ? null : artFor(def?.id);
-  if (def && art) return <ArtCharacter art={art} name={def.name.en} size={size} mood={mood} talking={talking} act={act} facing={facing} bust={bust} pose={pose} emote={emote} />;
-  return <VectorCharacter id={id} size={size} mood={mood} talking={talking} act={act} facing={facing} bust={bust} gaze={gaze} />;
-}
-
-function VectorCharacter({ id, size, mood, talking, act, facing, bust, gaze }: { id: string; size: number; mood: Mood; talking: boolean; act: Act; facing: 'left' | 'right'; bust: boolean; gaze: number }) {
   const def = charById(id);
   const closed = useBlink();
   const open = useMouthFlap(talking);
@@ -658,14 +460,25 @@ function VectorCharacter({ id, size, mood, talking, act, facing, bust, gaze }: {
                 <circle cx={-34} cy={4} r={7} fill={look.skin} />
                 <circle cx={34} cy={4} r={7} fill={look.skin} />
                 <ellipse cx={0} cy={0} rx={34} ry={36} fill={look.skin} />
-                <ellipse cx={-21} cy={13} rx={6} ry={3.6} fill="#FF7A8A" opacity={0.35} />
-                <ellipse cx={21} cy={13} rx={6} ry={3.6} fill="#FF7A8A" opacity={0.35} />
-                <Eyes mood={mood} closed={closed} look={look2} />
-                <Brows mood={mood} color={look.hair.style === 'bald' ? '#6E6E6E' : look.hair.color} />
-                <path d="M-2,8 Q0,12 3,9" stroke={INK} strokeOpacity={0.45} strokeWidth={2} fill="none" strokeLinecap="round" />
-                <Mouth mood={mood} open={open} />
-                <FaceAcc acc={look.acc} look={look} />
-                <HairFront look={look} />
+                {!back && <ellipse cx={-21} cy={13} rx={6} ry={3.6} fill="#FF7A8A" opacity={0.35} />}
+                {!back && <ellipse cx={21} cy={13} rx={6} ry={3.6} fill="#FF7A8A" opacity={0.35} />}
+                {back ? (
+                  // 后脑勺：头发盖住大半个头，只露出后颈
+                  look.hair.style === 'bald' ? (
+                    <ellipse cx={0} cy={-6} rx={30} ry={26} fill="#000" opacity={0.06} />
+                  ) : (
+                    <path d="M-35,6 C-38,-34 -18,-44 0,-44 C18,-44 38,-34 35,6 C26,22 -26,22 -35,6 Z" fill={look.hair.color} />
+                  )
+                ) : (
+                  <>
+                    <Eyes mood={mood} closed={closed} look={look2} />
+                    <Brows mood={mood} color={look.hair.style === 'bald' ? '#6E6E6E' : look.hair.color} />
+                    <path d="M-2,8 Q0,12 3,9" stroke={INK} strokeOpacity={0.45} strokeWidth={2} fill="none" strokeLinecap="round" />
+                    <Mouth mood={mood} open={open} />
+                    <FaceAcc acc={look.acc} look={look} />
+                    <HairFront look={look} />
+                  </>
+                )}
                 <HeadWear acc={look.acc} look={look} />
               </motion.g>
             </g>

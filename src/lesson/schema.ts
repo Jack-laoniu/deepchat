@@ -181,23 +181,39 @@ export const TalkRound = z.object({
 export type TalkRound = z.infer<typeof TalkRound>;
 
 /** 地图关：在小镇里走动，找几个人打听情况 */
+/** 地图场景：决定地面、围墙和点缀物 */
+export const SCENES = ['street', 'park', 'home', 'shop', 'office'] as const;
+/** 地点的大道具（NPC 就在它旁边）：楼、柜台、车、沙发、长椅、小摊、书桌、货架、餐桌、床 */
+export const PROPS = ['building', 'counter', 'car', 'sofa', 'bench', 'kiosk', 'desk', 'shelf', 'table', 'bed'] as const;
+
+/**
+ * NPC 送的道具：聊完（满足 if 条件时）递给玩家，效果和普通选项一样——
+ * 通常是帮用户省钱/省时间：price 为负数（优惠券、内部价），或者 add 同 id 的便宜替代品、remove 不必要的东西。
+ */
+export const Gift = Option.extend({ if: Cond.optional(), say: upto(28).optional() });
+export type Gift = z.infer<typeof Gift>;
+
+export const MapSpot = z.object({
+  id,
+  emoji,
+  label: short(6),
+  who: id,
+  x: z.number().min(0).max(100),
+  y: z.number().min(0).max(100),
+  prop: z.enum(PROPS).optional(),
+  beats: z.array(Beat).min(1).max(16),
+  gift: Gift.optional(),
+});
+export type MapSpot = z.infer<typeof MapSpot>;
+
 export const MapRound = z.object({
   type: z.literal('map'),
   id,
   title: short(14),
   emoji,
+  scene: z.enum(SCENES).default('street'),
   spots: z
-    .array(
-      z.object({
-        id,
-        emoji,
-        label: short(6),
-        who: id,
-        x: z.number().min(0).max(100),
-        y: z.number().min(0).max(100),
-        beats: z.array(Beat).min(1).max(16),
-      }),
-    )
+    .array(MapSpot)
     .min(2)
     .max(5),
   if: Cond.optional(),
@@ -378,6 +394,7 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
         ...(r.type === 'sort' ? r.cards.flatMap((c) => r.bins.map((b) => `${c.id}_${b.id}`)) : []),
         ...(r.type === 'place' ? r.things.flatMap((t) => r.zones.map((z) => `${t.id}_${z.id}`)) : []),
         ...(r.type === 'day' ? r.moments.flatMap((m) => m.options.flatMap((o) => o.set)) : []),
+        ...(r.type === 'map' ? r.spots.flatMap((s) => s.gift?.set ?? []) : []),
         ...asksOf(r).flatMap((a) => [...a.options.flatMap((o) => o.set), ...(a.free?.match.flatMap((m) => m.set) ?? [])]),
       ]),
     );
@@ -392,6 +409,7 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
       beats.forEach((b) => checkCond(b.if, ['rounds', i, 'beats']));
       if (r.type === 'chain') r.cards.forEach((c, j) => checkCond(c.if, ['rounds', i, 'cards', j, 'if']));
       if (r.type === 'place') r.zones.forEach((z, j) => checkCond(z.lockIf, ['rounds', i, 'zones', j, 'lockIf']));
+      if (r.type === 'map') r.spots.forEach((s, j) => checkCond(s.gift?.if, ['rounds', i, 'spots', j, 'gift', 'if']));
       [...linesOf(r), ...asksOf(r)].forEach((b) => {
         if (!speakers.has(b.who)) err(['rounds', i], `角色 ${b.who} 不在 cast 里`);
       });
@@ -417,7 +435,8 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
         r.type === 'pick' || r.type === 'fix' || r.type === 'boss' ? r.options :
         r.type === 'swipe' ? [r.yes, r.no] :
         r.type === 'chain' ? r.cards.flatMap((c) => [c.left, c.right]) :
-        r.type === 'day' ? r.moments.flatMap((m) => m.options) : [];
+        r.type === 'day' ? r.moments.flatMap((m) => m.options) :
+        r.type === 'map' ? r.spots.flatMap((s) => (s.gift ? [s.gift] : [])) : [];
       opts.forEach((o) =>
         o.add.forEach((it) => {
           const old = guessByEmoji.get(it.emoji);

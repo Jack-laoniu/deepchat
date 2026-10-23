@@ -8,10 +8,10 @@
   "currency": "USD",
   "cast": [
     {
-      "id": "xiaobei"
+      "id": "ajie"
     },
     {
-      "id": "wang",
+      "id": "daliu",
       "as": "PC shop owner"
     }
   ],
@@ -74,23 +74,23 @@
           "say": "Two people are arguing in a PC builders' chat."
         },
         {
-          "who": "xiaobei",
+          "who": "ajie",
           "say": "A 4060 is plenty for games. Don't listen to the shop!",
           "mood": "angry"
         },
         {
-          "who": "wang",
+          "who": "daliu",
           "say": "Plenty? Run a big AI model and 8GB explodes!",
           "mood": "smug"
         },
         {
-          "who": "xiaobei",
+          "who": "ajie",
           "say": "They might not even run AI…",
           "mood": "thinking"
         },
         {
           "id": "use",
-          "who": "xiaobei",
+          "who": "ajie",
           "q": "So what's it really for?",
           "options": [
             {
@@ -103,7 +103,7 @@
               ],
               "reply": [
                 {
-                  "who": "xiaobei",
+                  "who": "ajie",
                   "say": "See? Told you!",
                   "mood": "happy"
                 }
@@ -119,7 +119,7 @@
               ],
               "reply": [
                 {
-                  "who": "wang",
+                  "who": "daliu",
                   "say": "Heh, I was right.",
                   "mood": "smug"
                 }
@@ -136,7 +136,7 @@
               ],
               "reply": [
                 {
-                  "who": "xiaobei",
+                  "who": "ajie",
                   "say": "…Fine, then build it properly."
                 }
               ]
@@ -181,7 +181,7 @@
                 ],
                 "reply": [
                   {
-                    "who": "wang",
+                    "who": "daliu",
                     "say": "For AI, VRAM is what matters."
                   }
                 ]
@@ -196,7 +196,7 @@
                 "fact": "Also edits video",
                 "reply": [
                   {
-                    "who": "xiaobei",
+                    "who": "ajie",
                     "say": "Video editing eats GPU and RAM too."
                   }
                 ]
@@ -204,14 +204,14 @@
             ],
             "reply": [
               {
-                "who": "xiaobei",
+                "who": "ajie",
                 "say": "Got it, we'll build for that."
               }
             ]
           }
         },
         {
-          "who": "wang",
+          "who": "daliu",
           "say": "For AI, it depends on model size.",
           "if": {
             "all": [
@@ -221,7 +221,7 @@
         },
         {
           "id": "model",
-          "who": "wang",
+          "who": "daliu",
           "q": "How big a model?",
           "if": {
             "all": [
@@ -236,7 +236,7 @@
               "fact": "Only ~7B models or Stable Diffusion",
               "reply": [
                 {
-                  "who": "xiaobei",
+                  "who": "ajie",
                   "say": "Then 8GB VRAM barely works."
                 }
               ]
@@ -251,7 +251,7 @@
               ],
               "reply": [
                 {
-                  "who": "xiaobei",
+                  "who": "ajie",
                   "say": "Okay… that needs a new GPU."
                 }
               ]
@@ -278,12 +278,12 @@
           }
         },
         {
-          "who": "xiaobei",
+          "who": "ajie",
           "say": "Hear that? Buy what you need, not what he sells!",
           "mood": "angry"
         },
         {
-          "who": "wang",
+          "who": "daliu",
           "say": "I call that expert advice!",
           "mood": "surprised"
         }
@@ -466,16 +466,16 @@
       "style": "chat",
       "title": "Haggling at the PC shop",
       "emoji": "🧔‍♂️",
-      "with": "wang",
+      "with": "daliu",
       "beats": [
         {
-          "who": "wang",
+          "who": "daliu",
           "say": "Buddy, this i9 water-cooled rig is on sale today!",
           "mood": "smug"
         },
         {
           "id": "cpu",
-          "who": "wang",
+          "who": "daliu",
           "q": "Want this awesome CPU?",
           "options": [
             {
@@ -494,7 +494,7 @@
               ],
               "reply": [
                 {
-                  "who": "wang",
+                  "who": "daliu",
                   "say": "…You know your stuff.",
                   "mood": "surprised"
                 }
@@ -507,7 +507,7 @@
               "fact": "Keep the flagship CPU",
               "reply": [
                 {
-                  "who": "wang",
+                  "who": "daliu",
                   "say": "Great!"
                 }
               ]
@@ -516,7 +516,7 @@
         },
         {
           "id": "care",
-          "who": "wang",
+          "who": "daliu",
           "q": "What matters most?",
           "options": [
             {
@@ -580,7 +580,7 @@
           }
         },
         {
-          "who": "wang",
+          "who": "daliu",
           "say": "If noise bugs you, AIO pumps hum too.",
           "if": {
             "all": [
@@ -591,7 +591,7 @@
         },
         {
           "id": "cooler",
-          "who": "wang",
+          "who": "daliu",
           "q": "Swap AIO for air?",
           "options": [
             {
@@ -613,7 +613,7 @@
               },
               "reply": [
                 {
-                  "who": "wang",
+                  "who": "daliu",
                   "say": "Air is cheap and can't leak."
                 }
               ]
@@ -625,7 +625,7 @@
               "fact": "Keep the 360 AIO",
               "reply": [
                 {
-                  "who": "wang",
+                  "who": "daliu",
                   "say": "Looks are everything!"
                 }
               ]
@@ -633,7 +633,7 @@
           ]
         },
         {
-          "who": "wang",
+          "who": "daliu",
           "say": "Deal, writing it up!",
           "mood": "happy"
         }

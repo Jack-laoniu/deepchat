@@ -89,6 +89,8 @@ export interface Played {
   sacrificed?: Meter;
   /** 用户已经做过的决定（「再玩一轮」时告诉 AI 别再问）；thing = 被决定的那样东西的名字 */
   decisions: { thing: string; choice: string }[];
+  /** 地图上 NPC 送的道具 */
+  gifts: { emoji: string; label: string; from: string }[];
 }
 
 export const matches = (c: Cond | undefined, flags: Set<string>) =>
@@ -140,6 +142,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
   const quotes: Played['quotes'] = [];
   const visited: string[] = [];
   const decisions: Played['decisions'] = [];
+  const gifts: Played['gifts'] = [];
   let sacrificed: Meter | undefined;
   let budget: number | null = null;
   let current: Round | null = null;
@@ -214,7 +217,15 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
     } else if ('talk' in a && r.type === 'talk') {
       applyBeats(r.beats, a.talk);
     } else if ('map' in a && r.type === 'map') {
-      for (const spot of r.spots) if (a.map[spot.id]) applyBeats(spot.beats, a.map[spot.id]);
+      for (const spot of r.spots) {
+        if (!a.map[spot.id]) continue;
+        applyBeats(spot.beats, a.map[spot.id]);
+        // 聊完了，NPC 递过来的道具（条件按聊完那一刻的标记算）
+        if (spot.gift && matches(spot.gift.if, flags)) {
+          applyOption(spot.gift);
+          gifts.push({ emoji: spot.gift.emoji, label: spot.gift.label, from: spot.who });
+        }
+      }
     } else if ('chain' in a && r.type === 'chain') {
       for (const c of r.cards) {
         const side = a.chain.picks[c.id];
@@ -282,6 +293,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
     visited,
     sacrificed,
     decisions,
+    gifts,
   };
 }
 
