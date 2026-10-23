@@ -14,6 +14,7 @@ import { Sort } from '../rounds/Sort';
 import { Place } from '../rounds/Place';
 import { Day } from '../rounds/Day';
 import { FeedbackSheet } from '../ui/FeedbackSheet';
+import { RoundGuard } from '../ui/RoundGuard';
 import { TopBar } from '../ui/kit';
 import { money, t } from '../i18n';
 import { Emoji } from '../ui/Emoji';
@@ -42,6 +43,31 @@ function RoundView({ round }: { round: Round }) {
       return <Place round={round} />;
     case 'day':
       return <Day round={round} />;
+  }
+}
+
+/** 这一回合出错时跳过：交一个「什么都没选」的答案（选择题选第一个），接着往下走 */
+function skip(g: ReturnType<typeof useGame>, r: Round) {
+  switch (r.type) {
+    case 'pick':
+    case 'fix':
+    case 'boss':
+      return r.options[0] ? g.choose(r, r.options[0].id) : g.gamble(r);
+    case 'swipe':
+      return g.choose(r, r.yes.id);
+    case 'slider':
+      return g.setValue(r, Math.round((r.min + r.max) / 2 / r.step) * r.step);
+    case 'talk':
+    case 'map':
+      return g.talk(r, {});
+    case 'chain':
+      return g.chain(r, {});
+    case 'sort':
+      return g.sort(r, {});
+    case 'place':
+      return g.place(r, {});
+    case 'day':
+      return g.day(r, {});
   }
 }
 
@@ -87,7 +113,9 @@ export function Play() {
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="h-full"
             >
-              <RoundView round={current} />
+              <RoundGuard round={current} title={g.lesson?.title ?? ''} onSkip={() => skip(g, current)} onHome={g.home}>
+                <RoundView round={current} />
+              </RoundGuard>
             </motion.div>
           )}
         </AnimatePresence>

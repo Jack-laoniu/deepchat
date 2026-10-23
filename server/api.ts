@@ -1,5 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { mkdirSync, readdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { loadConfig, type Config } from './config';
 import { ttsFromConfig, type Tts } from './tts';
 import { genericLesson } from '../src/lesson/generic';
@@ -12,11 +15,53 @@ import { chatFromConfig, discussNeed, generateLesson, reactLine, UpstreamError, 
  *   POST /api/generate  { need, lang, context? } → { lesson } | { error }（context：再玩一轮时带上上一关的结果）
  *   POST /api/react     { need, who, as, q, options, text, recent, lang } → { say, mood }（角色回应用户自己打的字）
  *   POST /api/discuss   { plan, history, message, lang } → { reply } | { error }（结算后继续聊需求）
+ *   POST /api/clientlog { message, stack, title, round } → 204（某一回合在浏览器里渲染出错，记进日志）
  *
  * 公开网站 + 按量计费，所以有几道保护：按 IP 限频、每日总量上限、并发上限、相同需求缓存。
  */
 
 const MAX_NEED_CHARS = 200;
+
+/**
+ * 最近生成的关卡存一份（默认 /tmp/need-quest/levels，可用 NEED_QUEST_DATA 改），只留最新 30 个。
+ * 用户说「这关打不开 / 白屏」时，按日志里的文件名直接看是哪一关、哪一回合。
+ */
+const LEVEL_DIR = join(process.env.NEED_QUEST_DATA || join(tmpdir(), 'need-quest'), 'levels');
+function saveLevel(lesson: unknown, need: string): string | null {
+  try {
+    mkdirSync(LEVEL_DIR, { recursive: true });
+    const name = `${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+    writeFileSync(join(LEVEL_DIR, name), JSON.stringify({ need, lesson }, null, 1));
+    const all = readdirSync(LEVEL_DIR).filter((f) => f.endsWith('.json')).sort();
+    for (const f of all.slice(0, Math.max(0, all.length - 30))) unlinkSync(join(LEVEL_DIR, f));
+    return join(LEVEL_DIR, name);
+  } catch {
+    return null;
+  }
+}
+
+/** 前端某一回合渲染出错：打进日志（每个 IP 每小时最多 20 条，防刷） */
+const clientLogs = new Map<string, { n: number; at: number }>();
+async function clientLog(req: IncomingMessage, res: ServerResponse) {
+  if (req.method !== 'POST') return void res.writeHead(405).end(), true;
+  const ip = clientIp(req);
+  const now = Date.now();
+  const c = clientLogs.get(ip);
+  const n = c && now - c.at < 3600_000 ? c.n + 1 : 1;
+  clientLogs.set(ip, { n, at: c && now - c.at < 3600_000 ? c.at : now });
+  let body = null as { message?: unknown; stack?: unknown; title?: unknown; round?: unknown } | null;
+  try {
+    body = (await readBody(req, 32_000)) as typeof body;
+  } catch {
+    /* 太大或不是 JSON */
+  }
+  if (n <= 20 && body) {
+    const str = (v: unknown, max: number) => (typeof v === 'string' ? v.slice(0, max) : '');
+    console.error(`client error in 「${str(body.title, 40)}」: ${str(body.message, 300)}\n  stack: ${str(body.stack, 800).split('\n').slice(0, 4).join(' | ')}\n  round: ${str(body.round, 4000)}`);
+  }
+  res.writeHead(204).end();
+  return true;
+}
 
 /**
  * key、模型、访问码、限额都来自配置文件（见 config.ts），每次请求都读一遍：
@@ -104,6 +149,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   if (path === '/api/discuss') return discuss(req, res, cfg);
   if (path === '/api/react') return react(req, res, cfg);
   if (path === '/api/tts') return speech(req, res, cfg);
+  if (path === '/api/clientlog') return clientLog(req, res);
   if (path !== '/api/generate') return false;
   if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
   if (!client) return void json(res, 503, { error: 'disabled' }), true;
@@ -158,6 +204,8 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
       r = { ok: true, lesson: d.lesson };
     }
     if (r.ok) {
+      const file = saveLevel(r.lesson, need);
+      if (file) console.error(`generate: saved ${file}`);
       cache.set(key, r.lesson);
       if (cache.size > 200) cache.delete(cache.keys().next().value!);
       return void json(res, 200, { lesson: r.lesson }), true;

@@ -327,3 +327,25 @@ describe('benchmark quest: first car', () => {
     expect(chain.cards.filter((c) => matches(c.if, own)).map((c) => c.id)).not.toContain('c_queue');
   });
 });
+
+describe('skipping a broken round', () => {
+  it('every round type accepts an empty / first-choice answer and the level still reaches the end', () => {
+    for (const l of lessons) {
+      const answers: Answer[] = [];
+      for (let i = 0; i < 40; i++) {
+        const r = play(l, answers).current;
+        if (!r) break;
+        if (r.type === 'pick' || r.type === 'fix' || r.type === 'boss') answers.push({ round: r.id, option: r.options[0].id });
+        else if (r.type === 'swipe') answers.push({ round: r.id, option: r.yes.id });
+        else if (r.type === 'slider') answers.push({ round: r.id, value: r.min });
+        else if (r.type === 'talk') answers.push({ round: r.id, talk: {} });
+        else if (r.type === 'map') answers.push({ round: r.id, map: {} });
+        else if (r.type === 'chain') answers.push({ round: r.id, chain: { picks: {} } });
+        else if (r.type === 'sort') answers.push({ round: r.id, sort: {} });
+        else if (r.type === 'place') answers.push({ round: r.id, place: {} });
+        else if (r.type === 'day') answers.push({ round: r.id, day: {} });
+      }
+      expect(play(l, answers).current, l.title).toBeNull();
+    }
+  });
+});

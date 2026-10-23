@@ -5,6 +5,10 @@ import type { Lang } from './chars/library';
  */
 
 const zh = {
+  roundBroken: '这一步出了点问题',
+  roundBrokenSub: '可能是 AI 写的这一关有个小毛病，先跳过它接着玩',
+  roundSkip: '跳过这一步 →',
+  roundHome: '回首页',
   genCode: '访问码不对（测试期需要访问码）',
   codePh: '测试访问码',
   genTitle: '说说你想搞定什么',
@@ -155,6 +159,10 @@ const zh = {
 type Dict = typeof zh;
 
 const en: Dict = {
+  roundBroken: 'This step broke',
+  roundBrokenSub: 'The AI probably wrote something odd here. Skip it and keep going.',
+  roundSkip: 'Skip this step →',
+  roundHome: 'Back home',
   genCode: 'Wrong access code (needed during testing)',
   codePh: 'Test access code',
   genTitle: 'What do you want to get done?',
@@ -304,6 +312,10 @@ const en: Dict = {
 };
 
 const ja: Dict = {
+  roundBroken: 'このステップで問題が発生',
+  roundBrokenSub: 'AI の書いた内容に不具合があるかも。飛ばして続けよう',
+  roundSkip: 'スキップ →',
+  roundHome: 'ホームへ',
   genCode: 'アクセスコードが違います',
   codePh: 'テスト用アクセスコード',
   genTitle: '何を片付けたい？',
@@ -453,6 +465,10 @@ const ja: Dict = {
 };
 
 const es: Dict = {
+  roundBroken: 'Este paso falló',
+  roundBrokenSub: 'La IA escribió algo raro aquí. Sáltalo y sigue.',
+  roundSkip: 'Saltar este paso →',
+  roundHome: 'Volver al inicio',
   genCode: 'Código de acceso incorrecto',
   codePh: 'Código de acceso',
   genTitle: '¿Qué quieres resolver?',
