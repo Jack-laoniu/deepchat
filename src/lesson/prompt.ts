@@ -8,7 +8,7 @@ GOAL: never make the user fill a form. Inside the game they naturally reveal the
 - a short STORY (several characters bickering, read aloud like a listening story) acts out the pitfalls this need runs into in real life, and pauses to ask "which one are you?";
 - a CHAT / roleplay lets the user say, in their own words, their motivation, worries and wishes;
 - a MAP lets the user walk around and ask several people, each covering one aspect (seller → the plan, old-timer → pitfalls, family → motivation & budget).
-Choices change the plan's items and price and can "blow up" new problems (fix rounds). The last round is a boss: the most typical extreme situation in this field.
+Choices change the plan's items and price and can "blow up" new problems (fix rounds). The last round is the FINALE ("type": "boss"): not a fight, but the deep-talk ending that makes the need fully clear — recap, choose a direction among the approaches the industry really uses, answer sharper follow-up questions, and confirm which materials the user can provide.
 
 LANGUAGE: write ALL text in the user's language. Set "lang" to one of ${LANGS.join(', ')} and "currency" to the ISO code they'd pay in (CNY, USD, JPY, EUR…).
 
@@ -28,7 +28,7 @@ ROUND TYPES
 - swipe: yes / no
 - slider: drag a number; kind "budget" asks the budget cap; "{v}" in fact is the value
 - fix: a problem appeared; 1–3 fixes + 1 gamble (skip the fix and hope)
-- boss: final test, same shape as fix, required, must be last
+- boss (the FINALE, required, must be last): "who" = the most knowledgeable character, "q" = the decision to make (≤ 14). "options" = 2–4 approaches people in this field actually use (e.g. for gout: 急性期先止痛就医 / 长期降尿酸药 / 只靠饮食运动), each with "pros" and "cons" (≤ 16 each), a full "fact", and set a flag. "probe" = 3–6 beats of follow-up chat that dig deeper into the chosen approach (questions with "if" on that flag, with "free" for the user's own words) — ask what an expert would need to know next (numbers, history, constraints, what they already tried). "bring" = 2–5 materials the downstream AI will need before giving a concrete plan (e.g. 最近一次尿酸化验单, 正在吃的药, 车位产权证明), each {id, emoji, label ≤ 10, fact}. No "gamble" in the finale.
 - sort: drag 3–8 cards into 2–3 bins (e.g. must / nice / skip). No right answers — it reveals priorities. A card with "item" joins the plan when dropped in a bin with keep:true, and leaves it otherwise. Each drop sets the flag "<card id>_<bin id>".
 - place: an illustrated scene ("room" | "yard" | "office" | "street") with 2–4 spots (x 5–95, y 10–80) and 1–4 things; the user drags each thing to where it would go in their life. It reveals space, context and who uses it. A spot can list "bad" things with a short "warn" (it shakes and warns; the user may move it). Each placement sets "<thing id>_<spot id>".
 - day: a wordless day (Florence-style) — NOT an ordinary routine day. Pick THE day where this need really hurts or gets tested, the one people complain about (first car → driving home for Spring Festival stuck in a highway jam; new puppy → the first night it cries; renovation → move-in day; study plan → the night before the exam). 3–5 moments ("at": morning | noon | evening | night, plus "time" like "04:30" for the clock), each moment a pain point with a scene emoji and 2–3 options shown as BIG emoji only (label is a tiny caption ≤ 4 CJK / 7 letters) revealing how the user would cope. "scene": daily | road (highway, traffic, service area) | outdoor | home. Pick emojis that are obvious without words.
@@ -38,6 +38,7 @@ DIALOGUE
 - beats = lines {"who","say","mood"} and questions {"id","who","q","options":[...],"free":{...}}.
 - options may carry "reply": the characters' immediate reaction (tease, push back, warn).
 - "free" lets the user answer in their own words (typing or voice). "{v}" in fact is their words; "match" sets flags by keywords and reacts; "chips" are quick phrases. Use free at least twice: once for the motivation (why), once for the biggest worry or wish.
+- Besides pitfalls, characters also share what WORKS: the common or best-practice approaches in this field and who they suit ("most people in your case start with…", "the clinic usually…"). Let the user react to them; this is how they discover what they really want.
 - Dialogue is where the user feels cared for and hears REAL experience. Make each talk / map spot feel like a real person talking: 6–12 lines, characters share a concrete personal story with specific numbers and details ("my first winter, range dropped from 500 to 300 km", "I tried waking at 6 for a week and crashed by Thursday"), disagree with each other, then ask. Every talk round asks at least 2 questions; react to answers with "reply".
 - any line or question can have "if" to appear depending on earlier answers (e.g. the user said they're rarely home but picked manual control → a character calls it out).
 
@@ -51,7 +52,8 @@ RULES
 6. Prices are your estimates; never invent sources.
 7. "rounds" is a FLAT array of 8–12 separate round objects — never put the whole level inside one talk round (a talk has at most 24 beats; aim for 6–12). 8–12 rounds: open with a chat with "${GUIDE}" asking the motivation, include at least one story, one map, one slider (kind budget, in money or in the goal unit), one sort (what they really need among optional extras), one chain (living with the choice), and a place (when space matters) or a day (the hardest, most telling day of this need), and end with the boss. Max 16 rounds.
 8. ids use lowercase letters, digits, underscores only. Output JSON only, no explanation.
-9. Never put a raw double quote (") inside a string value. To quote speech inside text use 「」 (Chinese) or ‘ ’ (English).`;
+9. Never put a raw double quote (") inside a string value. To quote speech inside text use 「」 (Chinese) or ‘ ’ (English).
+10. No repeats: every sort card, chain card, pick option and question covers something NEW. Do not ask the same thing twice in different rounds or wordings (e.g. two chain cards both about 'waiting for a discount'), and do not put a card in sort that a chain card already decided.`;
 
 export function generatorPrompt(need: string, lang: 'zh' | 'en' = 'zh'): string {
   return `${GENERATOR_RULES}

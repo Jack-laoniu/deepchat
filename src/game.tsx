@@ -23,7 +23,6 @@ interface Game {
   lesson: Lesson | null;
   phase: Phase;
   played: Played | null;
-  hearts: number;
   streak: number;
   crashes: Crash[];
   feedback: Feedback | null;
@@ -42,6 +41,8 @@ interface Game {
   place(round: Round, spots: Record<string, string>): void;
   /** 无文字的一天整轮提交：时刻 → 选项 */
   day(round: Round, picks: Record<string, string>): void;
+  /** 终章整轮提交：选的做法、追问回答、资料有没有 */
+  finale(round: Round, answer: Extract<Answer, { finale: unknown }>['finale']): void;
   next(): void;
   undo(): void;
   home(): void;
@@ -50,13 +51,10 @@ interface Game {
 const Ctx = createContext<Game | null>(null);
 export const useGame = () => useContext(Ctx)!;
 
-const MAX_HEARTS = 3;
-
 export function GameProvider({ children }: { children: ReactNode }) {
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [phase, setPhase] = useState<Phase>('home');
   const [answers, setAnswers] = useState<Answer[]>([]);
-  const [hearts, setHearts] = useState(MAX_HEARTS);
   const [streak, setStreak] = useState(0);
   const [crashes, setCrashes] = useState<Crash[]>([]);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
@@ -86,7 +84,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
     lesson,
     phase,
     played,
-    hearts,
     streak,
     crashes,
     feedback,
@@ -94,7 +91,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
       setLocale(l.lang, l.currency, l.goal);
       setLesson(l);
       setAnswers([]);
-      setHearts(MAX_HEARTS);
       setStreak(0);
       setCrashes([]);
       setFeedback(null);
@@ -184,13 +180,23 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }));
       if (f?.tone === 'good') sfx.good();
     },
+    finale(round, answer) {
+      sfx.win();
+      commit({ round: round.id, finale: answer }, (b, a) => ({
+        tone: 'good',
+        title: t('finaleDone'),
+        tip: a.materials.length ? t('finaleBrought', { n: a.materials.filter((m) => m.state === 'have').length, m: a.materials.length }) : undefined,
+        delta: a.total - b.total,
+        emoji: '🧩',
+        round,
+      }));
+    },
     gamble(round) {
-      if (!lesson || !played || (round.type !== 'fix' && round.type !== 'boss')) return;
+      if (!lesson || !played || (round.type !== 'fix' && round.type !== 'boss') || !round.gamble) return;
       const g = round.gamble;
       if (gambleCrashes(g, played.flags)) {
         sfx.crash();
         setTimeout(() => jingle.lose(), 500);
-        setHearts((h) => Math.max(0, h - 1));
         setStreak(0);
         setCrashes((c) => [...c, { round: round.id, msg: `${round.problem} → 「${g.label}」: ${g.crash}`, loss: g.loss }]);
         setFeedback({ tone: 'crash', title: t('crash'), tip: g.crash, delta: g.loss, emoji: '💥', round });

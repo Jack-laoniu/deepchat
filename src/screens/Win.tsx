@@ -5,6 +5,8 @@ import { celebrate } from '../fx/fx';
 import { jingle, playMusic } from '../fx/music';
 import { hostFollowUp, inHost } from '../host';
 import { superPrompt, yuan } from '../lesson/output';
+import { filledOf, puzzleOf } from '../lesson/puzzle';
+import { PuzzleBoard } from '../ui/Puzzle';
 import { Emoji } from '../ui/Emoji';
 import { Btn, Mascot } from '../ui/kit';
 import { copyText } from '../ui/copy';
@@ -102,6 +104,11 @@ export function Win() {
         <Ring value={p.score.safe} emoji="🛡️" label={t('safe')} delay={0.7} />
       </div>
 
+      <div className="mt-5 rounded-3xl bg-gradient-to-b from-violet-50 to-white p-3">
+        <div className="mb-2 text-center text-sm font-black text-violet-600">🧩 {t('puzzleTitle')}</div>
+        <PuzzleBoard pieces={puzzleOf(l, p)} filled={filledOf(l, p)} size="sm" />
+      </div>
+
       <button onClick={() => setShowList(true)} className="mt-5 flex flex-wrap justify-center gap-2">
         {p.cart.map((it, i) => (
           <motion.span key={it.id} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.8 + i * 0.08 }}>
@@ -143,6 +150,11 @@ export function Win() {
       <NextStep plan={plan} text={text} turns={turns} setTurns={setTurns} />
 
       <div className="mt-auto space-y-3 pt-5">
+        {/* 定位：我们只把需求问清楚，方案交给用户自己常用的 AI */}
+        <div className="rounded-2xl border-2 border-green-200 bg-green-50 p-3">
+          <div className="text-base font-black text-green-700">{t('handoffTitle')}</div>
+          <div className="mt-1 text-[13px] font-bold leading-snug text-green-700/80">{t('handoffNote')}</div>
+        </div>
         <Btn onClick={handoff}>{inHost() ? t('handoffHost') : copied ? t('handoffCopied') : t('handoffCopy')}</Btn>
         <Btn tone="amber" onClick={() => setSharing(true)}>{t('shareBtn')}</Btn>
         <div className="grid grid-cols-2 gap-3">

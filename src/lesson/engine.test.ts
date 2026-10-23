@@ -104,8 +104,8 @@ describe('play', () => {
   it('gamble crash depends on the user’s real conditions', () => {
     const boss = farm.rounds.find((r) => r.id === 'boss')!;
     if (boss.type !== 'boss') throw new Error();
-    expect(gambleCrashes(boss.gamble, play(farm, [why, pick('scale', 'small')]).flags)).toBe(false);
-    expect(gambleCrashes(boss.gamble, play(farm, [why, pick('scale', 'big')]).flags)).toBe(true);
+    expect(gambleCrashes(boss.gamble!, play(farm, [why, pick('scale', 'small')]).flags)).toBe(false);
+    expect(gambleCrashes(boss.gamble!, play(farm, [why, pick('scale', 'big')]).flags)).toBe(true);
   });
 
   it('any-conditions trigger from several sources', () => {
@@ -347,5 +347,54 @@ describe('skipping a broken round', () => {
       }
       expect(play(l, answers).current, l.title).toBeNull();
     }
+  });
+});
+
+describe('finale and need puzzle', () => {
+  it('the finale applies the chosen approach, the probe answers and the materials, and the hand-off asks for what is missing', async () => {
+    const { filledOf, puzzleOf } = await import('./puzzle');
+    const car = lessons.find((l) => l.title === '第一辆车')!;
+    const answers: Answer[] = [];
+    for (let i = 0; i < 40; i++) {
+      const r = play(car, answers).current;
+      if (!r || r.type === 'boss') break;
+      if (r.type === 'pick' || r.type === 'fix') answers.push({ round: r.id, option: r.options[0].id });
+      else if (r.type === 'slider') answers.push({ round: r.id, value: r.max });
+      else if (r.type === 'talk') answers.push({ round: r.id, talk: {} });
+      else if (r.type === 'map') answers.push({ round: r.id, map: {} });
+      else if (r.type === 'chain') answers.push({ round: r.id, chain: { picks: {} } });
+      else if (r.type === 'sort') answers.push({ round: r.id, sort: {} });
+      else if (r.type === 'place') answers.push({ round: r.id, place: {} });
+      else if (r.type === 'day') answers.push({ round: r.id, day: {} });
+    }
+    const before = play(car, answers);
+    expect(before.current?.type).toBe('boss');
+    expect(filledOf(car, before).has('direction')).toBe(false);
+    answers.push({ round: 'boss', finale: { option: 'dir_phev', replies: { p_plug: { option: 'plug_no' } }, bring: { b_spot: 'have', b_km: 'no', b_driver: 'unsure' } } });
+    const p = play(car, answers);
+    expect(p.current).toBeNull();
+    expect(p.cart.find((i) => i.id === 'car')?.name).toBe('插混/增程车');
+    expect(p.facts.some((f) => f.includes('一直烧油'))).toBe(true);
+    expect(p.materials.map((m) => m.state)).toEqual(['have', 'no', 'unsure']);
+    expect(filledOf(car, p).size).toBe(puzzleOf(car, p).length);
+    const text = superPrompt(car, p, []);
+    expect(text).toContain('## 用户手头已有的资料');
+    expect(text).toContain('## 还需要用户补充的资料');
+    expect(text).toContain('这是需求，不是方案');
+  });
+
+  it('removes a repeated chain card and a repeated sort card, but never below three cards', async () => {
+    const { dedupeLesson } = await import('./salvage');
+    const car = structuredClone(lessons.find((l) => l.title === '第一辆车')!);
+    const chain = car.rounds.find((r) => r.type === 'chain')!;
+    if (chain.type !== 'chain') throw new Error();
+    chain.cards.push({ ...structuredClone(chain.cards.at(-1)!), id: 'dup_card', say: chain.cards.at(-1)!.say + '？' });
+    const sort = car.rounds.find((r) => r.type === 'sort')!;
+    if (sort.type !== 'sort') throw new Error();
+    sort.cards.push({ ...structuredClone(sort.cards[0]), id: 'dup_sort' });
+    const d = dedupeLesson(car);
+    expect(d.dropped).toHaveLength(2);
+    const c2 = d.lesson.rounds.find((r) => r.type === 'chain');
+    expect(c2?.type === 'chain' && c2.cards.some((c) => c.id === 'dup_card')).toBe(false);
   });
 });

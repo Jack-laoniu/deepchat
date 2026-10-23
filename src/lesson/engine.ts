@@ -1,3 +1,4 @@
+import { money } from '../i18n';
 import type { Beat, ChainRound, Cond, FixRound, Free, Gamble, Item, Lesson, Option, Round, Line } from './schema';
 
 /**
@@ -22,7 +23,11 @@ export type Answer =
   /** 摆进生活：东西 id → 位置 id */
   | { round: string; place: Record<string, string> }
   /** 无文字的一天：时刻 id → 选项 id */
-  | { round: string; day: Record<string, string> };
+  | { round: string; day: Record<string, string> }
+  /** 终章：选的做法、追问的回答、每样资料 有 / 没有 / 不确定 */
+  | { round: string; finale: { option: string; replies: Replies; bring: Record<string, Material['state']> } };
+
+export type Material = { label: string; fact: string; state: 'have' | 'no' | 'unsure' };
 
 /** 连环取舍的四条槽 */
 export const METERS = ['money', 'easy', 'good', 'safe'] as const;
@@ -91,7 +96,12 @@ export interface Played {
   decisions: { thing: string; choice: string }[];
   /** 地图上 NPC 送的道具 */
   gifts: { emoji: string; label: string; from: string }[];
+  /** 终章里确认的资料：用户手头有没有 */
+  materials: Material[];
 }
+
+/** 无文字的一天：时刻没写具体时间时用这个表示 */
+const AT_EMOJI = { morning: '🌅', noon: '☀️', evening: '🌇', night: '🌙' } as const;
 
 export const matches = (c: Cond | undefined, flags: Set<string>) =>
   !c ||
@@ -143,6 +153,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
   const visited: string[] = [];
   const decisions: Played['decisions'] = [];
   const gifts: Played['gifts'] = [];
+  const materials: Material[] = [];
   let sacrificed: Meter | undefined;
   let budget: number | null = null;
   let current: Round | null = null;
@@ -202,12 +213,25 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
     visited.push(r.id);
     if ('value' in a && r.type === 'slider') {
       if (r.kind === 'budget') budget = a.value;
-      decisions.push({ thing: r.q, choice: `${a.value}${r.unit}` });
+      decisions.push({ thing: r.q, choice: r.kind === 'budget' ? money(a.value) : `${a.value}${r.unit}` });
       facts.push(r.fact.replace('{v}', String(a.value)));
-    } else if ('gamble' in a && (r.type === 'fix' || r.type === 'boss')) {
+    } else if ('gamble' in a && (r.type === 'fix' || r.type === 'boss') && r.gamble) {
       if (r.gamble.fact) facts.push(r.gamble.fact);
       risks.push(`${r.problem} → 「${r.gamble.label}」${r.gamble.ok ? `: ${r.gamble.ok}` : ""}`);
       score.safe -= 15;
+    } else if ('finale' in a && r.type === 'boss') {
+      // 终章：选了哪种做法、追问的回答、手头有没有那些资料
+      const o = r.options.find((x) => x.id === a.finale.option);
+      if (o) {
+        applyOption(o);
+        decisions.push({ thing: r.q, choice: o.label });
+      }
+      applyBeats(r.probe, a.finale.replies);
+      for (const b of r.bring) {
+        const st = a.finale.bring[b.id];
+        if (!st) continue;
+        materials.push({ label: b.label, fact: b.fact, state: st });
+      }
     } else if ('option' in a) {
       const o = optionsOf(r).find((x) => x.id === a.option);
       if (o) {
@@ -254,7 +278,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
         const o = m.options.find((x) => x.id === a.day[m.id]);
         if (o) {
           applyOption(o);
-          decisions.push({ thing: `${r.title} · ${m.at}`, choice: o.label });
+          decisions.push({ thing: `${r.title} ${m.time ?? AT_EMOJI[m.at]}`, choice: o.label });
         }
       }
     } else if ('sort' in a && r.type === 'sort') {
@@ -294,6 +318,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
     sacrificed,
     decisions,
     gifts,
+    materials,
   };
 }
 

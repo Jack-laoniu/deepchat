@@ -58,6 +58,9 @@ export const Option = z.object({
   price: z.number().default(0),
   set: z.array(id).default([]),
   score: Score.default({}),
+  /** 终章里「行业常见做法」卡片上的一句优点 / 缺点 */
+  pros: upto(16).optional(),
+  cons: upto(16).optional(),
 });
 export type Option = z.infer<typeof Option>;
 
@@ -94,13 +97,6 @@ export const FixRound = z.object({
   type: z.literal('fix'),
   ...base,
   /** 出问题的那个东西 */
-  problem: short(12),
-  options: z.array(Option).min(1).max(3),
-  gamble: Gamble,
-});
-export const BossRound = z.object({
-  type: z.literal('boss'),
-  ...base,
   problem: short(12),
   options: z.array(Option).min(1).max(3),
   gamble: Gamble,
@@ -179,6 +175,29 @@ export const TalkRound = z.object({
   if: Cond.optional(),
 });
 export type TalkRound = z.infer<typeof TalkRound>;
+
+/** 终章里「AI 出方案前还需要你准备的资料」：用户逐项点 有 / 没有 / 不确定 */
+export const Bring = z.object({ id, emoji, label: short(10), fact: short(120) });
+export type Bring = z.infer<typeof Bring>;
+
+/**
+ * 终章（boss，最后一关）：不是打怪，而是把需求说透。
+ * ① 回顾已经弄清楚的；② options = 行业里常见的 2–4 种做法（带 pros / cons），用户选一个方向；
+ * ③ probe = 针对选的方向再追问 1–3 个更深的问题（可以用 if 按选项的 set 出现）；
+ * ④ bring = 出具体方案前还需要用户准备的资料。
+ * 老格式（problem + gamble，一个坑来了怎么办）仍然能玩。
+ */
+export const BossRound = z.object({
+  type: z.literal('boss'),
+  ...base,
+  /** 主持终章的角色（懂行的那位）；不填就是向导 */
+  who: id.optional(),
+  problem: upto(12).default(''),
+  options: z.array(Option).min(1).max(4),
+  gamble: Gamble.optional(),
+  probe: z.array(Beat).max(10).default([]),
+  bring: z.array(Bring).max(5).default([]),
+});
 
 /** 地图关：在小镇里走动，找几个人打听情况 */
 /** 地图场景：决定地面、围墙和点缀物 */
@@ -344,13 +363,18 @@ export type SliderRound = z.infer<typeof SliderRound>;
 export type FixRound = z.infer<typeof FixRound>;
 export type BossRound = z.infer<typeof BossRound>;
 
+/** 一个回合里的所有对话（剧情、地图各地点、终章的追问） */
+export function beatsOf(r: Round): Beat[] {
+  return r.type === 'talk' ? r.beats : r.type === 'map' ? r.spots.flatMap((s) => s.beats) : r.type === 'boss' ? r.probe : [];
+}
+
 /** 一关里所有的提问台词（地图关展开每个地点） */
 export function asksOf(r: Round): AskBeat[] {
-  const beats = r.type === 'talk' ? r.beats : r.type === 'map' ? r.spots.flatMap((s) => s.beats) : [];
+  const beats = beatsOf(r);
   return beats.filter((b): b is AskBeat => b.type === 'ask');
 }
 export function linesOf(r: Round): Line[] {
-  const beats = r.type === 'talk' ? r.beats : r.type === 'map' ? r.spots.flatMap((s) => s.beats) : [];
+  const beats = beatsOf(r);
   return [
     ...beats.filter((b) => b.type === 'line'),
     ...asksOf(r).flatMap((a) => [...a.options.flatMap((o) => o.reply), ...(a.free ? [...a.free.reply, ...a.free.match.flatMap((m) => m.reply)] : [])]),
@@ -409,8 +433,7 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
     const speakers = new Set<string>([...RESERVED_SPEAKERS, ...l.cast.map((c) => c.id)]);
     l.rounds.forEach((r, i) => {
       checkCond(r.if, ['rounds', i, 'if']);
-      const beats = r.type === 'talk' ? r.beats : r.type === 'map' ? r.spots.flatMap((s) => s.beats) : [];
-      beats.forEach((b) => checkCond(b.if, ['rounds', i, 'beats']));
+      beatsOf(r).forEach((b) => checkCond(b.if, ['rounds', i, 'beats']));
       if (r.type === 'chain') r.cards.forEach((c, j) => checkCond(c.if, ['rounds', i, 'cards', j, 'if']));
       if (r.type === 'place') r.zones.forEach((z, j) => checkCond(z.lockIf, ['rounds', i, 'zones', j, 'lockIf']));
       if (r.type === 'map') r.spots.forEach((s, j) => checkCond(s.gift?.if, ['rounds', i, 'spots', j, 'gift', 'if']));

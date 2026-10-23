@@ -249,3 +249,62 @@ export function dropDecided(lesson: LessonT, decided: string[]): { lesson: Lesso
   const fixed = salvage({ ...lesson, rounds });
   return fixed ? { lesson: fixed.lesson, dropped } : { lesson, dropped: [] };
 }
+
+/** 两句话像不像：去掉标点后按相邻两字（bigram）算重合度；一句包含另一句也算像 */
+export function similar(a: string, b: string): boolean {
+  const x = norm(a);
+  const y = norm(b);
+  if (!x || !y) return false;
+  if (x === y || (Math.min(x.length, y.length) >= 4 && (x.includes(y) || y.includes(x)))) return true;
+  const grams = (s: string) => {
+    const g = new Set<string>();
+    const chars = [...s];
+    for (let i = 0; i < chars.length - 1; i++) g.add(chars[i] + chars[i + 1]);
+    return g;
+  };
+  const gx = grams(x);
+  const gy = grams(y);
+  if (!gx.size || !gy.size) return false;
+  let both = 0;
+  for (const g of gx) if (gy.has(g)) both++;
+  return (2 * both) / (gx.size + gy.size) >= 0.6;
+}
+
+/**
+ * 去重：模型常在两个回合里出几乎一样的题（两张「等打折」的取舍卡、整理归类里同一样东西出两次）。
+ * 后出现的那张删掉；删了以后回合里剩的卡不够（取舍 3 张、归类 3 张）就不删。
+ */
+export function dedupeLesson(lesson: LessonT): { lesson: LessonT; dropped: string[] } {
+  const dropped: string[] = [];
+  const seenSay: string[] = [];
+  const seenCard: string[] = [];
+  const rounds = lesson.rounds.map<Round>((r) => {
+    if (r.type === 'chain') {
+      const keep = r.cards.filter((c) => {
+        const dup = seenSay.some((s) => similar(s, c.say));
+        if (!dup) seenSay.push(c.say);
+        return !dup;
+      });
+      if (keep.length >= 3 && keep.length < r.cards.length) {
+        dropped.push(...r.cards.filter((c) => !keep.includes(c)).map((c) => c.say));
+        return { ...r, cards: keep };
+      }
+      return r;
+    }
+    if (r.type === 'sort') {
+      const keep = r.cards.filter((c) => {
+        const names = [c.label, c.item?.name].filter((n): n is string => !!n);
+        const dup = names.some((n) => seenCard.some((s) => similar(s, n)));
+        if (!dup) seenCard.push(...names);
+        return !dup;
+      });
+      if (keep.length >= 3 && keep.length < r.cards.length) {
+        dropped.push(...r.cards.filter((c) => !keep.includes(c)).map((c) => c.label));
+        return { ...r, cards: keep };
+      }
+      return r;
+    }
+    return r;
+  });
+  return { lesson: { ...lesson, rounds }, dropped };
+}

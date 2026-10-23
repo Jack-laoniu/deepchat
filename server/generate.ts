@@ -4,7 +4,7 @@ import { dropNulls, lessonJsonSchema } from './jsonSchema';
 import { keep } from './store';
 import { charById, MOODS } from '../src/chars/library';
 import { GENERATOR_RULES } from '../src/lesson/prompt';
-import { salvage, explainIssues, type Salvaged } from '../src/lesson/salvage';
+import { dedupeLesson, salvage, explainIssues, type Salvaged } from '../src/lesson/salvage';
 import { fixInnerQuotes, parseLesson, type Lesson } from '../src/lesson/schema';
 import dog from '../src/lessons/dog.json';
 import farm from '../src/lessons/farm.json';
@@ -258,7 +258,11 @@ export async function generateLesson(startChat: StartChat, need: string, lang: '
 
   // 重修过的（删了卡片/回合）先留着，模型一直改不好时用它
   let fallback: Salvaged | null = null;
-  const done = (l: Lesson): GenerateResult => ({ ok: true, lesson: { ...l, need: l.need || need } });
+  const done = (l: Lesson): GenerateResult => {
+    const d = dedupeLesson(l);
+    if (d.dropped.length) console.error(`generate: removed ${d.dropped.length} repeated card(s): ${d.dropped.join(' / ').slice(0, 200)}`);
+    return { ok: true, lesson: { ...d.lesson, need: d.lesson.need || need } };
+  };
 
   for (let attempt = 0; attempt <= MAX_FIX; attempt++) {
     // 总时间快用完了就别再让模型改了，有修补版就用修补版

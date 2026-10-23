@@ -30,7 +30,16 @@ const T = {
       ['mei', '等打折能便宜两成，但要等一个月', '🏷️', ['等打折', '愿意等一等换便宜', { good: -10, easy: -5 }], ['马上办', '不想等，马上办', { easy: 10 }]],
       ['xiaobei', '便宜的那家口碑一般，要赌一把吗？', '🎲', ['赌一把', '愿意为便宜冒点风险', { safe: -25 }], ['选靠谱', '宁可贵也选靠谱的', { safe: 15 }]],
     ],
-    bossQ: '最怕的事来了', problem: '钱花了却不好用', fixL: '先试再买', fixF: '先试用/看样再决定', gamL: '直接买', gamCrash: '买回来发现不合适', gamOk: '运气不错，挺合适',
+    bossQ: '最后，你想怎么推进？',
+    fin: [
+      ['🔍', '多比较几家', '想多比较几家再决定', '不容易踩坑', '要花时间'],
+      ['⚡', '尽快定下来', '想尽快定下来，不想拖', '省心省时间', '可能多花钱'],
+      ['🧑‍🏫', '找懂行的人', '想找懂行的人/专业的人带着做', '少走弯路', '可能要付费'],
+    ],
+    probeHi: '好，最后再问你两句。', probeQ: '你现在最卡在哪一步？',
+    probeO: [['🤷', '不知道选哪个', '卡在不知道该选哪个'], ['💸', '不知道花多少', '卡在不知道要花多少钱/时间'], ['⏳', '没空研究', '卡在没时间研究']],
+    probeFree: '用户说的最卡的地方：{v}',
+    bring: [['📸', '现状照片', '现在的情况：照片、截图或简单描述'], ['📏', '硬性条件', '必须满足的条件：尺寸、时间、人数、地点等'], ['💬', '别人的建议', '朋友、商家或网上给过的方案和报价']],
   },
   en: {
     title: 'Think it through',
@@ -54,7 +63,16 @@ const T = {
       ['mei', 'Wait a month and it is 20% off.', '🏷️', ['Wait', 'Will wait to save money', { good: -10, easy: -5 }], ['Now', 'Wants it now', { easy: 10 }]],
       ['xiaobei', 'The cheap one has so-so reviews. Risk it?', '🎲', ['Risk it', 'Will take a risk to save money', { safe: -25 }], ['Go safe', 'Prefers the reliable option', { safe: 15 }]],
     ],
-    bossQ: 'Your worst case', problem: 'Paid but useless', fixL: 'Try first', fixF: 'Tries or sees a sample before deciding', gamL: 'Just buy', gamCrash: "It doesn't fit after all", gamOk: 'Lucky — it fits',
+    bossQ: 'How to go from here?',
+    fin: [
+      ['🔍', 'Compare more', 'Wants to compare a few options first', 'Fewer surprises', 'Takes time'],
+      ['⚡', 'Decide fast', 'Wants to settle it quickly', 'Less hassle', 'May cost more'],
+      ['🧑‍🏫', 'Ask an expert', 'Wants an expert or professional to guide it', 'Fewer detours', 'May be paid'],
+    ],
+    probeHi: 'Two last questions.', probeQ: 'Where are you stuck most?',
+    probeO: [['🤷', "Can't choose", 'Stuck on which option to pick'], ['💸', 'Cost unclear', 'Stuck on how much money / time it takes'], ['⏳', 'No time', 'Stuck on having no time to research']],
+    probeFree: 'Where the user says they are stuck: {v}',
+    bring: [['📸', 'Photos now', 'The current situation: photos, screenshots or a short description'], ['📏', 'Must-haves', 'Hard requirements: size, timing, number of people, place…'], ['💬', 'Advice so far', 'Plans or quotes friends, sellers or the web suggested']],
   },
 } as const;
 
@@ -76,7 +94,6 @@ const TIME = {
       ['mei', '周末想睡懒觉，要不要破例？', '🛌', ['破例', '周末会放松一下', { easy: 10, good: -10 }], ['照旧', '周末也坚持', { easy: -10, good: 10 }]],
       ['xiaobei', '朋友约你熬夜，去不去？', '🌙', ['去', '偶尔会被打乱', { safe: -20, easy: 10 }], ['不去', '为计划推掉', { safe: 10, easy: -10 }]],
     ],
-    problem: '三天就坚持不住', fixL: '从小目标开始', fixF: '先从很小的目标开始，再慢慢加', gamL: '硬扛', gamCrash: '第四天就放弃了', gamOk: '居然扛住了',
   },
   en: {
     goal: { name: 'time', unit: 'min', emoji: '⏱️' },
@@ -89,7 +106,6 @@ const TIME = {
       ['mei', 'Sleep in this weekend?', '🛌', ['Sleep in', 'Relaxes at weekends', { easy: 10, good: -10 }], ['Keep going', 'Sticks to it at weekends too', { easy: -10, good: 10 }]],
       ['xiaobei', 'Friends want a late night out. Go?', '🌙', ['Go', 'Plans get broken sometimes', { safe: -20, easy: 10 }], ['Skip', 'Turns it down for the plan', { safe: 10, easy: -10 }]],
     ],
-    problem: 'Quit by day three', fixL: 'Start tiny', fixF: 'Starts with a tiny goal and builds up', gamL: 'Push through', gamCrash: 'Gave up on day four', gamOk: 'Somehow held on',
   },
 } as const;
 
@@ -144,9 +160,13 @@ export function genericLesson(need: string, lang: 'zh' | 'en'): LessonT {
         })),
       },
       {
-        type: 'boss', id: 'boss', q: d.bossQ, emoji: '👹', problem: d.problem,
-        options: [{ id: 'try', emoji: '🔍', label: d.fixL, fact: d.fixF, score: { safe: 15 } }],
-        gamble: { emoji: '🎲', label: d.gamL, crash_if: [], crash: d.gamCrash, ok: d.gamOk },
+        type: 'boss', id: 'boss', q: d.bossQ, emoji: '🧭', who: GUIDE,
+        options: d.fin.map(([emoji, label, fact, pros, cons], i) => ({ id: `fin_${i}`, emoji, label, fact, pros, cons, set: [`fin_${i}`] })),
+        probe: [
+          { who: GUIDE, say: d.probeHi, mood: 'happy' },
+          { id: 'stuck', who: GUIDE, q: d.probeQ, options: d.probeO.map((o, i) => opt(o, `stuck_${i}`)), free: { placeholder: d.whyPh, fact: d.probeFree } },
+        ],
+        bring: d.bring.map(([emoji, label, fact], i) => ({ id: `bring_${i}`, emoji, label, fact })),
       },
     ],
   };

@@ -135,17 +135,18 @@ export function useCountUp(value: number) {
   return shown;
 }
 
-/** 顶栏：退出、进度条、护盾心、方案总价 */
+/** 顶栏：退出、进度条、需求拼图（取代血条）、方案总价 */
 export function TopBar({
   progress,
-  hearts,
+  puzzle,
   total,
   budget,
   streak,
   onClose,
 }: {
   progress: number;
-  hearts: number;
+  /** 需求拼图：一共几块、点亮了几块 */
+  puzzle: { done: number; total: number };
   total: number;
   budget: number | null;
   streak: number;
@@ -179,10 +180,19 @@ export function TopBar({
           🔥{streak}
         </motion.span>
       )}
-      <motion.span key={`hearts-${hearts}`} initial={{ scale: 1.5 }} animate={{ scale: 1 }} className="flex items-center gap-0.5 text-lg font-black text-rose-500">
-        <Emoji e={hearts ? '❤️' : '💔'} size={26} replay={hearts + 1} />
-        {hearts}
-      </motion.span>
+      {puzzle.total > 0 && (
+        <motion.span
+          key={`puzzle-${puzzle.done}`}
+          initial={{ scale: 1.6, rotate: -15 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 12 }}
+          className="flex items-center gap-0.5 text-base font-black tabular-nums text-violet-600"
+          aria-label="need puzzle"
+        >
+          <Emoji e="🧩" size={24} replay={puzzle.done + 1} />
+          {puzzle.done}/{puzzle.total}
+        </motion.span>
+      )}
       <div className="relative">
         <span className={`rounded-xl border-2 border-b-4 px-2 py-1 text-sm font-black tabular-nums ${over ? 'border-rose-300 bg-rose-50 text-rose-600' : 'border-amber-300 bg-amber-50 text-amber-700'}`}>
           {yuan(shown)}

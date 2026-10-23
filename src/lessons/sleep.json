@@ -1312,55 +1312,207 @@
     {
       "type": "boss",
       "id": "boss",
-      "q": "连续加班一周！",
-      "emoji": "👹",
-      "problem": "每晚都到十一点",
+      "q": "最后，你想怎么调？",
+      "emoji": "🧭",
+      "who": "mei",
       "options": [
         {
-          "id": "b_short",
-          "emoji": "✂️",
-          "label": "睡前流程减半",
-          "fact": "加班的日子只保留最短的睡前流程（拉伸 5 分钟、不看手机）",
-          "price": -15,
-          "tip": "流程可以短，但不能断",
-          "score": {
-            "good": 10,
-            "easy": 5
-          }
+          "id": "dir_slow",
+          "emoji": "🐢",
+          "label": "每周提前一点",
+          "fact": "每周把入睡和起床时间各提前 15 分钟，慢慢调到目标",
+          "set": [
+            "dir_slow"
+          ],
+          "pros": "身体不抗拒",
+          "cons": "要一两个月"
         },
         {
-          "id": "b_nap",
-          "emoji": "💤",
-          "label": "午睡二十分钟",
-          "fact": "加班周用 20 分钟午睡补精力",
-          "tip": "别超过半小时",
-          "score": {
-            "easy": 10
-          }
+          "id": "dir_anchor",
+          "emoji": "⏰",
+          "label": "先固定起床",
+          "fact": "不管几点睡，每天同一时间起床，困了再上床（睡眠科常用做法）",
+          "set": [
+            "dir_anchor"
+          ],
+          "pros": "节律建立最快",
+          "cons": "头几天会很困"
         },
         {
-          "id": "b_talk",
-          "emoji": "🗣️",
-          "label": "跟领导谈边界",
-          "fact": "和领导沟通，晚上十点后的消息第二天早上处理",
-          "tip": "说清楚，大多数人能理解",
-          "score": {
-            "safe": 10,
-            "easy": -5
-          }
+          "id": "dir_buddy",
+          "emoji": "👫",
+          "label": "找人一起打卡",
+          "fact": "和朋友/室友一起定目标、每天打卡互相监督",
+          "set": [
+            "dir_buddy"
+          ],
+          "pros": "不容易放弃",
+          "cons": "要找到靠谱搭子"
         }
       ],
-      "gamble": {
-        "label": "硬撑着照旧",
-        "fact": "加班周也坚持原计划五点起床",
-        "crash_if": [
-          "work_late",
-          "early_start"
-        ],
-        "crash": "第三天开会睡着，被点名了",
-        "loss": 0,
-        "ok": "这周加班不多，扛住了"
-      }
+      "probe": [
+        {
+          "who": "mei",
+          "say": "好，我再多问几句，这样计划才贴你。",
+          "mood": "happy"
+        },
+        {
+          "id": "p_target",
+          "who": "mei",
+          "q": "你想多久调到目标时间？",
+          "options": [
+            {
+              "id": "tg_1",
+              "emoji": "🚀",
+              "label": "一个月内",
+              "fact": "希望一个月内调整到目标作息"
+            },
+            {
+              "id": "tg_2",
+              "emoji": "🗓️",
+              "label": "两个月",
+              "fact": "可以花两个月慢慢调整"
+            },
+            {
+              "id": "tg_any",
+              "emoji": "😌",
+              "label": "不着急",
+              "fact": "不着急，能坚持就好"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_slow"
+            ]
+          }
+        },
+        {
+          "id": "p_weekend",
+          "who": "mei",
+          "q": "周末也能同一时间起吗？",
+          "options": [
+            {
+              "id": "we_yes",
+              "emoji": "💪",
+              "label": "能",
+              "fact": "周末也能和平时同一时间起床"
+            },
+            {
+              "id": "we_hard",
+              "emoji": "😩",
+              "label": "很难",
+              "fact": "周末很难早起，想补觉"
+            },
+            {
+              "id": "we_some",
+              "emoji": "🤏",
+              "label": "晚一小时",
+              "fact": "周末最多比平时晚一小时"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_anchor"
+            ]
+          }
+        },
+        {
+          "id": "p_who",
+          "who": "mei",
+          "q": "找谁一起打卡？",
+          "options": [
+            {
+              "id": "wh_mate",
+              "emoji": "🏠",
+              "label": "室友",
+              "fact": "和室友一起打卡"
+            },
+            {
+              "id": "wh_work",
+              "emoji": "🏢",
+              "label": "同事",
+              "fact": "和同事一起打卡"
+            },
+            {
+              "id": "wh_app",
+              "emoji": "📱",
+              "label": "打卡 App",
+              "fact": "用打卡 App 记录，不找真人"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_buddy"
+            ]
+          }
+        },
+        {
+          "id": "p_nap",
+          "who": "mei",
+          "q": "白天会午睡吗？睡多久？",
+          "options": [
+            {
+              "id": "np_no",
+              "emoji": "🙅",
+              "label": "不午睡",
+              "fact": "白天不午睡"
+            },
+            {
+              "id": "np_s",
+              "emoji": "💤",
+              "label": "半小时内",
+              "fact": "午睡半小时以内"
+            },
+            {
+              "id": "np_l",
+              "emoji": "🛌",
+              "label": "一小时以上",
+              "fact": "午睡一小时以上（可能影响晚上入睡）"
+            }
+          ],
+          "free": {
+            "placeholder": "比如：周末下午会睡两小时",
+            "fact": "用户说的白天补觉情况：{v}",
+            "chips": [
+              "不午睡",
+              "偶尔睡",
+              "周末睡很久"
+            ],
+            "reply": [
+              {
+                "who": "mei",
+                "say": "记下了，这个挺关键。",
+                "mood": "thinking"
+              }
+            ]
+          }
+        },
+        {
+          "who": "mei",
+          "say": "好，剩下的交给 AI 给你排一张具体的作息表。",
+          "mood": "happy"
+        }
+      ],
+      "bring": [
+        {
+          "id": "b_log",
+          "emoji": "📊",
+          "label": "一周睡眠记录",
+          "fact": "最近一周每天几点睡、几点醒（手机或手环的记录）"
+        },
+        {
+          "id": "b_coffee",
+          "emoji": "☕",
+          "label": "咖啡茶的时间",
+          "fact": "每天喝几杯咖啡/茶，最后一杯几点喝"
+        },
+        {
+          "id": "b_shift",
+          "emoji": "📅",
+          "label": "上班和加班安排",
+          "fact": "几点上班、一周加几次班、要不要倒班"
+        }
+      ]
     }
   ],
   "secret": "先管住睡前一小时，早起自然就来了"

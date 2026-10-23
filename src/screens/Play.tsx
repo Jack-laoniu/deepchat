@@ -4,7 +4,8 @@ import { playMusic, type Theme } from '../fx/music';
 import { useGame } from '../game';
 import type { Round } from '../lesson/schema';
 import { Pick } from '../rounds/Pick';
-import { Boss, Fix } from '../rounds/Repair';
+import { Fix } from '../rounds/Repair';
+import { Finale } from '../rounds/Finale';
 import { Slider } from '../rounds/Slider';
 import { Swipe } from '../rounds/Swipe';
 import { Talk } from '../rounds/Talk';
@@ -15,6 +16,7 @@ import { Place } from '../rounds/Place';
 import { Day } from '../rounds/Day';
 import { FeedbackSheet } from '../ui/FeedbackSheet';
 import { RoundGuard } from '../ui/RoundGuard';
+import { filledOf, puzzleOf } from '../lesson/puzzle';
 import { TopBar } from '../ui/kit';
 import { money, t } from '../i18n';
 import { Emoji } from '../ui/Emoji';
@@ -30,7 +32,7 @@ function RoundView({ round }: { round: Round }) {
     case 'fix':
       return <Fix round={round} />;
     case 'boss':
-      return <Boss round={round} />;
+      return <Finale round={round} />;
     case 'talk':
       return <Talk round={round} />;
     case 'map':
@@ -100,7 +102,7 @@ export function Play() {
 
   return (
     <motion.div animate={crashed ? { x: [0, -14, 14, -10, 10, -4, 0] } : { x: 0 }} transition={{ duration: 0.5 }} className="flex h-full flex-col">
-      <TopBar progress={p.done / p.estimate} hearts={g.hearts} total={p.total} budget={p.budget} streak={g.streak} onClose={g.home} />
+      <TopBar progress={p.done / p.estimate} puzzle={{ done: filledOf(g.lesson!, p).size, total: puzzleOf(g.lesson!, p).length }} total={p.total} budget={p.budget} streak={g.streak} onClose={g.home} />
       <PlanStrip />
       <div className="relative flex-1 overflow-hidden px-5 pb-6 pt-6">
         <AnimatePresence mode="wait">

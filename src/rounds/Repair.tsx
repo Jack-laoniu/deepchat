@@ -1,9 +1,9 @@
-import { motion, useAnimationControls } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useRef, useState } from 'react';
 import { useGame } from '../game';
 import { sfx, sparkle } from '../fx/fx';
 import { gambleCrashes, optionDelta } from '../lesson/engine';
-import type { BossRound, FixRound, Option } from '../lesson/schema';
+import type { FixRound, Option } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
 import { PriceBadge } from '../ui/kit';
 import { t } from '../i18n';
@@ -171,109 +171,5 @@ function DragTool({
         <PriceBadge delta={delta} />
       </span>
     </motion.button>
-  );
-}
-
-/** Boss 关：灾害从天而降砸向你的方案，选一个防护 */
-export function Boss({ round }: { round: BossRound }) {
-  const g = useGame();
-  const hazard = useAnimationControls();
-  const [stage, setStage] = useState<Stage>('idle');
-  const [shield, setShield] = useState<string | null>(null);
-  const cart = g.played!.cart;
-
-  const strike = async (o: Option | null) => {
-    if (stage !== 'idle') return;
-    const crash = !o && gambleCrashes(round.gamble, g.played!.flags);
-    if (o) setShield(o.emoji);
-    sfx.whoosh();
-    await hazard.start({ y: 150, scale: 0.8, transition: { duration: 0.45, ease: 'easeIn' } });
-    if (o) {
-      setStage('fixed');
-      sfx.fix();
-      await hazard.start({ y: -60, rotate: -30, opacity: 0, transition: { duration: 0.4 } });
-      g.choose(round, o.id);
-    } else if (crash) {
-      setStage('boom');
-      setTimeout(() => g.gamble(round), 500);
-    } else {
-      setStage('shrug');
-      await hazard.start({ y: 320, opacity: 0, transition: { duration: 0.4 } });
-      g.gamble(round);
-    }
-  };
-
-  return (
-    <div className="flex h-full flex-col">
-      <div className="text-center">
-        <span className="rounded-full bg-purple-600 px-3 py-1 text-xs font-black tracking-widest text-white">BOSS</span>
-        <h2 className="mt-2 text-[28px] font-black text-slate-700">{round.q}</h2>
-      </div>
-
-      <div className="relative flex flex-1 flex-col items-center justify-between py-2">
-        <motion.div animate={hazard} initial={{ y: 0 }}>
-          <motion.div animate={{ y: [0, -10, 0], rotate: [0, 6, -6, 0] }} transition={{ repeat: Infinity, duration: 1.4 }}>
-            <Emoji e={round.emoji} size={110} loop />
-          </motion.div>
-        </motion.div>
-
-        <div className="relative">
-          {shield && stage !== 'boom' && (
-            <motion.div initial={{ scale: 0, y: 20 }} animate={{ scale: 1.3, y: -36 }} className="absolute inset-x-0 -top-10 z-10 flex justify-center">
-              <Emoji e={shield} size={70} replay={1} />
-            </motion.div>
-          )}
-          <div className="flex items-end justify-center gap-1 rounded-3xl bg-slate-100 px-4 pb-3 pt-4">
-            {cart.slice(0, 6).map((it, i) => (
-              <motion.div
-                key={it.id}
-                animate={
-                  stage === 'boom'
-                    ? { x: (i - 2.5) * 60, y: -80 - Math.random() * 80, rotate: (Math.random() - 0.5) * 540, opacity: 0 }
-                    : stage === 'shrug'
-                      ? { rotate: [0, -8, 8, 0] }
-                      : { y: [0, -3, 0] }
-                }
-                transition={stage === 'boom' ? { duration: 0.8 } : { repeat: stage === 'idle' ? Infinity : 0, duration: 1.6, delay: i * 0.12 }}
-              >
-                <Emoji e={it.emoji} size={44} />
-              </motion.div>
-            ))}
-          </div>
-          <div className="mt-1 text-center text-xs font-extrabold text-slate-400">{t('yourPlan')}</div>
-        </div>
-      </div>
-
-      <div className="mt-3 flex justify-center gap-3">
-        {round.options.map((o) => (
-          <motion.button
-            key={o.id}
-            whileTap={{ scale: 0.92 }}
-            onClick={() => {
-              sfx.tap();
-              void strike(o);
-            }}
-            className="relative flex w-24 flex-col items-center gap-1 rounded-3xl border-2 border-b-[5px] border-purple-300 bg-white p-2"
-          >
-            <Emoji e={o.emoji} size={52} />
-            <span className="text-sm font-extrabold text-purple-600">{o.label}</span>
-            <span className="absolute -right-2 -top-2">
-              <PriceBadge delta={optionDelta(cart, o)} />
-            </span>
-          </motion.button>
-        ))}
-        <motion.button
-          whileTap={{ scale: 0.92 }}
-          onClick={() => {
-            sfx.tap();
-            void strike(null);
-          }}
-          className="flex w-24 flex-col items-center gap-1 rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50 p-2"
-        >
-          <Emoji e={round.gamble.emoji} size={52} />
-          <span className="text-sm font-extrabold text-slate-500">{round.gamble.label}</span>
-        </motion.button>
-      </div>
-    </div>
   );
 }
