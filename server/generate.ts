@@ -1,10 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { Config } from './config';
 import { dropNulls, lessonJsonSchema } from './jsonSchema';
+import { keep } from './store';
 import { charById, MOODS } from '../src/chars/library';
 import { GENERATOR_RULES } from '../src/lesson/prompt';
 import { salvage, explainIssues, type Salvaged } from '../src/lesson/salvage';
-import { parseLesson, type Lesson } from '../src/lesson/schema';
+import { fixInnerQuotes, parseLesson, type Lesson } from '../src/lesson/schema';
 import dog from '../src/lessons/dog.json';
 import farm from '../src/lessons/farm.json';
 
@@ -271,7 +272,16 @@ export async function generateLesson(startChat: StartChat, need: string, lang: '
       prompt = SHORTER;
       continue;
     }
-    const json = extractJson(reply.text);
+    let json = extractJson(reply.text);
+    // 字符串里没转义的 "：自己修（比 jsonrepair 猜得准，不会把后面的回合吞掉）
+    if (!parses(json)) {
+      const q = fixInnerQuotes(json);
+      if (q.fixed && parses(q.text)) {
+        console.error(`generate attempt ${attempt + 1}: fixed ${q.fixed} unescaped quote(s) inside text`);
+        json = q.text;
+      }
+    }
+    const syntaxBroken = !parses(json);
     // 结构化输出里可选字段会是 null，我们的校验不认 null
     let parsed: unknown = json;
     try {
@@ -281,7 +291,8 @@ export async function generateLesson(startChat: StartChat, need: string, lang: '
     }
     const r = parseLesson(parsed);
     if (r.ok) return done(r.lesson);
-    console.error(`generate attempt ${attempt + 1}: invalid level (${reply.text.length} chars):`, r.errors.slice(0, 5).join(' | '));
+    const saved = keep('invalid', reply.text);
+    console.error(`generate attempt ${attempt + 1}: invalid level (${reply.text.length} chars${syntaxBroken ? ', broken JSON' : ''}):`, r.errors.slice(0, 5).join(' | '), saved ? `\n  raw reply: ${saved}` : '');
 
     // 小毛病自己修：只截短文字、去掉多余项之类不影响玩法的，直接用，不再麻烦模型
     const s = r.data ? salvage(r.data) : null;
@@ -292,7 +303,18 @@ export async function generateLesson(startChat: StartChat, need: string, lang: '
     if (s) fallback = s;
 
     let problems: string;
-    if (r.issues) problems = explainIssues(r.data, r.issues).map((e) => `- ${e}`).join('\n');
+    // JSON 本身坏了：修补出来的结构错误（「回合不够」之类）是假象，告诉模型 JSON 坏在哪儿才有用
+    if (syntaxBroken) {
+      let msg = 'invalid JSON';
+      try {
+        JSON.parse(json);
+      } catch (e) {
+        msg = (e as Error).message;
+      }
+      const pos = Number(msg.match(/position (\d+)/)?.[1]);
+      const near = Number.isFinite(pos) ? `\nThe text around the error (>>> marks the spot):\n${json.slice(Math.max(0, pos - 160), pos)}>>>${json.slice(pos, pos + 80)}` : '';
+      problems = `- The JSON is not valid: ${msg}${near}\nCommon cause: a double quote inside a string; write quotes inside text as 「」 instead. Keep the same level, only fix the JSON.`;
+    } else if (r.issues) problems = explainIssues(r.data, r.issues).map((e) => `- ${e}`).join('\n');
     else {
       // JSON 语法错：只说「第 6538 个字符」模型看不出是哪儿，把出错位置前后的原文带上
       const pos = Number(r.errors[0].match(/position (\d+)/)?.[1]);

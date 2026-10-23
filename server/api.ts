@@ -1,9 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { mkdirSync, readdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 import { loadConfig, type Config } from './config';
+import { keep } from './store';
 import { ttsFromConfig, type Tts } from './tts';
 import { genericLesson } from '../src/lesson/generic';
 import { dropDecided } from '../src/lesson/salvage';
@@ -21,24 +19,6 @@ import { chatFromConfig, discussNeed, generateLesson, reactLine, UpstreamError, 
  */
 
 const MAX_NEED_CHARS = 200;
-
-/**
- * 最近生成的关卡存一份（默认 /tmp/need-quest/levels，可用 NEED_QUEST_DATA 改），只留最新 30 个。
- * 用户说「这关打不开 / 白屏」时，按日志里的文件名直接看是哪一关、哪一回合。
- */
-const LEVEL_DIR = join(process.env.NEED_QUEST_DATA || join(tmpdir(), 'need-quest'), 'levels');
-function saveLevel(lesson: unknown, need: string): string | null {
-  try {
-    mkdirSync(LEVEL_DIR, { recursive: true });
-    const name = `${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
-    writeFileSync(join(LEVEL_DIR, name), JSON.stringify({ need, lesson }, null, 1));
-    const all = readdirSync(LEVEL_DIR).filter((f) => f.endsWith('.json')).sort();
-    for (const f of all.slice(0, Math.max(0, all.length - 30))) unlinkSync(join(LEVEL_DIR, f));
-    return join(LEVEL_DIR, name);
-  } catch {
-    return null;
-  }
-}
 
 /** 前端某一回合渲染出错：打进日志（每个 IP 每小时最多 20 条，防刷） */
 const clientLogs = new Map<string, { n: number; at: number }>();
@@ -204,7 +184,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
       r = { ok: true, lesson: d.lesson };
     }
     if (r.ok) {
-      const file = saveLevel(r.lesson, need);
+      const file = keep('level', JSON.stringify({ need, lesson: r.lesson }, null, 1));
       if (file) console.error(`generate: saved ${file}`);
       cache.set(key, r.lesson);
       if (cache.size > 200) cache.delete(cache.keys().next().value!);

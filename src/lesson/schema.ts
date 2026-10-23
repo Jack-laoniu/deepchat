@@ -456,6 +456,58 @@ export type Lesson = z.infer<typeof Lesson>;
 /** 失败时带上解析出来的原始数据和结构化错误，方便自动修补（salvage）和给模型指出具体哪段文字有问题 */
 export type ParseResult = { ok: true; lesson: Lesson } | { ok: false; errors: string[]; data?: unknown; issues?: z.ZodIssue[] };
 
+/**
+ * 修「字符串里没转义的英文双引号」——模型最常犯的 JSON 错误（如 低嘌呤"饮食"）。
+ * 在字符串里遇到 " 时往后看：后面紧跟 , } ] : （再往后是下一个键/值）才是真的收尾，否则是正文里的引号，换成「」。
+ * 通用的 jsonrepair 在这种情况下会猜错字符串的结尾，把后面整段回合吞掉，所以先用这个。返回修好的文字和改了几处。
+ */
+export function fixInnerQuotes(text: string): { text: string; fixed: number } {
+  let out = '';
+  let inStr = false;
+  let open = true; // 下一个正文引号是开引号「还是关引号」
+  let fixed = 0;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (!inStr) {
+      out += ch;
+      if (ch === '"') {
+        inStr = true;
+        open = true;
+      }
+      continue;
+    }
+    if (ch === '\\') {
+      out += ch + (text[i + 1] ?? '');
+      i++;
+      continue;
+    }
+    if (ch !== '"') {
+      out += ch;
+      continue;
+    }
+    // 看后面第一个非空白字符
+    let j = i + 1;
+    while (j < text.length && /\s/.test(text[j])) j++;
+    const next = text[j];
+    let closes = next === undefined || next === '}' || next === ']' || next === ':';
+    if (next === ',') {
+      // 逗号后面应该是下一个值 / 键：引号、括号、数字、true/false/null
+      let k = j + 1;
+      while (k < text.length && /\s/.test(text[k])) k++;
+      closes = /["{[\d\-tfn]/.test(text[k] ?? '"');
+    }
+    if (closes) {
+      out += ch;
+      inStr = false;
+    } else {
+      out += open ? '「' : '」';
+      open = !open;
+      fixed++;
+    }
+  }
+  return { text: out, fixed };
+}
+
 export function parseLesson(input: unknown): ParseResult {
   let data = input;
   if (typeof input === 'string') {
@@ -464,9 +516,14 @@ export function parseLesson(input: unknown): ParseResult {
     try {
       data = JSON.parse(text);
     } catch (e) {
-      // 模型常犯的小毛病（中文里夹着没转义的 "、多余的逗号、被截断的结尾）先自动修一下
+      // 模型常犯的小毛病：先修字符串里没转义的 "；还不行再交给 jsonrepair（多余的逗号、被截断的结尾…）
       try {
-        data = JSON.parse(jsonrepair(text));
+        const q = fixInnerQuotes(text);
+        try {
+          data = JSON.parse(q.text);
+        } catch {
+          data = JSON.parse(jsonrepair(q.text));
+        }
       } catch {
         return { ok: false, errors: [`不是合法 JSON：${(e as Error).message}`] };
       }

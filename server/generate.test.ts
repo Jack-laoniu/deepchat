@@ -255,4 +255,29 @@ describe('OpenAI-compatible provider', () => {
     expect(bodies[0].max_tokens ?? bodies[0].max_completion_tokens).toBe(32000);
     expect('reasoning_effort' in bodies[1]).toBe(false);
   });
+
+  it('fixes raw double quotes inside text itself, without a second round trip or losing rounds', async () => {
+    const l = structuredClone(farm) as any;
+    const text = JSON.stringify(l).replace('"say":"', '"say":"他说"别急"，');
+    let calls = 0;
+    vi.stubGlobal('fetch', async () => (calls++, sse(text)));
+    const r = await generateLesson(openAiChat({ baseUrl: 'https://q.example/v1', apiKey: 'k', model: 'm' }), '农场浇水', 'zh');
+    expect(r.ok).toBe(true);
+    expect(calls).toBe(1);
+    if (r.ok) expect(r.lesson.rounds.length).toBe(farm.rounds.length);
+  });
+
+  it('tells the model where its JSON broke instead of the misleading structure errors of a guessed repair', async () => {
+    const bodies: any[] = [];
+    const broken = JSON.stringify(farm).replace('"rounds":[', '"rounds":[{"type":"talk",,,');
+    vi.stubGlobal('fetch', async (_u: string, init: RequestInit) => {
+      bodies.push(JSON.parse(init.body as string));
+      return sse(bodies.length === 1 ? broken : JSON.stringify(farm));
+    });
+    const r = await generateLesson(openAiChat({ baseUrl: 'https://syn.example/v1', apiKey: 'k', model: 'm' }), '农场浇水', 'zh');
+    expect(r.ok).toBe(true);
+    const ask = bodies[1].messages.at(-1).content as string;
+    expect(ask).toContain('The JSON is not valid');
+    expect(ask).not.toContain('at least 3');
+  });
 });
