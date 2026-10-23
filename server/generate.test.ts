@@ -147,7 +147,7 @@ describe('OpenAI-compatible provider', () => {
       if (body.response_format) return new Response('{"error":"response_format is not supported"}', { status: 400 });
       return sse(JSON.stringify(farm));
     });
-    const start = openAiChat({ baseUrl: 'https://relay.example/v1', apiKey: 'k', model: 'json-less' });
+    const start = openAiChat({ baseUrl: 'https://relay.example/v1', apiKey: 'k', model: 'json-less', strictSchema: true });
     expect((await generateLesson(start, '农场浇水', 'zh')).ok).toBe(true);
     // 先要 strict schema，不行降成任意 JSON，还不行就不加约束
     expect(bodies.map((b) => b.response_format?.type)).toEqual(['json_schema', 'json_object', undefined]);
@@ -199,7 +199,7 @@ describe('OpenAI-compatible provider', () => {
       bodies.push(JSON.parse(init.body as string));
       return sse(JSON.stringify(withNulls));
     });
-    const start = openAiChat({ baseUrl: 'https://api.example/v1', apiKey: 'k', model: 'strict-ok' });
+    const start = openAiChat({ baseUrl: 'https://api.example/v1', apiKey: 'k', model: 'strict-ok', strictSchema: true });
     expect((await generateLesson(start, '农场浇水', 'zh')).ok).toBe(true);
     expect(bodies[0].response_format.type).toBe('json_schema');
   });
@@ -241,7 +241,7 @@ describe('OpenAI-compatible provider', () => {
     expect(bodies[1].messages.at(-1).content).toContain('SHORTER');
   });
 
-  it('asks reasoning models to think briefly, and drops the parameter for relays that reject it', async () => {
+  it('asks reasoning models for medium effort when generating, and drops the parameter for relays that reject it', async () => {
     const bodies: any[] = [];
     vi.stubGlobal('fetch', async (_u: string, init: RequestInit) => {
       const b = JSON.parse(init.body as string);
@@ -251,7 +251,8 @@ describe('OpenAI-compatible provider', () => {
     });
     const r = await generateLesson(openAiChat({ baseUrl: 'https://think.example/v1', apiKey: 'k', model: 'gpt-5.4-mini' }), '农场浇水', 'zh');
     expect(r.ok).toBe(true);
-    expect(bodies[0].reasoning_effort).toBe('low');
+    expect(bodies[0].reasoning_effort).toBe('medium');
+    expect(bodies[0].response_format).toEqual({ type: 'json_object' });
     expect(bodies[0].max_tokens ?? bodies[0].max_completion_tokens).toBe(32000);
     expect('reasoning_effort' in bodies[1]).toBe(false);
   });
@@ -279,5 +280,19 @@ describe('OpenAI-compatible provider', () => {
     const ask = bodies[1].messages.at(-1).content as string;
     expect(ask).toContain('The JSON is not valid');
     expect(ask).not.toContain('at least 3');
+  });
+
+  it('explains a level crammed into one round as a structure problem', async () => {
+    const crammed = structuredClone(farm) as any;
+    const talk = crammed.rounds[0];
+    crammed.rounds = [talk];
+    const bodies: any[] = [];
+    vi.stubGlobal('fetch', async (_u: string, init: RequestInit) => {
+      bodies.push(JSON.parse(init.body as string));
+      return sse(JSON.stringify(bodies.length === 1 ? crammed : farm));
+    });
+    const r = await generateLesson(openAiChat({ baseUrl: 'https://cram.example/v1', apiKey: 'k', model: 'm' }), '农场浇水', 'zh');
+    expect(r.ok).toBe(true);
+    expect(bodies[1].messages.at(-1).content).toContain('FLAT array');
   });
 });

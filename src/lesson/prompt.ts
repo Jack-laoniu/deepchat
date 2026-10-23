@@ -49,7 +49,7 @@ RULES
    To make something CHEAPER (downgrade, second-hand, smaller, skip it), the replacement MUST reuse the SAME id as the item it replaces (or put the old id in "remove"); a new id keeps both items and the total goes UP. A cost-cutting option must lower the total; a non-item saving is a negative "price".
 5. gamble.crash_if: flags under which it must crash ("always" or a list). When saving money is reasonable for a small scale / light load, don't use "always" and write an "ok" text.
 6. Prices are your estimates; never invent sources.
-7. 8–12 rounds: open with a chat with "${GUIDE}" asking the motivation, include at least one story, one map, one slider (kind budget, in money or in the goal unit), one sort (what they really need among optional extras), one chain (living with the choice), and a place (when space matters) or a day (the hardest, most telling day of this need), and end with the boss. Max 16 rounds.
+7. "rounds" is a FLAT array of 8–12 separate round objects — never put the whole level inside one talk round (a talk has at most 24 beats; aim for 6–12). 8–12 rounds: open with a chat with "${GUIDE}" asking the motivation, include at least one story, one map, one slider (kind budget, in money or in the goal unit), one sort (what they really need among optional extras), one chain (living with the choice), and a place (when space matters) or a day (the hardest, most telling day of this need), and end with the boss. Max 16 rounds.
 8. ids use lowercase letters, digits, underscores only. Output JSON only, no explanation.
 9. Never put a raw double quote (") inside a string value. To quote speech inside text use 「」 (Chinese) or ‘ ’ (English).`;
 

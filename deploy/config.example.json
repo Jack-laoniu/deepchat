@@ -5,13 +5,14 @@
   "provider": "",
 
   "openai": {
-    "_说明": "OpenAI 兼容接口。baseUrl 通常以 /v1 结尾；model 必填。timeoutSec 单次调用超时秒数；fallbackModel 备用模型：主模型超时或一直写不对时换它再试（可留空）；maxTokens 单次最多输出多少 token（默认 32000，推理模型的思考也算在里面）；reasoningEffort 推理模型（gpt-5 系列）想多久：minimal / low（默认）/ medium / high，填 off 则不传",
+    "_说明": "OpenAI 兼容接口。baseUrl 通常以 /v1 结尾；model 必填。timeoutSec 单次调用超时秒数；fallbackModel 备用模型：主模型超时或一直写不对时换它再试（可留空）；maxTokens 单次最多输出多少 token（默认 32000，推理模型的思考也算在里面）；reasoningEffort 推理模型（gpt-5 系列）想多久：留空 = 生成关卡用 medium、其它用 low；填 minimal / low / medium / high 则都用它；填 off 不传；strictSchema 填 true 用严格 JSON schema（默认 JSON 模式，输出更短）",
     "apiKey": "",
     "baseUrl": "https://api.openai.com/v1",
     "model": "",
     "timeoutSec": 150,
     "fallbackModel": "",
-    "reasoningEffort": "low"
+    "reasoningEffort": "",
+    "strictSchema": false
   },
 
   "anthropic": {

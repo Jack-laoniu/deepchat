@@ -196,7 +196,19 @@ export function salvage(data: unknown): Salvaged | null {
 
 /** 给模型看的错误：带上出问题的原文和它的宽度，免得它反复犯同一个错 */
 export function explainIssues(data: unknown, issues: ZodIssue[]): string[] {
-  return issues.slice(0, 30).map((i) => {
+  // 最离谱的一种：整关都塞进了第一个回合（几十句对话、提问 id 重复、回合不足 3 个）。只报「回合不够」模型看不懂，会往里塞得更多
+  const rounds = at(data, ['rounds']);
+  const crammed =
+    (Array.isArray(rounds) && rounds.length < 5) ||
+    issues.some((i) => i.path[0] === 'rounds' && i.path.length === 3 && i.path[2] === 'beats' && i.code === 'too_big');
+  const head = crammed
+    ? [
+        `STRUCTURE: you put (almost) the whole level into ${Array.isArray(rounds) ? rounds.length : 'too few'} round(s). "rounds" must be a FLAT array of 8–12 SEPARATE round objects, ` +
+          'each with its own "type": open with a talk (6–12 beats), then e.g. map, slider (budget), sort, chain, day or place, a fix where something goes wrong, and the boss LAST. ' +
+          'Move every mini-game and every question out of that talk round into its own round object; question ids must be unique in the whole level.',
+      ]
+    : [];
+  return head.concat(issues.slice(0, 30).map((i) => {
     const v = at(data, i.path);
     const where = i.path.join('.') || 'root';
     if (typeof v === 'string' && /不超过 (\d+) 个汉字宽/.test(i.message)) {
@@ -206,7 +218,7 @@ export function explainIssues(data: unknown, issues: ZodIssue[]): string[] {
     if (i.code === 'too_big' && Array.isArray(v)) return `${where} has ${v.length} items, at most ${i.maximum} allowed.`;
     if (i.code === 'invalid_type' && v === undefined) return `${where} is missing (required).`;
     return `${where}: ${i.message}`;
-  });
+  }));
 }
 
 const norm = (s: string) => s.replace(/[\s·・、，,。.!！?？「」“”"']/g, '').toLowerCase();

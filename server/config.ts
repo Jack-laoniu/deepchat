@@ -10,7 +10,7 @@ export interface Config {
   /** 在线生成用哪个：openai = OpenAI 兼容接口，anthropic = Claude；留空则自动选有 key 的那个 */
   provider?: 'openai' | 'anthropic' | '';
   /** timeoutSec：单次调用超时；fallbackModel：主模型超时/一直写不对时换这个模型再试一次（同一个接口） */
-  openai?: { apiKey?: string; baseUrl?: string; model?: string; maxTokens?: number; timeoutSec?: number; fallbackModel?: string; /** 推理模型的思考强度：low（默认）/ medium / high / minimal / off（不传） */ reasoningEffort?: string };
+  openai?: { apiKey?: string; baseUrl?: string; model?: string; maxTokens?: number; timeoutSec?: number; fallbackModel?: string; /** 推理模型的思考强度：不填 = 生成关卡 medium、其它 low；填了就都用它；off = 不传 */ reasoningEffort?: string; /** true = 用严格 JSON schema（默认 JSON 模式） */ strictSchema?: boolean };
   anthropic?: { apiKey?: string; baseUrl?: string; model?: string; effort?: 'low' | 'medium' | 'high'; timeoutSec?: number; fallbackModel?: string };
   /** 一次生成（含返修和备用模型）总共最多等多少秒，超了就用兜底关卡 */
   generateBudgetSec?: number;

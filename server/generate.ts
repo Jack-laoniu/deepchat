@@ -32,7 +32,8 @@ export type Turn = { role: 'user' | 'assistant'; content: string };
  * 接口不支持时自动降级：schema(strict) → 任意 JSON → 不加约束。
  */
 export type JsonFormat = boolean | { name: string; schema: Record<string, unknown> };
-export type StartChat = (system: string, history?: Turn[], opts?: { json?: JsonFormat }) => Chat;
+/** effort：这次对话想让推理模型想多久（生成关卡要想清楚结构，角色即兴回应一句要快） */
+export type StartChat = (system: string, history?: Turn[], opts?: { json?: JsonFormat; effort?: string }) => Chat;
 
 /** 单次模型调用的超时（毫秒），可在配置里改 */
 export const DEFAULT_CALL_TIMEOUT = 150_000;
@@ -126,7 +127,7 @@ async function readReply(res: Response): Promise<Reply> {
   }
 }
 
-export function openAiChat(opts: { baseUrl: string; apiKey: string; model: string; maxTokens?: number; timeoutMs?: number; reasoningEffort?: string }): StartChat {
+export function openAiChat(opts: { baseUrl: string; apiKey: string; model: string; maxTokens?: number; timeoutMs?: number; reasoningEffort?: string; strictSchema?: boolean }): StartChat {
   const url = `${opts.baseUrl.replace(/\/+$/, '')}/chat/completions`;
   const key = `${url}|${opts.model}`;
   const timeout = opts.timeoutMs ?? DEFAULT_CALL_TIMEOUT;
@@ -134,7 +135,7 @@ export function openAiChat(opts: { baseUrl: string; apiKey: string; model: strin
     !json || mode === 'none' ? {} :
     mode === 'schema' && typeof json === 'object' ? { response_format: { type: 'json_schema', json_schema: { name: json.name, strict: true, schema: json.schema } } } :
     { response_format: { type: 'json_object' } };
-  const post = (messages: OaMessage[], param: 'max_tokens' | 'max_completion_tokens' | 'none', mode: Mode, json: JsonFormat | undefined, signal: AbortSignal) =>
+  const post = (messages: OaMessage[], param: 'max_tokens' | 'max_completion_tokens' | 'none', mode: Mode, json: JsonFormat | undefined, signal: AbortSignal, effort: string) =>
     fetch(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: `Bearer ${opts.apiKey}` },
@@ -144,7 +145,7 @@ export function openAiChat(opts: { baseUrl: string; apiKey: string; model: strin
         stream: true,
         // 32000：推理模型的「思考」也算在这个额度里，16000 时长关卡会写到一半被截断
         ...(param === 'none' ? {} : { [param]: opts.maxTokens ?? 32000 }),
-        ...(isReasoningModel(opts.model) && !noReasoning.has(key) && opts.reasoningEffort !== 'off' ? { reasoning_effort: opts.reasoningEffort || 'low' } : {}),
+        ...(isReasoningModel(opts.model) && !noReasoning.has(key) && effort !== 'off' ? { reasoning_effort: effort } : {}),
         ...format(mode, json),
       }),
       signal,
@@ -160,7 +161,8 @@ export function openAiChat(opts: { baseUrl: string; apiKey: string; model: strin
         // 有的模型输出上限比 16000 小，会说「太大」。依次换着试，记住这个接口+模型能用的那个。
         const order = (['max_tokens', 'max_completion_tokens', 'none'] as const).filter((p) => p !== tokenParam.get(key));
         const tries = tokenParam.has(key) ? [tokenParam.get(key)!, ...order] : order;
-        const wanted: Mode = !chatOpts.json ? 'none' : typeof chatOpts.json === 'object' ? 'schema' : 'object';
+        // 严格 schema 要求每个可选字段都写成 null，关卡 JSON 会胀一倍，模型也更容易写乱结构；默认用 JSON 模式（同样保证语法合法），配置里可打开
+        const wanted: Mode = !chatOpts.json ? 'none' : typeof chatOpts.json === 'object' && opts.strictSchema ? 'schema' : 'object';
         // 想要的约束，但不超过这个接口已知能接受的上限
         const cap = jsonMode.get(key) ?? 'schema';
         let mode: Mode = RANK[wanted] <= RANK[cap] ? wanted : cap;
@@ -168,7 +170,7 @@ export function openAiChat(opts: { baseUrl: string; apiKey: string; model: strin
         try {
           for (let i = 0; i < tries.length; i++) {
             const param = tries[i];
-            res = await post(messages, param, mode, chatOpts.json, signal);
+            res = await post(messages, param, mode, chatOpts.json, signal, opts.reasoningEffort || chatOpts.effort || 'low');
             if (res.ok) {
               tokenParam.set(key, param);
               break;
@@ -245,7 +247,8 @@ export function extractJson(text: string): string {
  */
 export async function generateLesson(startChat: StartChat, need: string, lang: 'zh' | 'en', context = '', deadline = Infinity): Promise<GenerateResult> {
   const example = lang === 'zh' ? farm : dog;
-  const chat = startChat(GENERATOR_RULES, [], { json: { name: 'need_quest_level', schema: lessonJsonSchema(true) } });
+  // 生成整关要把结构想清楚：推理强度用 medium（配置里的 reasoningEffort 优先）
+  const chat = startChat(GENERATOR_RULES, [], { json: { name: 'need_quest_level', schema: lessonJsonSchema(true) }, effort: 'medium' });
   const followUp = context
     ? `\n\nThis is a FOLLOW-UP level. The user already played one level for this need. What we learned so far:\n${context}\n\n` +
       `Design a NEW level that digs into what is still unclear or was never covered (especially anything the user says is still unclear). ` +
@@ -393,7 +396,7 @@ export function chatFromConfig(c: Config): ModelChoice | null {
       return null;
     }
     const baseUrl = oa.baseUrl || 'https://api.openai.com/v1';
-    const make = (model: string) => openAiChat({ baseUrl, apiKey: oa.apiKey!, model, maxTokens: oa.maxTokens, timeoutMs: (oa.timeoutSec ?? 150) * 1000, reasoningEffort: oa.reasoningEffort });
+    const make = (model: string) => openAiChat({ baseUrl, apiKey: oa.apiKey!, model, maxTokens: oa.maxTokens, timeoutMs: (oa.timeoutSec ?? 150) * 1000, reasoningEffort: oa.reasoningEffort, strictSchema: oa.strictSchema });
     return {
       start: make(oa.model),
       label: `openai-compatible ${baseUrl} ${oa.model}`,
