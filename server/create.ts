@@ -21,7 +21,11 @@ const DOMAINS = ['https://fonts.gstatic.com', 'https://fonts.googleapis.com'];
 
 const TOOL_DESCRIPTION = `Start an interactive "Need Quest" game that helps the user figure out what they actually need.
 
-Call this whenever the user wants to get something done (buy, build, plan, set up, organize, choose…) but the details are vague. Instead of asking a list of questions, write a level as described below and pass it as "lesson". The user plays it (stories, chats with characters, a town map, quick choices, a boss) and the game sends back a structured summary of their real situation, own words, budget and accepted risks — use that to give the detailed plan.
+Call this whenever the user wants to get something done (buy, build, plan, set up, organize, choose…) but the details are vague. Instead of asking a list of questions, write a level as described below and pass it as "lesson". The user plays it (stories, chats with characters, a walkable map, quick choices, a finale) and the game sends back a structured summary of their real situation, own words, budget and accepted risks — use that to give the detailed plan.
+
+If you already know relevant things about this user — from your memory of them or earlier in this conversation (for example an earlier Need Quest summary: they chose a plug-in hybrid, have no fixed parking spot) — build them into the level: characters remember and mention them naturally (「你上回说想买插混，后来买了吗？」), do not re-ask what is known, and only confirm what may have changed. Use only what is relevant to this need.
+
+The game finds out what the user NEEDS; it does not deliver the solution. After it returns the summary, you give the detailed plan.
 
 If the tool returns validation errors, fix exactly those fields and call it again.
 
@@ -41,7 +45,7 @@ export function createNeedQuestServer(widgetHtml: string): McpServer {
           mimeType: 'text/html+skybridge',
           text: widgetHtml,
           _meta: {
-            'openai/widgetDescription': 'An interactive mini game that turns a vague need into a clear plan.',
+            'openai/widgetDescription': 'An interactive mini game that turns a vague need into a clear, structured need.',
             'openai/widgetPrefersBorder': true,
             'openai/widgetCSP': { connect_domains: DOMAINS, resource_domains: DOMAINS },
           },
