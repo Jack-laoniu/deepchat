@@ -1,6 +1,9 @@
 import { characterCatalog, GUIDE, LANGS, MOODS } from '../chars/library';
 import dog from '../lessons/dog.json';
 
+/** 终章的写法：整关生成时用，玩到快结尾按用户的回答重写终章时也用 */
+const BOSS_RULE = `"who" = the most knowledgeable character, "q" = the decision to make (≤ 14). "options" = 2–4 approaches people in this field actually use (e.g. for gout: 急性期先止痛就医 / 长期降尿酸药 / 只靠饮食运动), each with "pros" and "cons" (≤ 16 each), a full "fact", and set a flag. "probe" = 3–6 beats of follow-up chat that dig deeper into the chosen approach (questions with "if" on that flag, with "free" for the user's own words) — ask what an expert would need to know next (numbers, history, constraints, what they already tried). "bring" = 2–5 materials the downstream AI will need before giving a concrete plan (e.g. 最近一次尿酸化验单, 正在吃的药, 车位产权证明), each {id, emoji, label ≤ 10, fact}. No "gamble" in the finale.`;
+
 /** 让任意大模型把一句需求编译成关卡 JSON。商店版里它就是 MCP 工具描述。 */
 export const GENERATOR_RULES = `You turn a user's vague one-line need into a JSON level for "Need Quest", a Duolingo-style mini game.
 
@@ -28,7 +31,7 @@ ROUND TYPES
 - swipe: yes / no
 - slider: drag a number; kind "budget" asks the budget cap; "{v}" in fact is the value
 - fix: a problem appeared; 1–3 fixes + 1 gamble (skip the fix and hope)
-- boss (the FINALE, required, must be last): "who" = the most knowledgeable character, "q" = the decision to make (≤ 14). "options" = 2–4 approaches people in this field actually use (e.g. for gout: 急性期先止痛就医 / 长期降尿酸药 / 只靠饮食运动), each with "pros" and "cons" (≤ 16 each), a full "fact", and set a flag. "probe" = 3–6 beats of follow-up chat that dig deeper into the chosen approach (questions with "if" on that flag, with "free" for the user's own words) — ask what an expert would need to know next (numbers, history, constraints, what they already tried). "bring" = 2–5 materials the downstream AI will need before giving a concrete plan (e.g. 最近一次尿酸化验单, 正在吃的药, 车位产权证明), each {id, emoji, label ≤ 10, fact}. No "gamble" in the finale.
+- boss (the FINALE, required, must be last): ${BOSS_RULE}
 - sort: drag 3–8 cards into 2–3 bins (e.g. must / nice / skip). No right answers — it reveals priorities. A card with "item" joins the plan when dropped in a bin with keep:true, and leaves it otherwise. Each drop sets the flag "<card id>_<bin id>".
 - place: an illustrated scene ("room" | "yard" | "office" | "street") with 2–4 spots (x 5–95, y 10–80) and 1–4 things; the user drags each thing to where it would go in their life. It reveals space, context and who uses it. A spot can list "bad" things with a short "warn" (it shakes and warns; the user may move it). Each placement sets "<thing id>_<spot id>".
 - day: a wordless day (Florence-style) — NOT an ordinary routine day. Pick THE day where this need really hurts or gets tested, the one people complain about (first car → driving home for Spring Festival stuck in a highway jam; new puppy → the first night it cries; renovation → move-in day; study plan → the night before the exam). 3–5 moments ("at": morning | noon | evening | night, plus "time" like "04:30" for the clock), each moment a pain point with a scene emoji and 2–3 options shown as BIG emoji only (label is a tiny caption ≤ 4 CJK / 7 letters) revealing how the user would cope. "scene": daily | road (highway, traffic, service area) | outdoor | home. Pick emojis that are obvious without words.
@@ -61,6 +64,30 @@ export const memoryBlock = (memory: string) =>
   'Use it like a friend who remembers: when it matters for THIS need, characters bring it up naturally (e.g. 「你上回说想买插混，后来买了吗？」) and build on it; ' +
   'do not re-ask what is already known, but confirm things that may have changed since. Ignore memories that have nothing to do with this need.';
 
+/** 模型的知识可能停在几年前：告诉它今天的日期，产品、价格、政策要按现在的行情写 */
+export const todayLine = (d = new Date()) =>
+  `TODAY is ${d.toISOString().slice(0, 10)}. Products, models, prices, subsidies, taxes and policies must reflect what is current as of today, not what was true years ago. ` +
+  'For anything that changes often (a subsidy, a tax rule, a market price), say in "fact" that it is an estimate as of today and should be verified locally.';
+
+/**
+ * 个性化终章：用户玩到快结尾时，把前面所有的选择和原话交给模型，重写最后一关。
+ * 用户还在玩前面几关，这边就在后台生成好了，不用多等。
+ */
+export const FINALE_RULES = `You write the FINALE round of a "Need Quest" level (a Duolingo-style mini game that collects a user's real need; it never gives the final solution — a downstream AI does that).
+The user has almost finished the level. You get the level (its cast, the AI's initial guess list, its rounds) and EVERYTHING the user chose and said so far. Rewrite the finale so it is about THIS user, not a generic person.
+
+The finale ("type": "boss"): ${BOSS_RULE}
+
+Make it personal:
+- "q" and the options start from what the user actually said and chose (their budget, constraints, worries, their own words). Drop approaches that clearly contradict what they settled; prefer the 2–4 approaches people in their exact situation really pick today.
+- "probe" asks only what is STILL unclear after their answers — never re-ask anything already answered. Refer back to their words ("你说过「…」，那…").
+- "bring" lists only materials still missing for a concrete plan, given what they told us.
+- The plan items marked "never touched" are only the AI's blind guess. If one is redundant, outdated or contradicts the user's answers, the options should fix it: "remove" its id, or "add" an item with the SAME id at today's realistic price. Never add an item the user already ruled out.
+- Use only characters from the cast. Keep the round id given. Text limits: q ≤ 14, option label ≤ 8, pros / cons ≤ 16, line say ≤ 40, dialogue question q ≤ 24, bring label ≤ 10 (a CJK char = 1 width). Every option needs an emoji and a full "fact" for the downstream AI. Flags used in probe "if" must be set by an option.
+- ids use lowercase letters, digits, underscores only. Never put a raw double quote (") inside a string; use 「」.
+
+Output the finale round as a single JSON object only (with "type": "boss"), no explanation.`;
+
 export function generatorPrompt(need: string, lang: 'zh' | 'en' = 'zh', memory = ''): string {
   return `${GENERATOR_RULES}
 
@@ -70,6 +97,8 @@ ${JSON.stringify(dog)}
 \`\`\`
 
 Write ALL text in ${lang === 'zh' ? 'Simplified Chinese (lang "zh")' : 'English (lang "en")'}.
+
+${todayLine()}
 
 The user's need: ${need || '(write the need here)'}${memory ? `\n\n${memoryBlock(memory)}` : ''}`;
 }

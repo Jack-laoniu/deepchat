@@ -436,6 +436,7 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
       beatsOf(r).forEach((b) => checkCond(b.if, ['rounds', i, 'beats']));
       if (r.type === 'chain') r.cards.forEach((c, j) => checkCond(c.if, ['rounds', i, 'cards', j, 'if']));
       if (r.type === 'place') r.zones.forEach((z, j) => checkCond(z.lockIf, ['rounds', i, 'zones', j, 'lockIf']));
+      if (r.type === 'boss' && r.who && !speakers.has(r.who)) err(['rounds', i, 'who'], `角色 ${r.who} 不在 cast 里`);
       if (r.type === 'map') r.spots.forEach((s, j) => checkCond(s.gift?.if, ['rounds', i, 'spots', j, 'gift', 'if']));
       [...linesOf(r), ...asksOf(r)].forEach((b) => {
         if (!speakers.has(b.who)) err(['rounds', i], `角色 ${b.who} 不在 cast 里`);

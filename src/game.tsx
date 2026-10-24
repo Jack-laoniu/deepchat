@@ -1,10 +1,12 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { requestFinale, serverConfig } from './api';
 import { sfx } from './fx/fx';
 import { hush } from './fx/voice';
 import { jingle } from './fx/music';
 import { detectLang, money, pickCheer, setLocale, t } from './i18n';
 import { gambleCrashes, optionsOf, play, revealsProblem, type Answer, type Crash, type Meter, type Played, type Replies } from './lesson/engine';
-import type { FixRound, Lesson, Round } from './lesson/schema';
+import { bossOf, journeyText, withBoss } from './lesson/journey';
+import { parseLesson, type FixRound, type Lesson, type Round } from './lesson/schema';
 
 export type Phase = 'home' | 'intro' | 'play' | 'win';
 
@@ -26,6 +28,10 @@ interface Game {
   streak: number;
   crashes: Crash[];
   feedback: Feedback | null;
+  /** 个性化终章还在后台生成，而用户已经走到终章了：先等一下 */
+  finaleWaiting: boolean;
+  /** 不等个性化终章了，用关卡里原来的 */
+  skipFinaleWait(): void;
   open(lesson: Lesson): void;
   begin(): void;
   choose(round: Round, optionId: string): void;
@@ -61,6 +67,31 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const played = useMemo(() => (lesson ? play(lesson, answers) : null), [lesson, answers]);
 
+  // 个性化终章：玩到只剩两关 + 终章时，把这一局的选择和原话交给模型，在后台重写终章；
+  // 用户玩完那两关的工夫就生成好了。没有服务器、失败、超时都用关卡里原来的终章。
+  const [custom, setCustom] = useState<'idle' | 'pending' | 'done'>('idle');
+  const job = useRef(0);
+  useEffect(() => {
+    if (phase !== 'play' || custom !== 'idle' || !lesson || !played?.current) return;
+    if (!bossOf(lesson) || played.current.type === 'boss') return void setCustom('done');
+    if (played.estimate - played.done > 3) return;
+    const my = ++job.current;
+    const base = lesson;
+    const journey = journeyText(lesson, played);
+    setCustom('pending');
+    void serverConfig()
+      .then((c) => (c.generate ? requestFinale(base, journey) : null))
+      .then((r) => {
+        if (job.current !== my) return;
+        if (r) {
+          // 只换终章（和可能补进来的角色），其他回合原样保留
+          const next: Lesson = { ...withBoss(base, r.boss), cast: r.cast };
+          if (parseLesson(next).ok) setLesson((cur) => (cur === base ? next : cur));
+        }
+        setCustom('done');
+      });
+  }, [phase, custom, lesson, played]);
+
   const commit = (a: Answer, fb: (before: Played, after: Played, problem: FixRound | null) => Feedback) => {
     if (!lesson) return;
     const after = [...answers, a];
@@ -87,7 +118,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
     streak,
     crashes,
     feedback,
+    finaleWaiting: custom === 'pending' && played?.current?.type === 'boss' && !feedback,
+    skipFinaleWait() {
+      job.current++;
+      setCustom('done');
+    },
     open(l) {
+      job.current++;
+      setCustom('idle');
       setLocale(l.lang, l.currency, l.goal);
       setLesson(l);
       setAnswers([]);

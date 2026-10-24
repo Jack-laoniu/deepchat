@@ -5,7 +5,7 @@ import { useGame } from '../game';
 import type { Round } from '../lesson/schema';
 import { Pick } from '../rounds/Pick';
 import { Fix } from '../rounds/Repair';
-import { Finale } from '../rounds/Finale';
+import { Finale, FinaleWait } from '../rounds/Finale';
 import { Slider } from '../rounds/Slider';
 import { Swipe } from '../rounds/Swipe';
 import { Talk } from '../rounds/Talk';
@@ -116,7 +116,7 @@ export function Play() {
               className="h-full"
             >
               <RoundGuard round={current} title={g.lesson?.title ?? ''} onSkip={() => skip(g, current)} onHome={g.home}>
-                <RoundView round={current} />
+                {g.finaleWaiting && current.type === 'boss' ? <FinaleWait round={current} /> : <RoundView round={current} />}
               </RoundGuard>
             </motion.div>
           )}

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Character } from '../chars/Character';
 import { GUIDE } from '../chars/library';
 import { sfx } from '../fx/fx';
@@ -234,3 +234,46 @@ export function Finale({ round }: { round: BossRound }) {
 }
 
 const piecesOfFinale = (r: BossRound): Piece[] => (r.bring.length ? ['direction', 'data'] : ['direction']);
+
+/**
+ * 用户走到终章时，按他的回答重写的终章还没生成好：拼图转一转等一会儿。
+ * 8 秒后可以点「不等了」；30 秒还没好就自动用原来的终章。
+ */
+export function FinaleWait({ round }: { round: BossRound }) {
+  const g = useGame();
+  const [canSkip, setCanSkip] = useState(false);
+  useEffect(() => {
+    const a = setTimeout(() => setCanSkip(true), 8000);
+    const b = setTimeout(() => g.skipFinaleWait(), 30_000);
+    return () => {
+      clearTimeout(a);
+      clearTimeout(b);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-5 text-center">
+      <span className="rounded-full bg-violet-600 px-3 py-1 text-xs font-black tracking-widest text-white">{t('finaleTag')}</span>
+      <div className="relative">
+        <div className="overflow-hidden rounded-3xl bg-violet-50">
+          <Character id={round.who ?? GUIDE} size={120} bust mood="thinking" />
+        </div>
+        <motion.div className="absolute -right-4 -top-4" animate={{ rotate: [0, 360] }} transition={{ duration: 2.4, repeat: Infinity, ease: 'linear' }}>
+          <Emoji e="🧩" size={44} />
+        </motion.div>
+      </div>
+      <div className="max-w-[18rem] text-lg font-black text-slate-600">{t('finaleWait')}</div>
+      <div className="flex gap-1.5">
+        {[0, 1, 2].map((i) => (
+          <motion.span key={i} className="h-2.5 w-2.5 rounded-full bg-violet-400" animate={{ y: [0, -8, 0] }} transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }} />
+        ))}
+      </div>
+      <AnimatePresence>
+        {canSkip && (
+          <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={g.skipFinaleWait} className="text-sm font-black text-slate-400">
+            {t('finaleWaitSkip')}
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

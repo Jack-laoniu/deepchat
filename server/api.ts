@@ -5,7 +5,8 @@ import { keep } from './store';
 import { ttsFromConfig, type Tts } from './tts';
 import { genericLesson } from '../src/lesson/generic';
 import { dropDecided } from '../src/lesson/salvage';
-import { chatFromConfig, discussNeed, generateLesson, reactLine, UpstreamError, type GenerateResult, type ModelChoice, type StartChat, type Turn } from './generate';
+import { parseLesson } from '../src/lesson/schema';
+import { chatFromConfig, discussNeed, finaleFor, generateLesson, reactLine, UpstreamError, type GenerateResult, type ModelChoice, type StartChat, type Turn } from './generate';
 
 /**
  * 网页版的生成接口：
@@ -132,6 +133,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   if (path === '/api/react') return react(req, res, cfg);
   if (path === '/api/tts') return speech(req, res, cfg);
   if (path === '/api/clientlog') return clientLog(req, res);
+  if (path === '/api/finale') return finale(req, res, cfg);
   if (path !== '/api/generate') return false;
   if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
   if (!client) return void json(res, 503, { error: 'disabled' }), true;
@@ -228,6 +230,43 @@ function upstreamFailed(res: ServerResponse, what: string, e: unknown) {
   // detail 只给状态码，方便排查（401 = key 不对，404 = 地址或模型名不对，400 = 参数不被接受…），不带上游原文
   const detail = e instanceof Anthropic.APIError || e instanceof UpstreamError ? `HTTP ${e.status}` : (e as Error)?.name === 'TimeoutError' ? 'timeout' : 'network';
   json(res, status, { error: status === 429 ? 'busy' : 'upstream', detail });
+}
+
+/**
+ * 个性化终章：用户玩到倒数几关时前端在后台发来这一局的选择和原话，按它重写最后一关。
+ * 用的是聊天的额度（不占生成关卡的次数）；失败就回 {}，前端用原来的终章。
+ */
+async function finale(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<typeof settings>): Promise<boolean> {
+  if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
+  if (!cfg.client) return void json(res, 503, { error: 'disabled' }), true;
+  let body: { lesson?: unknown; journey?: unknown; code?: unknown; memory?: unknown };
+  try {
+    body = (await readBody(req, 96_000)) as typeof body;
+  } catch {
+    return void json(res, 400, { error: 'bad_request' }), true;
+  }
+  if (cfg.accessCode && body?.code !== cfg.accessCode) return void json(res, 403, { error: 'code' }), true;
+  const parsed = parseLesson(body?.lesson);
+  const journey = typeof body?.journey === 'string' ? body.journey.slice(0, 8000) : '';
+  if (!parsed.ok || !journey) return void json(res, 400, { error: 'need' }), true;
+  const memory = typeof body?.memory === 'string' ? body.memory.slice(0, 4000) : '';
+
+  const verdict = allow(clientIp(req), cfg.discussPerIpPerHour, cfg.perDay, talkHits);
+  if (verdict !== 'ok') return void json(res, 429, { error: verdict === 'ip' ? 'rate_ip' : 'rate_day' }), true;
+  if (running >= cfg.concurrency) return void json(res, 429, { error: 'busy' }), true;
+
+  running++;
+  const t0 = Date.now();
+  try {
+    const r = await finaleFor(cfg.client, { lesson: parsed.lesson, journey, memory }, t0 + 90_000);
+    console.error(`finale: ${r ? 'ok' : 'kept the original'} after ${Math.round((Date.now() - t0) / 1000)}s ${parsed.lesson.title.slice(0, 30)}`);
+    json(res, 200, r ?? {});
+  } catch (e) {
+    upstreamFailed(res, 'finale', e);
+  } finally {
+    running--;
+  }
+  return true;
 }
 
 const MAX_PLAN_CHARS = 8000;
