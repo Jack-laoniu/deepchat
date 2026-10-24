@@ -66,7 +66,26 @@ jobs:
           KNOWN: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
         run: |
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          printf '%s\n' "$KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          # 粘贴时常见的问题：Windows 换行符、整段被粘成一行（换行变成空格）、末尾没有换行。这里统一修好
+          printf '%s\n' "$KEY" | tr -d '\r' | python3 -c '
+          import re, sys
+          k = sys.stdin.read().strip()
+          m = re.match(r"(-----BEGIN [A-Z ]+-----)\s*(.*?)\s*(-----END [A-Z ]+-----)$", k, re.S)
+          if m and "\n" not in m.group(2).strip():
+              body = re.sub(r"\s+", "\n", m.group(2).strip())
+              k = f"{m.group(1)}\n{body}\n{m.group(3)}"
+          print(k)
+          ' > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          if grep -q '^ssh-' ~/.ssh/deploy_key; then
+            echo "::error::DEPLOY_SSH_KEY 填的是公钥（ssh-ed25519 开头那行）。请改填私钥：cat ~/.ssh/github_deploy 打印出的整段（BEGIN 到 END）"
+            exit 1
+          fi
+          if ! ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null 2>&1; then
+            echo "::error::DEPLOY_SSH_KEY 不是有效的私钥。请在服务器上 cat ~/.ssh/github_deploy，把从 -----BEGIN 到 -----END 的整段原样复制进去（包括这两行）"
+            exit 1
+          fi
+          echo "私钥格式正确：$(ssh-keygen -l -f ~/.ssh/deploy_key)"
           if [ -n "$KNOWN" ]; then
             printf '%s\n' "$KNOWN" > ~/.ssh/known_hosts
           else
