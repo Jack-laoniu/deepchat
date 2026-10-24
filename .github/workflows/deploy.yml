@@ -1,0 +1,92 @@
+# 自动部署：推送到 claude/need-quest（或在 Actions 页面手动点 Run workflow）后，
+# 在 GitHub 的机器上装依赖 → 跑测试 → 打包，再通过 SSH 把 deploy/ 目录传到服务器，执行 update.sh。
+# 服务器上不需要代码仓库，只需要之前用 deploy/install.sh 装过一次。
+#
+# 需要在仓库 Settings → Secrets and variables → Actions 里添加：
+#   DEPLOY_HOST      服务器 IP 或域名
+#   DEPLOY_USER      SSH 登录用户（root，或者能免密 sudo 的用户）
+#   DEPLOY_SSH_KEY   这个用户的 SSH 私钥（整段，含 BEGIN / END 行）
+#   DEPLOY_PORT      可选，SSH 端口，默认 22
+#   DEPLOY_KNOWN_HOSTS 可选，服务器的 known_hosts 行（ssh-keyscan 的输出）；不填就在部署时现扫
+name: deploy
+
+on:
+  push:
+    branches: [claude/need-quest]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Test
+        run: npx vitest run
+
+      - name: Build
+        run: npm run build:deploy
+
+      - name: Check secrets
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          missing=""
+          [ -n "$HOST" ] || missing="$missing DEPLOY_HOST"
+          [ -n "$USER" ] || missing="$missing DEPLOY_USER"
+          [ -n "$KEY" ] || missing="$missing DEPLOY_SSH_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::缺少仓库 Secrets:$missing（Settings → Secrets and variables → Actions）"
+            exit 1
+          fi
+
+      - name: Set up SSH
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          PORT: ${{ secrets.DEPLOY_PORT }}
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          if [ -n "$KNOWN" ]; then
+            printf '%s\n' "$KNOWN" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -p "${PORT:-22}" -H "$HOST" > ~/.ssh/known_hosts 2>/dev/null
+          fi
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Upload and update
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+          PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          SSH="ssh -i ~/.ssh/deploy_key -p ${PORT:-22} -o BatchMode=yes"
+          DIR=/tmp/need-quest-deploy-$GITHUB_RUN_ID
+          $SSH "$USER@$HOST" "mkdir -p $DIR"
+          scp -i ~/.ssh/deploy_key -P "${PORT:-22}" -o BatchMode=yes deploy/need-quest-server.mjs deploy/update.sh deploy/ensure-config.sh deploy/check.sh deploy/config.example.json "$USER@$HOST:$DIR/"
+          # root 直接跑；普通用户用 sudo（需要免密 sudo）
+          $SSH "$USER@$HOST" "if [ \$(id -u) = 0 ]; then bash $DIR/update.sh; else sudo -n bash $DIR/update.sh; fi; status=\$?; rm -rf $DIR; exit \$status"
+
+      - name: Clean up
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
