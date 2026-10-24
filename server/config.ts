@@ -22,6 +22,8 @@ export interface Config {
   /** 测试访问码：填了以后网页上要输入它才能生成 */
   accessCode?: string;
   limits?: { perIpPerHour?: number; perDay?: number; concurrency?: number; discussPerIpPerHour?: number };
+  /** 隐私政策 /privacy、用户协议 /terms 里要填的运营者信息；providers 不填则按上面配的接口自动写 */
+  legal?: { operator?: string; contact?: string; effectiveDate?: string; jurisdiction?: string; providers?: string };
 }
 
 export const CONFIG_PATH = process.env.NEED_QUEST_CONFIG || '/etc/need-quest/config.json';

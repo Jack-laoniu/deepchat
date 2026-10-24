@@ -4,7 +4,9 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import widgetHtml from '../dist-widget/index.html?raw';
 import { handleApi } from './api';
 import { check } from './check';
+import { loadConfig } from './config';
 import { createNeedQuestServer, VERSION } from './create';
+import { legalPage } from './legal';
 
 /**
  * 启动方式：
@@ -26,6 +28,10 @@ function http(port: number, host: string) {
     // 首页直接就是可玩的游戏（独立网页模式）
     if ((path === '/' || path === '/play') && req.method === 'GET')
       return void res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=300' }).end(widgetHtml);
+    if ((path === '/privacy' || path === '/terms') && req.method === 'GET')
+      return void res
+        .writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=300' })
+        .end(legalPage(path === '/privacy' ? 'privacy' : 'terms', loadConfig().config, `https://${req.headers.host ?? 'localhost'}`));
     if (path === '/health') return void res.writeHead(200, { 'content-type': 'text/plain' }).end(`need-quest MCP ${VERSION}`);
     if (path.startsWith('/api/') && (await handleApi(req, res, path))) return;
     if (path !== '/mcp') return void res.writeHead(404).end();
@@ -41,7 +47,7 @@ function http(port: number, host: string) {
     }
 
     // 无状态模式：每个请求一套 server + transport，便于水平扩展和无服务器部署
-    const server = createNeedQuestServer(widgetHtml);
+    const server = createNeedQuestServer(widgetHtml, req.headers.host && !/^(localhost|127\.)/.test(req.headers.host) ? `https://${req.headers.host}` : undefined);
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
     res.on('close', () => {
       void transport.close();

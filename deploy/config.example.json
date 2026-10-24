@@ -44,5 +44,14 @@
     "perDay": 200,
     "concurrency": 3,
     "discussPerIpPerHour": 30
+  },
+
+  "legal": {
+    "_说明": "隐私政策 https://<域名>/privacy 和用户协议 /terms 里显示的信息，上架 ChatGPT / Claude 时要填这两个地址。operator 运营者（个人或公司名），contact 联系邮箱，effectiveDate 生效日期；providers 留空则按上面配的接口自动写（如 DeepSeek、Anthropic）",
+    "operator": "",
+    "contact": "",
+    "effectiveDate": "",
+    "jurisdiction": "",
+    "providers": ""
   }
 }

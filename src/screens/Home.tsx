@@ -17,6 +17,7 @@ import { sfx } from '../fx/fx';
 import { Hearts } from '../ui/Hearts';
 import { FriendChat } from './FriendChat';
 import { loadCode, requestLesson, saveCode, useCanGenerate } from '../api';
+import { inHost } from '../host';
 import { forget, memories, memoryOn, memoryText, setMemoryOn, type QuestMemory } from '../memory';
 
 type GenState = { phase: 'idle' } | { phase: 'loading'; started: number } | { phase: 'error'; msg: string };
@@ -123,6 +124,17 @@ export function Home() {
       <button onClick={() => setStudio(true)} className="mt-5 text-center text-xs font-extrabold text-slate-300 hover:text-slate-500">
         {t('advanced')}
       </button>
+
+      {!inHost() && (
+        <div className="mt-4 flex justify-center gap-3 text-[11px] font-bold text-slate-300">
+          <a href="/privacy" target="_blank" rel="noreferrer" className="hover:text-slate-500">
+            {t('privacy')}
+          </a>
+          <a href="/terms" target="_blank" rel="noreferrer" className="hover:text-slate-500">
+            {t('terms')}
+          </a>
+        </div>
+      )}
 
       <AnimatePresence>{studio && <Studio initialNeed={need} onClose={() => setStudio(false)} onLoad={(l) => g.open(l)} />}</AnimatePresence>
     </div>
