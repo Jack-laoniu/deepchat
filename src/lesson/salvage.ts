@@ -165,6 +165,18 @@ function fix(root: Record<string, unknown>, issue: ZodIssue, fixes: string[]): {
     }
     return { ok: true, heavy: false };
   }
+  // 物品写了负价（其实是优惠）→ 折进选项的 price，去掉这个物品
+  if (issue.code === 'too_small' && key === 'price' && path.at(-3) === 'add' && typeof value === 'number' && value < 0) {
+    const option = at(root, path.slice(0, -3)) as Record<string, unknown> | undefined;
+    const items = option?.add as unknown[] | undefined;
+    if (option && Array.isArray(items) && items[path.at(-2) as number]) {
+      option.price = (typeof option.price === 'number' ? option.price : 0) + value;
+      items.splice(path.at(-2) as number, 1);
+      if (!items.length) delete option.add;
+      fixes.push(`把 ${path.slice(0, -1).join('.')} 的负价改成了优惠`);
+      return { ok: true, heavy: false };
+    }
+  }
   // AI 盲猜的清单不够 2 项 → 补一项「其他」，价格 0
   if (issue.code === 'too_small' && issue.type === 'array' && path.join('.') === 'guess.items' && Array.isArray(value)) {
     while (value.length < 2) value.push({ id: `other_${value.length}`, emoji: '📦', name: root.lang === 'en' ? 'Other' : '其他', price: 0 });

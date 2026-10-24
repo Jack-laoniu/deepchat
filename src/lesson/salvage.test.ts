@@ -27,6 +27,19 @@ describe('salvage', () => {
     expect(fixR.problem.endsWith('…')).toBe(true);
   });
 
+  it('turns a negative item price inside a gift into a discount on the option', () => {
+    const l = structuredClone(farm) as any;
+    const map = l.rounds.find((r: any) => r.type === 'map');
+    const spot = map.spots.find((s: any) => s.gift) ?? map.spots[0];
+    spot.gift = { id: 'coupon', emoji: '🎟️', label: '优惠券', fact: '店长给的', add: [{ id: 'coupon', emoji: '🎟️', name: '优惠券', price: -300 }] };
+    expect(parseLesson(l).ok).toBe(false);
+    const s = salvage(l)!;
+    expect(s.heavy).toBe(false);
+    const g = (s.lesson.rounds.find((r) => r.type === 'map') as any).spots.find((x: any) => x.gift?.id === 'coupon').gift;
+    expect(g.price).toBe(-300);
+    expect(g.add ?? []).toHaveLength(0);
+  });
+
   it('drops a chain card that is missing a side (heavy) and keeps the rest', () => {
     const l = broken();
     const chain = l.rounds.find((r: any) => r.type === 'chain');

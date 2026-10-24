@@ -44,6 +44,8 @@ export const saveCode = (c: string) => {
 const ERRORS: Record<string, MsgKey> = { code: 'genCode', rate_ip: 'genRate', rate_day: 'genRate', busy: 'genBusy' };
 
 /** 在线生成关卡；context = 上一关的结果（再玩一轮时） */
+const RETRIES = 3;
+
 export async function requestLesson(
   need: string,
   opts: { context?: string; avoid?: string[]; signal?: AbortSignal } = {},
@@ -52,14 +54,23 @@ export async function requestLesson(
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 330_000);
   opts.signal?.addEventListener('abort', () => ctrl.abort());
+  // memory：这台设备上记住的、用户以前闯过的需求（角色会记得）
+  const body = JSON.stringify({ need, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode(), context: opts.context, avoid: opts.avoid, memory: memoryText(need) || undefined });
+  // 连接中途断了（手机切后台、网关超时）：服务器那边还在生成，重新连上会直接等那一份或拿缓存，不会重新生成
+  const send = async (): Promise<Response> => {
+    for (let i = 0; ; i++) {
+      try {
+        const res = await fetch('/api/generate', { method: 'POST', headers: { 'content-type': 'application/json' }, body, signal: ctrl.signal });
+        if ((res.status === 502 || res.status === 504) && i < RETRIES) throw new Error(`HTTP ${res.status}`);
+        return res;
+      } catch (e) {
+        if (ctrl.signal.aborted || i >= RETRIES) throw e;
+        await new Promise((ok) => setTimeout(ok, 1500 * (i + 1)));
+      }
+    }
+  };
   try {
-    const res = await fetch('/api/generate', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      // memory：这台设备上记住的、用户以前闯过的需求（角色会记得）
-      body: JSON.stringify({ need, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode(), context: opts.context, avoid: opts.avoid, memory: memoryText(need) || undefined }),
-      signal: ctrl.signal,
-    });
+    const res = await send();
     const data = (await res.json().catch(() => ({}))) as { lesson?: unknown; error?: string; detail?: string };
     const r = data.lesson ? parseLesson(data.lesson) : null;
     if (r?.ok) return { lesson: r.lesson };

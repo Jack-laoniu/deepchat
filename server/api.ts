@@ -80,6 +80,8 @@ const ttsHits = new Map<string, number[]>();
 let day = '';
 let dayCount = 0;
 let running = 0;
+/** 正在生成的请求（按缓存 key）：重复的请求等同一份结果 */
+const inflight = new Map<string, Promise<object>>();
 const cache = new Map<string, unknown>();
 
 function json(res: ServerResponse, status: number, body: unknown) {
@@ -152,10 +154,30 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   const key = `${lang}:${need}:${context}:${memory}`;
   if (cache.has(key)) return void (console.error(`generate: cache hit (${lang}) ${need.slice(0, 40)}`), json(res, 200, { lesson: cache.get(key) })), true;
 
+  // 同一个请求还在生成（浏览器断线后自动重试）：不重新生成，直接等那一份的结果
+  const pending = inflight.get(key);
+  if (pending) {
+    console.error(`generate: joined the running generation ${need.slice(0, 40)}`);
+    return void json(res, 200, await pending), true;
+  }
+
   const verdict = allow(clientIp(req), cfg.perIpPerHour, cfg.perDay);
   if (verdict !== 'ok') return void (console.error(`generate: rate limited (${verdict})`), json(res, 429, { error: verdict === 'ip' ? 'rate_ip' : 'rate_day' })), true;
   if (running >= cfg.concurrency) return void json(res, 429, { error: 'busy' }), true;
 
+  const job = produce(req, res, cfg, client, { need, lang, context, avoid, memory, key });
+  inflight.set(key, job);
+  try {
+    json(res, 200, await job);
+  } finally {
+    inflight.delete(key);
+  }
+  return true;
+}
+
+type Job = { need: string; lang: 'zh' | 'en'; context: string; avoid: string[]; memory: string; key: string };
+
+async function produce(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<typeof settings>, client: StartChat, { need, lang, context, avoid, memory, key }: Job): Promise<object> {
   running++;
   const t0 = Date.now();
   const secs = () => `${Math.round((Date.now() - t0) / 1000)}s`;
@@ -190,15 +212,14 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
       if (file) console.error(`generate: saved ${file}`);
       cache.set(key, r.lesson);
       if (cache.size > 200) cache.delete(cache.keys().next().value!);
-      return void json(res, 200, { lesson: r.lesson }), true;
+      return { lesson: r.lesson };
     }
     // 兜底：不依赖模型的通用关卡（不进缓存，下次还会再试模型）
     console.error('generate: serving the generic fallback level');
-    json(res, 200, { lesson: genericLesson(need, lang), generic: true, reason: 'detail' in r ? r.detail : r.error });
+    return { lesson: genericLesson(need, lang), generic: true, reason: 'detail' in r ? r.detail : r.error };
   } finally {
     running--;
   }
-  return true;
 }
 
 function upstreamFailed(res: ServerResponse, what: string, e: unknown) {

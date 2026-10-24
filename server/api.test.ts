@@ -12,9 +12,12 @@ process.env.NEED_QUEST_CONFIG = cfgPath;
 writeFileSync(cfgPath, JSON.stringify({ provider: 'openai', openai: { apiKey: 'k', baseUrl: 'https://relay.example/v1', model: 'main', fallbackModel: 'backup' }, limits: { perIpPerHour: 100 } }));
 
 let behaviour: Record<string, 'ok' | 'down'> = {};
+let calls = 0;
 const sse = (text: string) => new Response(`data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\ndata: [DONE]\n\n`, { headers: { 'content-type': 'text/event-stream' } });
 vi.stubGlobal('fetch', async (_u: string, init: RequestInit) => {
   const model = JSON.parse(init.body as string).model as string;
+  calls++;
+  await new Promise((r) => setTimeout(r, 50));
   return behaviour[model] === 'ok' ? sse(JSON.stringify(farm)) : new Response('upstream exploded', { status: 500 });
 });
 
@@ -50,5 +53,14 @@ describe('generate endpoint fallback chain', async () => {
     expect(r.generic).toBe(true);
     expect(r.lesson.domain).toBe('generic');
     expect(r.lesson.need).toContain('月子');
+  });
+
+  it('a repeated request while generating waits for the same result (no second generation)', async () => {
+    behaviour = { main: 'ok' };
+    calls = 0;
+    const [a, b] = await Promise.all([post(port, { need: '农场浇水 B', lang: 'zh' }), post(port, { need: '农场浇水 B', lang: 'zh' })]);
+    expect(a.lesson.title).toBe(farm.title);
+    expect(b.lesson.title).toBe(farm.title);
+    expect(calls).toBe(1);
   });
 });
