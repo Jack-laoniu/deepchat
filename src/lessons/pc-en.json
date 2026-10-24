@@ -652,8 +652,8 @@
       "fact": "Budget cap: ${v}"
     },
     {
-      "type": "boss",
-      "id": "boss",
+      "type": "fix",
+      "id": "risk_heat",
       "q": "Summer, 8h full load!",
       "emoji": "🥵",
       "problem": "The case is an oven",
@@ -699,6 +699,211 @@
         "crash": "Throttling, then black screen",
         "ok": "Light load, you'll be fine"
       }
+    },
+    {
+      "type": "boss",
+      "id": "boss",
+      "q": "Which route?",
+      "emoji": "🧭",
+      "who": "ajie",
+      "options": [
+        {
+          "id": "dir_diy",
+          "emoji": "🧱",
+          "label": "Build it",
+          "fact": "Picks parts and builds the PC; best value",
+          "set": [
+            "dir_diy"
+          ],
+          "pros": "Most power per dollar",
+          "cons": "DIY support"
+        },
+        {
+          "id": "dir_brand",
+          "emoji": "🏪",
+          "label": "Prebuilt",
+          "fact": "Buys a prebuilt with full-system warranty",
+          "set": [
+            "dir_brand"
+          ],
+          "pros": "One warranty",
+          "cons": "20–30% pricier"
+        },
+        {
+          "id": "dir_cloud",
+          "emoji": "☁️",
+          "label": "PC + cloud AI",
+          "fact": "Gaming PC locally; rents cloud GPUs by the hour for big models",
+          "set": [
+            "dir_cloud"
+          ],
+          "pros": "No VRAM limit",
+          "cons": "Pay per hour"
+        }
+      ],
+      "probe": [
+        {
+          "who": "ajie",
+          "say": "Before you lock it in, a few key questions.",
+          "mood": "thinking"
+        },
+        {
+          "id": "p_diy",
+          "who": "ajie",
+          "q": "Built a PC before?",
+          "options": [
+            {
+              "id": "dy_yes",
+              "emoji": "🛠️",
+              "label": "Yes",
+              "fact": "Has built a PC before"
+            },
+            {
+              "id": "dy_no",
+              "emoji": "🙋",
+              "label": "Never",
+              "fact": "Has never built a PC; needs help assembling"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_diy"
+            ]
+          }
+        },
+        {
+          "id": "p_brand",
+          "who": "ajie",
+          "q": "What support matters?",
+          "options": [
+            {
+              "id": "bd_home",
+              "emoji": "🏠",
+              "label": "On-site",
+              "fact": "Wants on-site repair"
+            },
+            {
+              "id": "bd_swap",
+              "emoji": "🔁",
+              "label": "Swap it",
+              "fact": "Wants a replacement when it breaks"
+            },
+            {
+              "id": "bd_any",
+              "emoji": "🤷",
+              "label": "Any",
+              "fact": "No special support needs"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_brand"
+            ]
+          }
+        },
+        {
+          "id": "p_cloud",
+          "who": "ajie",
+          "q": "Hours of AI per week?",
+          "options": [
+            {
+              "id": "cl_low",
+              "emoji": "⏱️",
+              "label": "A few",
+              "fact": "Runs models a few hours a week"
+            },
+            {
+              "id": "cl_mid",
+              "emoji": "📆",
+              "label": "10–20 h",
+              "fact": "Runs models 10–20 hours a week"
+            },
+            {
+              "id": "cl_high",
+              "emoji": "🔥",
+              "label": "Daily",
+              "fact": "Runs models almost daily; renting may cost more than buying"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_cloud"
+            ]
+          }
+        },
+        {
+          "id": "p_games",
+          "who": "ajie",
+          "q": "Which games mostly?",
+          "options": [
+            {
+              "id": "gm_aaa",
+              "emoji": "🎮",
+              "label": "AAA",
+              "fact": "Mostly AAA games at high settings"
+            },
+            {
+              "id": "gm_esports",
+              "emoji": "🎯",
+              "label": "Esports",
+              "fact": "Mostly competitive games, high frame rates"
+            },
+            {
+              "id": "gm_light",
+              "emoji": "🕹️",
+              "label": "Casual",
+              "fact": "Mostly casual games"
+            }
+          ],
+          "free": {
+            "placeholder": "e.g. Cyberpunk, CS2",
+            "fact": "Games the user plays: {v}",
+            "chips": [
+              "Cyberpunk",
+              "CS2",
+              "Fortnite"
+            ],
+            "reply": [
+              {
+                "who": "ajie",
+                "say": "Noted. That sets the GPU tier.",
+                "mood": "thinking"
+              }
+            ]
+          }
+        },
+        {
+          "who": "ajie",
+          "say": "Good. The AI can write the parts list now.",
+          "mood": "happy"
+        }
+      ],
+      "bring": [
+        {
+          "id": "b_games",
+          "emoji": "🎮",
+          "label": "Games & settings",
+          "fact": "Main games, target resolution and frame rate"
+        },
+        {
+          "id": "b_model",
+          "emoji": "🤖",
+          "label": "Models to run",
+          "fact": "Model names and sizes to run locally (e.g. 7B, 14B)"
+        },
+        {
+          "id": "b_space",
+          "emoji": "📏",
+          "label": "Desk space",
+          "fact": "Space for the case under or on the desk, and airflow"
+        },
+        {
+          "id": "b_monitor",
+          "emoji": "🖥️",
+          "label": "Current monitor",
+          "fact": "Current monitor model, resolution and refresh rate"
+        }
+      ]
     }
   ],
   "secret": "Skip the flagship CPU — spend it on VRAM and a good PSU"

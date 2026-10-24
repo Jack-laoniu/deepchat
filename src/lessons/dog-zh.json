@@ -813,8 +813,8 @@
       "fact": "第一年预算上限 {v} 元"
     },
     {
-      "type": "boss",
-      "id": "boss",
+      "type": "fix",
+      "id": "risk_emergency",
       "q": "半夜急诊！",
       "emoji": "🚑",
       "problem": "狗吞了一只袜子",
@@ -857,6 +857,199 @@
         "crash": "手术费两万，一下拿不出来",
         "loss": 21000
       }
+    },
+    {
+      "type": "boss",
+      "id": "boss",
+      "q": "最后，从哪条路开始？",
+      "emoji": "🧭",
+      "who": "xiaobei",
+      "options": [
+        {
+          "id": "dir_adopt",
+          "emoji": "🏠",
+          "label": "领养",
+          "fact": "从救助站或领养平台领养",
+          "set": [
+            "dir_adopt"
+          ],
+          "pros": "花费少，救一条命",
+          "cons": "性格要慢慢磨合"
+        },
+        {
+          "id": "dir_kennel",
+          "emoji": "🏅",
+          "label": "正规犬舍",
+          "fact": "从有资质的犬舍买，看得到父母犬",
+          "set": [
+            "dir_kennel"
+          ],
+          "pros": "健康血统有保障",
+          "cons": "价格最高"
+        },
+        {
+          "id": "dir_friend",
+          "emoji": "👨‍👩‍👧",
+          "label": "熟人家小狗",
+          "fact": "接朋友或亲戚家生的小狗",
+          "set": [
+            "dir_friend"
+          ],
+          "pros": "知根知底",
+          "cons": "品种不一定合适"
+        }
+      ],
+      "probe": [
+        {
+          "who": "xiaobei",
+          "say": "好。接狗回家之前，有几件事得问清楚。",
+          "mood": "thinking"
+        },
+        {
+          "id": "p_adult",
+          "who": "xiaobei",
+          "q": "能接受成年狗吗？",
+          "options": [
+            {
+              "id": "ad_yes",
+              "emoji": "👍",
+              "label": "可以",
+              "fact": "能接受领养成年犬（性格稳定、已绝育）"
+            },
+            {
+              "id": "ad_puppy",
+              "emoji": "🐶",
+              "label": "想要小狗",
+              "fact": "只想要幼犬"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_adopt"
+            ]
+          }
+        },
+        {
+          "id": "p_cert",
+          "who": "xiaobei",
+          "q": "会看父母犬的健康证明吗？",
+          "options": [
+            {
+              "id": "ct_yes",
+              "emoji": "📄",
+              "label": "会",
+              "fact": "会查看父母犬的健康和遗传病检测"
+            },
+            {
+              "id": "ct_no",
+              "emoji": "🤔",
+              "label": "不知道要看",
+              "fact": "不知道要看父母犬的健康证明"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_kennel"
+            ]
+          }
+        },
+        {
+          "id": "p_vax",
+          "who": "xiaobei",
+          "q": "小狗打过疫苗驱虫了吗？",
+          "options": [
+            {
+              "id": "vx_yes",
+              "emoji": "💉",
+              "label": "打过",
+              "fact": "小狗已经打过疫苗和驱虫"
+            },
+            {
+              "id": "vx_no",
+              "emoji": "❓",
+              "label": "不清楚",
+              "fact": "不清楚小狗有没有打疫苗驱虫"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_friend"
+            ]
+          }
+        },
+        {
+          "id": "p_allergy",
+          "who": "xiaobei",
+          "q": "家里有人对狗毛过敏吗？",
+          "options": [
+            {
+              "id": "al_no",
+              "emoji": "🙂",
+              "label": "没有",
+              "fact": "家里没人过敏"
+            },
+            {
+              "id": "al_yes",
+              "emoji": "🤧",
+              "label": "有",
+              "fact": "家里有人对狗毛过敏，要考虑少掉毛的品种"
+            },
+            {
+              "id": "al_unk",
+              "emoji": "🤷",
+              "label": "不知道",
+              "fact": "不确定家里人会不会过敏"
+            }
+          ],
+          "free": {
+            "placeholder": "比如：女朋友有点过敏",
+            "fact": "用户说的过敏情况：{v}",
+            "chips": [
+              "没人过敏",
+              "有点过敏",
+              "没测过"
+            ],
+            "reply": [
+              {
+                "who": "xiaobei",
+                "say": "这个很重要，记下了。",
+                "mood": "thinking"
+              }
+            ]
+          }
+        },
+        {
+          "who": "xiaobei",
+          "say": "好，剩下的交给 AI 列一份接狗清单。",
+          "mood": "happy"
+        }
+      ],
+      "bring": [
+        {
+          "id": "b_lease",
+          "emoji": "📄",
+          "label": "租房合同",
+          "fact": "租房合同里关于养宠物的条款（或房东同意）"
+        },
+        {
+          "id": "b_time",
+          "emoji": "📅",
+          "label": "每天在家时间",
+          "fact": "工作日和周末大概几点在家"
+        },
+        {
+          "id": "b_budget",
+          "emoji": "💰",
+          "label": "每月宠物预算",
+          "fact": "每月能花在狗粮、驱虫、医疗上的钱"
+        },
+        {
+          "id": "b_vet",
+          "emoji": "🏥",
+          "label": "附近宠物医院",
+          "fact": "家附近的宠物医院和 24 小时急诊"
+        }
+      ]
     }
   ],
   "secret": "救助站的成年犬常已打疫苗、会定点，先去问问"

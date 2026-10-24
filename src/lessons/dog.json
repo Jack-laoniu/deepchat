@@ -1055,106 +1055,111 @@
     {
       "type": "day",
       "id": "routine",
-      "title": "A day together",
-      "emoji": "🗓️",
+      "title": "First night home",
+      "emoji": "🌙",
+      "scene": "home",
       "moments": [
         {
-          "id": "m_am",
-          "at": "morning",
-          "emoji": "⏰",
-          "options": [
-            {
-              "id": "m_am_walk",
-              "emoji": "🚶",
-              "label": "Walk",
-              "fact": "Takes the dog out every morning",
-              "score": {
-                "good": 10,
-                "easy": -5
-              }
-            },
-            {
-              "id": "m_am_snooze",
-              "emoji": "😴",
-              "label": "Snooze",
-              "fact": "Skips the morning walk",
-              "score": {
-                "good": -10,
-                "easy": 5
-              }
-            }
-          ]
-        },
-        {
-          "id": "m_noon",
-          "at": "noon",
-          "emoji": "🏢",
-          "options": [
-            {
-              "id": "m_noon_office",
-              "emoji": "💼",
-              "label": "Office",
-              "fact": "Away at the office all day; the dog is alone 8+ hours",
-              "score": {
-                "good": -10
-              }
-            },
-            {
-              "id": "m_noon_home",
-              "emoji": "🏠",
-              "label": "Home",
-              "fact": "Works from home at noon",
-              "score": {
-                "good": 10
-              }
-            }
-          ]
-        },
-        {
-          "id": "m_eve",
-          "at": "evening",
-          "emoji": "🌳",
-          "options": [
-            {
-              "id": "m_eve_park",
-              "emoji": "🎾",
-              "label": "Park",
-              "fact": "Plays in the park in the evening",
-              "score": {
-                "good": 10,
-                "easy": -5
-              }
-            },
-            {
-              "id": "m_eve_sofa",
-              "emoji": "🛋️",
-              "label": "Sofa",
-              "fact": "Stays in on the sofa in the evening",
-              "score": {
-                "easy": 5
-              }
-            }
-          ]
-        },
-        {
-          "id": "m_night",
+          "id": "d_cry",
           "at": "night",
-          "emoji": "🛏️",
+          "time": "22:00",
+          "emoji": "😢",
           "options": [
             {
-              "id": "m_night_bed",
-              "emoji": "🧑‍🤝‍🧑",
-              "label": "My bed",
-              "fact": "Lets the dog sleep in their bed"
+              "id": "d_cry_bed",
+              "emoji": "🛏️",
+              "label": "Let in",
+              "fact": "Lets the crying puppy into their bed"
             },
             {
-              "id": "m_night_crate",
+              "id": "d_cry_crate",
               "emoji": "📦",
               "label": "Crate",
-              "fact": "Dog sleeps in the crate",
-              "score": {
-                "safe": 5
-              }
+              "fact": "Keeps him in the crate with a warm blanket and a ticking clock"
+            },
+            {
+              "id": "d_cry_ear",
+              "emoji": "🎧",
+              "label": "Earplugs",
+              "fact": "Puts in earplugs and waits it out"
+            }
+          ]
+        },
+        {
+          "id": "d_3am",
+          "at": "night",
+          "time": "03:00",
+          "emoji": "💦",
+          "options": [
+            {
+              "id": "d_3am_out",
+              "emoji": "🚪",
+              "label": "Go out",
+              "fact": "Gets up at 3 a.m. to take him out"
+            },
+            {
+              "id": "d_3am_clean",
+              "emoji": "🧻",
+              "label": "Clean up",
+              "fact": "Cleans the accident in the morning"
+            },
+            {
+              "id": "d_3am_pad",
+              "emoji": "🐾",
+              "label": "Pee pad",
+              "fact": "Uses pee pads at night"
+            }
+          ]
+        },
+        {
+          "id": "d_shoes",
+          "at": "morning",
+          "time": "07:30",
+          "emoji": "👟",
+          "options": [
+            {
+              "id": "d_shoes_proof",
+              "emoji": "📦",
+              "label": "Hide stuff",
+              "fact": "Puppy-proofs the flat: shoes and cables out of reach"
+            },
+            {
+              "id": "d_shoes_toys",
+              "emoji": "🦴",
+              "label": "Chew toys",
+              "fact": "Buys chew toys"
+            },
+            {
+              "id": "d_shoes_scold",
+              "emoji": "😤",
+              "label": "Scold",
+              "fact": "Scolds the puppy"
+            }
+          ]
+        },
+        {
+          "id": "d_alone",
+          "at": "evening",
+          "time": "18:30",
+          "emoji": "📢",
+          "options": [
+            {
+              "id": "d_alone_walker",
+              "emoji": "🧑",
+              "label": "Walker",
+              "fact": "Hires a midday dog walker after a neighbor complains about barking"
+            },
+            {
+              "id": "d_alone_cam",
+              "emoji": "📹",
+              "label": "Camera",
+              "fact": "Gets a pet camera to check on him"
+            },
+            {
+              "id": "d_alone_work",
+              "emoji": "🏢",
+              "label": "Take him",
+              "fact": "Brings him to work or works from home"
             }
           ]
         }
@@ -1173,8 +1178,8 @@
       "fact": "First-year budget cap: ${v}"
     },
     {
-      "type": "boss",
-      "id": "boss",
+      "type": "fix",
+      "id": "risk_emergency",
       "q": "Midnight emergency!",
       "emoji": "🚑",
       "problem": "The dog ate a sock",
@@ -1217,6 +1222,199 @@
         "crash": "$3,000 surgery bill, no way to pay",
         "loss": 3000
       }
+    },
+    {
+      "type": "boss",
+      "id": "boss",
+      "q": "Where to start?",
+      "emoji": "🧭",
+      "who": "xiaobei",
+      "options": [
+        {
+          "id": "dir_adopt",
+          "emoji": "🏠",
+          "label": "Adopt",
+          "fact": "Adopts from a shelter or rescue",
+          "set": [
+            "dir_adopt"
+          ],
+          "pros": "Cheap, saves a life",
+          "cons": "Needs time to settle"
+        },
+        {
+          "id": "dir_kennel",
+          "emoji": "🏅",
+          "label": "Breeder",
+          "fact": "Buys from a licensed breeder who shows the parents",
+          "set": [
+            "dir_kennel"
+          ],
+          "pros": "Health on record",
+          "cons": "Most expensive"
+        },
+        {
+          "id": "dir_friend",
+          "emoji": "👨‍👩‍👧",
+          "label": "Friend's puppy",
+          "fact": "Takes a puppy from a friend or relative",
+          "set": [
+            "dir_friend"
+          ],
+          "pros": "You know the family",
+          "cons": "Breed may not fit"
+        }
+      ],
+      "probe": [
+        {
+          "who": "xiaobei",
+          "say": "Good. Before the dog comes home, a few things to check.",
+          "mood": "thinking"
+        },
+        {
+          "id": "p_adult",
+          "who": "xiaobei",
+          "q": "Would an adult dog work?",
+          "options": [
+            {
+              "id": "ad_yes",
+              "emoji": "👍",
+              "label": "Sure",
+              "fact": "Open to adopting an adult dog (settled, neutered)"
+            },
+            {
+              "id": "ad_puppy",
+              "emoji": "🐶",
+              "label": "Puppy only",
+              "fact": "Only wants a puppy"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_adopt"
+            ]
+          }
+        },
+        {
+          "id": "p_cert",
+          "who": "xiaobei",
+          "q": "Will you check the parents' health tests?",
+          "options": [
+            {
+              "id": "ct_yes",
+              "emoji": "📄",
+              "label": "Yes",
+              "fact": "Will check the parents' health and genetic tests"
+            },
+            {
+              "id": "ct_no",
+              "emoji": "🤔",
+              "label": "Didn't know",
+              "fact": "Did not know to check the parents' health records"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_kennel"
+            ]
+          }
+        },
+        {
+          "id": "p_vax",
+          "who": "xiaobei",
+          "q": "Vaccinated and dewormed?",
+          "options": [
+            {
+              "id": "vx_yes",
+              "emoji": "💉",
+              "label": "Yes",
+              "fact": "The puppy is vaccinated and dewormed"
+            },
+            {
+              "id": "vx_no",
+              "emoji": "❓",
+              "label": "Not sure",
+              "fact": "Not sure if the puppy is vaccinated or dewormed"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_friend"
+            ]
+          }
+        },
+        {
+          "id": "p_allergy",
+          "who": "xiaobei",
+          "q": "Anyone allergic to dogs?",
+          "options": [
+            {
+              "id": "al_no",
+              "emoji": "🙂",
+              "label": "No",
+              "fact": "Nobody at home is allergic"
+            },
+            {
+              "id": "al_yes",
+              "emoji": "🤧",
+              "label": "Yes",
+              "fact": "Someone is allergic; consider low-shedding breeds"
+            },
+            {
+              "id": "al_unk",
+              "emoji": "🤷",
+              "label": "Not sure",
+              "fact": "Not sure about allergies"
+            }
+          ],
+          "free": {
+            "placeholder": "e.g. my partner sneezes a bit",
+            "fact": "Allergies the user mentions: {v}",
+            "chips": [
+              "Nobody",
+              "A little",
+              "Never tested"
+            ],
+            "reply": [
+              {
+                "who": "xiaobei",
+                "say": "That matters a lot. Noted.",
+                "mood": "thinking"
+              }
+            ]
+          }
+        },
+        {
+          "who": "xiaobei",
+          "say": "Good. The AI can write your bring-home checklist.",
+          "mood": "happy"
+        }
+      ],
+      "bring": [
+        {
+          "id": "b_lease",
+          "emoji": "📄",
+          "label": "Lease pet rules",
+          "fact": "Pet clause in the lease, or the landlord's OK"
+        },
+        {
+          "id": "b_time",
+          "emoji": "📅",
+          "label": "Hours at home",
+          "fact": "When you are home on weekdays and weekends"
+        },
+        {
+          "id": "b_budget",
+          "emoji": "💰",
+          "label": "Monthly budget",
+          "fact": "Monthly budget for food, parasite care and vet"
+        },
+        {
+          "id": "b_vet",
+          "emoji": "🏥",
+          "label": "Nearby vet",
+          "fact": "Nearest vet and 24-hour emergency clinic"
+        }
+      ]
     }
   ],
   "secret": "Shelter adults often come vaccinated and house-trained — ask a shelter first"

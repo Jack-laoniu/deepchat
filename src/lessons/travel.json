@@ -633,8 +633,8 @@
       "fact": "预算上限 {v} 元"
     },
     {
-      "type": "boss",
-      "id": "boss",
+      "type": "fix",
+      "id": "risk_storm",
       "q": "暴雨，山路塌方！",
       "emoji": "🌧️",
       "problem": "行程被打乱",
@@ -676,6 +676,205 @@
         "crash": "后面全乱了，返程机票作废",
         "loss": 2000
       }
+    },
+    {
+      "type": "boss",
+      "id": "boss",
+      "q": "最后，选哪种玩法？",
+      "emoji": "🧭",
+      "who": "mei",
+      "options": [
+        {
+          "id": "dir_charter",
+          "emoji": "🚐",
+          "label": "包车+司机",
+          "fact": "全程包车带司机，按爸妈的节奏走",
+          "set": [
+            "dir_charter"
+          ],
+          "pros": "老人不累、不赶",
+          "cons": "最贵"
+        },
+        {
+          "id": "dir_tour",
+          "emoji": "🧳",
+          "label": "精品小团",
+          "fact": "报十人以内的精品小团，有人安排吃住",
+          "set": [
+            "dir_tour"
+          ],
+          "pros": "不用操心安排",
+          "cons": "时间不自由"
+        },
+        {
+          "id": "dir_free",
+          "emoji": "🚄",
+          "label": "高铁自由行",
+          "fact": "高铁加酒店自由行，自己订票做攻略",
+          "set": [
+            "dir_free"
+          ],
+          "pros": "灵活又便宜",
+          "cons": "全靠自己操心"
+        }
+      ],
+      "probe": [
+        {
+          "who": "mei",
+          "say": "行，那我再问几句，咱们把细节定下来。",
+          "mood": "thinking"
+        },
+        {
+          "id": "p_carsick",
+          "who": "mei",
+          "q": "爸妈晕车吗？",
+          "options": [
+            {
+              "id": "cs_no",
+              "emoji": "🙂",
+              "label": "不晕",
+              "fact": "爸妈不晕车"
+            },
+            {
+              "id": "cs_yes",
+              "emoji": "🤢",
+              "label": "会晕",
+              "fact": "爸妈会晕车，山路包车要备药、少走盘山路"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_charter"
+            ]
+          }
+        },
+        {
+          "id": "p_group",
+          "who": "mei",
+          "q": "能接受跟陌生人同行吗？",
+          "options": [
+            {
+              "id": "gp_ok",
+              "emoji": "👌",
+              "label": "可以",
+              "fact": "能接受和陌生人一起出行"
+            },
+            {
+              "id": "gp_no",
+              "emoji": "🙅",
+              "label": "不太行",
+              "fact": "不太愿意和陌生人同行"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_tour"
+            ]
+          }
+        },
+        {
+          "id": "p_plan",
+          "who": "mei",
+          "q": "谁来订票做攻略？",
+          "options": [
+            {
+              "id": "pl_me",
+              "emoji": "🙋",
+              "label": "我来",
+              "fact": "用户自己负责订票和做攻略"
+            },
+            {
+              "id": "pl_sis",
+              "emoji": "👩",
+              "label": "姐姐来",
+              "fact": "姐姐负责订票和做攻略"
+            },
+            {
+              "id": "pl_ai",
+              "emoji": "🤖",
+              "label": "交给 AI",
+              "fact": "希望 AI 帮忙排行程"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_free"
+            ]
+          }
+        },
+        {
+          "id": "p_want",
+          "who": "mei",
+          "q": "爸妈最想看什么？",
+          "options": [
+            {
+              "id": "wt_nature",
+              "emoji": "🏔️",
+              "label": "山和湖",
+              "fact": "爸妈最想看雪山和湖"
+            },
+            {
+              "id": "wt_town",
+              "emoji": "🏘️",
+              "label": "古城古镇",
+              "fact": "爸妈最想逛古城古镇"
+            },
+            {
+              "id": "wt_food",
+              "emoji": "🍜",
+              "label": "吃吃逛逛",
+              "fact": "爸妈最想吃当地美食、逛市场"
+            }
+          ],
+          "free": {
+            "placeholder": "比如：妈一直想去洱海",
+            "fact": "爸妈最想去的地方：{v}",
+            "chips": [
+              "洱海",
+              "玉龙雪山",
+              "丽江古城"
+            ],
+            "reply": [
+              {
+                "who": "mei",
+                "say": "好，这个一定排进去。",
+                "mood": "happy"
+              }
+            ]
+          }
+        },
+        {
+          "who": "mei",
+          "say": "差不多了，剩下的让 AI 排个不累的行程。",
+          "mood": "happy"
+        }
+      ],
+      "bring": [
+        {
+          "id": "b_id",
+          "emoji": "🪪",
+          "label": "身份证和出行日期",
+          "fact": "全家身份证信息和能请假的日期"
+        },
+        {
+          "id": "b_meds",
+          "emoji": "💊",
+          "label": "爸妈常用药",
+          "fact": "爸妈平时吃的药和用量"
+        },
+        {
+          "id": "b_health",
+          "emoji": "🩺",
+          "label": "爸妈身体情况",
+          "fact": "最近体检、有没有心脏病高血压、能不能上高原"
+        },
+        {
+          "id": "b_food",
+          "emoji": "🍜",
+          "label": "饮食忌口",
+          "fact": "爸妈能不能吃辣、有没有忌口"
+        }
+      ]
     }
   ],
   "secret": "带老人出行：直飞+包车，比省机票钱重要"

@@ -1252,109 +1252,111 @@
     {
       "type": "day",
       "id": "routine",
-      "title": "农忙的一天",
-      "emoji": "🗓️",
+      "title": "大旱那天",
+      "emoji": "🌵",
+      "scene": "outdoor",
       "moments": [
         {
-          "id": "m_am",
-          "at": "morning",
-          "emoji": "🐓",
-          "options": [
-            {
-              "id": "m_am_field",
-              "emoji": "🚜",
-              "label": "下地",
-              "fact": "早上习惯先下地看一圈",
-              "score": {
-                "good": 5
-              }
-            },
-            {
-              "id": "m_am_phone",
-              "emoji": "📱",
-              "label": "看手机",
-              "fact": "早上想在手机上看看就行",
-              "score": {
-                "easy": 10
-              }
-            }
-          ]
-        },
-        {
-          "id": "m_noon",
-          "at": "noon",
-          "emoji": "☀️",
-          "options": [
-            {
-              "id": "m_noon_nap",
-              "emoji": "😴",
-              "label": "午睡",
-              "fact": "中午要休息，没人看着地",
-              "score": {
-                "easy": 5
-              }
-            },
-            {
-              "id": "m_noon_market",
-              "emoji": "🛒",
-              "label": "赶集",
-              "fact": "中午常出门赶集，离家远",
-              "score": {
-                "safe": -5
-              }
-            }
-          ]
-        },
-        {
-          "id": "m_eve",
-          "at": "evening",
-          "emoji": "🌾",
-          "options": [
-            {
-              "id": "m_eve_water",
-              "emoji": "💧",
-              "label": "浇水",
-              "fact": "傍晚亲自浇水",
-              "score": {
-                "easy": -10,
-                "good": 5
-              }
-            },
-            {
-              "id": "m_eve_tea",
-              "emoji": "🍵",
-              "label": "喝茶",
-              "fact": "傍晚想歇着，让机器自己浇",
-              "score": {
-                "easy": 10
-              }
-            }
-          ]
-        },
-        {
-          "id": "m_night",
+          "id": "d_dawn",
           "at": "night",
-          "emoji": "🌙",
+          "time": "04:30",
+          "emoji": "🌡️",
           "options": [
             {
-              "id": "m_night_check",
+              "id": "d_dawn_go",
               "emoji": "🔦",
-              "label": "巡一圈",
-              "fact": "睡前要去关阀、巡一圈",
-              "score": {
-                "safe": 5,
-                "easy": -5
-              }
+              "label": "摸黑去浇",
+              "fact": "天气预报 40 度，天亮前摸黑去浇水，避开蒸发"
             },
             {
-              "id": "m_night_sleep",
+              "id": "d_dawn_sleep",
+              "emoji": "😴",
+              "label": "睡到天亮",
+              "fact": "不想摸黑起床，天亮再说"
+            },
+            {
+              "id": "d_dawn_phone",
+              "emoji": "📱",
+              "label": "手机开阀",
+              "fact": "希望在床上用手机就能远程开阀浇水"
+            }
+          ]
+        },
+        {
+          "id": "d_noon",
+          "at": "noon",
+          "time": "13:00",
+          "emoji": "🥀",
+          "options": [
+            {
+              "id": "d_noon_water",
+              "emoji": "💦",
+              "label": "中午补水",
+              "fact": "叶子打蔫就中午补水（容易蒸发、烫苗）"
+            },
+            {
+              "id": "d_noon_shade",
+              "emoji": "⛱️",
+              "label": "拉遮阳网",
+              "fact": "中午给作物拉遮阳网降温"
+            },
+            {
+              "id": "d_noon_wait",
+              "emoji": "⏳",
+              "label": "等到傍晚",
+              "fact": "忍到傍晚再浇"
+            }
+          ]
+        },
+        {
+          "id": "d_eve",
+          "at": "evening",
+          "time": "18:30",
+          "emoji": "🚰",
+          "options": [
+            {
+              "id": "d_eve_queue",
+              "emoji": "🕐",
+              "label": "排队等水",
+              "fact": "全村一起浇，水压不够，就排队等"
+            },
+            {
+              "id": "d_eve_tank",
+              "emoji": "🛢️",
+              "label": "储水罐",
+              "fact": "想要一个储水罐，错峰把水存起来"
+            },
+            {
+              "id": "d_eve_turn",
+              "emoji": "🤝",
+              "label": "和邻居轮流",
+              "fact": "和邻居约好分时段轮流用水"
+            }
+          ]
+        },
+        {
+          "id": "d_night",
+          "at": "night",
+          "time": "23:00",
+          "emoji": "💥",
+          "options": [
+            {
+              "id": "d_night_fix",
+              "emoji": "🔦",
+              "label": "马上去修",
+              "fact": "半夜管子爆了马上去修"
+            },
+            {
+              "id": "d_night_wait",
               "emoji": "🛌",
-              "label": "直接睡",
-              "fact": "晚上不想再出门",
-              "score": {
-                "easy": 5,
-                "safe": -5
-              }
+              "label": "明早再说",
+              "fact": "半夜不想出门，明早再修"
+            },
+            {
+              "id": "d_night_alarm",
+              "emoji": "🔔",
+              "label": "要个报警",
+              "fact": "希望漏水或压力异常时能自动报警、自动关阀"
             }
           ]
         }
@@ -1373,8 +1375,8 @@
       "fact": "预算上限 {v} 元"
     },
     {
-      "type": "boss",
-      "id": "boss",
+      "type": "fix",
+      "id": "risk_hammer",
       "q": "水锤来了！",
       "emoji": "💥",
       "problem": "关阀瞬间冲击管道",
@@ -1428,6 +1430,205 @@
         "loss": 8000,
         "ok": "管子短水流小，没事"
       }
+    },
+    {
+      "type": "boss",
+      "id": "boss",
+      "q": "最后，选哪种浇法？",
+      "emoji": "🧭",
+      "who": "wang",
+      "options": [
+        {
+          "id": "dir_spray",
+          "emoji": "🌧️",
+          "label": "喷灌",
+          "fact": "用摇臂/微喷头喷灌，覆盖面大、安装快",
+          "set": [
+            "dir_spray"
+          ],
+          "pros": "覆盖大、装得快",
+          "cons": "费水，风大喷不匀"
+        },
+        {
+          "id": "dir_drip",
+          "emoji": "💧",
+          "label": "滴灌",
+          "fact": "用滴灌带直接滴到根部，最省水，需要过滤器防堵",
+          "set": [
+            "dir_drip"
+          ],
+          "pros": "最省水，果菜不烂",
+          "cons": "容易堵，要装过滤"
+        },
+        {
+          "id": "dir_fert",
+          "emoji": "🧪",
+          "label": "水肥一体",
+          "fact": "滴灌加施肥罐，浇水和施肥一起做",
+          "set": [
+            "dir_fert"
+          ],
+          "pros": "浇水施肥一次搞定",
+          "cons": "投入高，要学配肥"
+        }
+      ],
+      "probe": [
+        {
+          "who": "wang",
+          "say": "行，我再问你几句，装之前心里得有数。",
+          "mood": "thinking"
+        },
+        {
+          "id": "p_wind",
+          "who": "wang",
+          "q": "地里风大吗？",
+          "options": [
+            {
+              "id": "wd_low",
+              "emoji": "🍃",
+              "label": "不大",
+              "fact": "地里风不大，适合喷灌"
+            },
+            {
+              "id": "wd_high",
+              "emoji": "🌬️",
+              "label": "经常刮风",
+              "fact": "地里经常刮大风，喷灌会喷不匀、漂走"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_spray"
+            ]
+          }
+        },
+        {
+          "id": "p_water",
+          "who": "wang",
+          "q": "水是井水还是河水？",
+          "options": [
+            {
+              "id": "wt_well",
+              "emoji": "🕳️",
+              "label": "井水",
+              "fact": "用井水，泥沙少"
+            },
+            {
+              "id": "wt_river",
+              "emoji": "🏞️",
+              "label": "河水/塘水",
+              "fact": "用河水或塘水，泥沙多，滴灌必须加砂石过滤"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_drip"
+            ]
+          }
+        },
+        {
+          "id": "p_fert",
+          "who": "wang",
+          "q": "平时施什么肥？",
+          "options": [
+            {
+              "id": "ft_chem",
+              "emoji": "🧂",
+              "label": "化肥",
+              "fact": "平时施化肥，可以溶到水里"
+            },
+            {
+              "id": "ft_organic",
+              "emoji": "💩",
+              "label": "农家肥",
+              "fact": "平时用农家肥，不能直接走滴灌管"
+            },
+            {
+              "id": "ft_mix",
+              "emoji": "🔀",
+              "label": "都有",
+              "fact": "化肥农家肥都用"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_fert"
+            ]
+          }
+        },
+        {
+          "id": "p_far",
+          "who": "wang",
+          "q": "最远那块地离水源多远？",
+          "options": [
+            {
+              "id": "fr_near",
+              "emoji": "📍",
+              "label": "一百米内",
+              "fact": "最远的地块离水源一百米以内"
+            },
+            {
+              "id": "fr_mid",
+              "emoji": "📏",
+              "label": "一两百米",
+              "fact": "最远的地块离水源一两百米"
+            },
+            {
+              "id": "fr_far",
+              "emoji": "🛤️",
+              "label": "更远",
+              "fact": "最远的地块离水源两百米以上，要考虑分区和压力"
+            }
+          ],
+          "free": {
+            "placeholder": "比如：东头那块有三百米",
+            "fact": "用户说的地块距离：{v}",
+            "chips": [
+              "一百多米",
+              "走路五分钟",
+              "不清楚"
+            ],
+            "reply": [
+              {
+                "who": "wang",
+                "say": "嗯，这决定管子粗细和要不要分区。",
+                "mood": "thinking"
+              }
+            ]
+          }
+        },
+        {
+          "who": "wang",
+          "say": "好，剩下的让 AI 帮你算管径和分区。",
+          "mood": "happy"
+        }
+      ],
+      "bring": [
+        {
+          "id": "b_map",
+          "emoji": "📐",
+          "label": "地块尺寸和形状",
+          "fact": "每块地的长宽和形状（画个草图或拍卫星图）"
+        },
+        {
+          "id": "b_water",
+          "emoji": "💧",
+          "label": "水源和出水量",
+          "fact": "水源类型、井深、水泵功率和扬程"
+        },
+        {
+          "id": "b_power",
+          "emoji": "⚡",
+          "label": "地头有没有电",
+          "fact": "地头有没有电、是 220V 还是 380V"
+        },
+        {
+          "id": "b_crop",
+          "emoji": "🌱",
+          "label": "种什么怎么轮作",
+          "fact": "每块地种什么、一年几茬、怎么轮作"
+        }
+      ]
     }
   ],
   "secret": "买管认准『全新料 PE100 国标管』，回料管晒一年就脆"

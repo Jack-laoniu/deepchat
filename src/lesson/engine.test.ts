@@ -102,8 +102,8 @@ describe('play', () => {
   });
 
   it('gamble crash depends on the user’s real conditions', () => {
-    const boss = farm.rounds.find((r) => r.id === 'boss')!;
-    if (boss.type !== 'boss') throw new Error();
+    const boss = farm.rounds.find((r) => r.id === 'risk_hammer')!;
+    if (boss.type !== 'fix') throw new Error();
     expect(gambleCrashes(boss.gamble!, play(farm, [why, pick('scale', 'small')]).flags)).toBe(false);
     expect(gambleCrashes(boss.gamble!, play(farm, [why, pick('scale', 'big')]).flags)).toBe(true);
   });
@@ -133,16 +133,18 @@ describe('play', () => {
         },
       },
       { round: 'spots', place: { pump: 'well', box: 'shed' } },
-      { round: 'routine', day: { m_am: 'm_am_phone', m_noon: 'm_noon_market', m_eve: 'm_eve_tea', m_night: 'm_night_sleep' } },
+      { round: 'routine', day: { d_dawn: 'd_dawn_phone', d_noon: 'd_noon_wait', d_eve: 'd_eve_tank', d_night: 'd_night_alarm' } },
       { round: 'budget', value: 5000 },
-      { round: 'boss', gamble: true },
+      { round: 'risk_hammer', gamble: true },
+      { round: 'boss', finale: { option: 'dir_drip', replies: { p_water: { option: 'wt_river' } }, bring: { b_map: 'have', b_water: 'unsure' } } },
     ];
     const p = play(farm, answers);
     expect(p.current).toBeNull();
     expect(p.flags.has('frost')).toBe(true);
     expect(p.risks).toHaveLength(2);
     expect(p.quotes.map((q) => q.text)).toEqual(['腰不好，浇不动了', '怕冬天管子冻裂', '多陪陪孩子']);
-    const text = superPrompt(farm, p, [{ round: 'boss', msg: '主管接头被冲爆', loss: 8000 }]);
+    expect(p.facts.some((f) => f.includes('砂石过滤'))).toBe(true);
+    const text = superPrompt(farm, p, [{ round: 'risk_hammer', msg: '主管接头被冲爆', loss: 8000 }]);
     expect(text).toContain('用户自己说的话');
     expect(text).toContain('多陪陪孩子');
     expect(text).toContain('冬季有冰冻风险');
@@ -290,9 +292,9 @@ describe('place and day rounds', () => {
     expect(p.flags.has('box_edge')).toBe(true);
     expect(p.risks.some((r) => r.includes('短路'))).toBe(true);
     expect(p.facts.some((f) => f.includes('井边'))).toBe(true);
-    const q = play(farmL, [...answers, { round: 'spots', place: { pump: 'well', box: 'shed' } }, { round: 'routine', day: { m_am: 'm_am_phone' } }]);
+    const q = play(farmL, [...answers, { round: 'spots', place: { pump: 'well', box: 'shed' } }, { round: 'routine', day: { d_dawn: 'd_dawn_phone' } }]);
     expect(q.risks.some((r) => r.includes('短路'))).toBe(false);
-    expect(q.facts).toContain('早上想在手机上看看就行');
+    expect(q.facts).toContain('希望在床上用手机就能远程开阀浇水');
   });
 });
 

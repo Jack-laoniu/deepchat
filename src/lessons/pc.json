@@ -652,8 +652,8 @@
       "fact": "预算上限 {v} 元"
     },
     {
-      "type": "boss",
-      "id": "boss",
+      "type": "fix",
+      "id": "risk_heat",
       "q": "夏天满载 8 小时！",
       "emoji": "🥵",
       "problem": "机箱里热成蒸笼",
@@ -699,6 +699,211 @@
         "crash": "过热降频，接着黑屏",
         "ok": "负载不高，问题不大"
       }
+    },
+    {
+      "type": "boss",
+      "id": "boss",
+      "q": "最后，走哪条路线？",
+      "emoji": "🧭",
+      "who": "ajie",
+      "options": [
+        {
+          "id": "dir_diy",
+          "emoji": "🧱",
+          "label": "自己攒机",
+          "fact": "自己挑配件组装，性价比最高",
+          "set": [
+            "dir_diy"
+          ],
+          "pros": "同样钱性能最强",
+          "cons": "要自己折腾售后"
+        },
+        {
+          "id": "dir_brand",
+          "emoji": "🏪",
+          "label": "品牌整机",
+          "fact": "买品牌整机或电脑城整机，整机保修",
+          "set": [
+            "dir_brand"
+          ],
+          "pros": "整机保修省心",
+          "cons": "同配置贵两三成"
+        },
+        {
+          "id": "dir_cloud",
+          "emoji": "☁️",
+          "label": "游戏机+云端AI",
+          "fact": "本地只配打游戏的电脑，大模型按小时租云端显卡",
+          "set": [
+            "dir_cloud"
+          ],
+          "pros": "大模型不卡显存",
+          "cons": "按小时付费"
+        }
+      ],
+      "probe": [
+        {
+          "who": "ajie",
+          "say": "嗯。确定路线之前，我再问几个关键的。",
+          "mood": "thinking"
+        },
+        {
+          "id": "p_diy",
+          "who": "ajie",
+          "q": "你自己装过电脑吗？",
+          "options": [
+            {
+              "id": "dy_yes",
+              "emoji": "🛠️",
+              "label": "装过",
+              "fact": "自己装过电脑"
+            },
+            {
+              "id": "dy_no",
+              "emoji": "🙋",
+              "label": "没装过",
+              "fact": "没装过电脑，需要有人帮忙装机"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_diy"
+            ]
+          }
+        },
+        {
+          "id": "p_brand",
+          "who": "ajie",
+          "q": "更看重哪种售后？",
+          "options": [
+            {
+              "id": "bd_home",
+              "emoji": "🏠",
+              "label": "上门维修",
+              "fact": "希望能上门维修"
+            },
+            {
+              "id": "bd_swap",
+              "emoji": "🔁",
+              "label": "坏了直接换",
+              "fact": "希望出问题能直接换新"
+            },
+            {
+              "id": "bd_any",
+              "emoji": "🤷",
+              "label": "都行",
+              "fact": "对售后没有特别要求"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_brand"
+            ]
+          }
+        },
+        {
+          "id": "p_cloud",
+          "who": "ajie",
+          "q": "每周跑模型大概几小时？",
+          "options": [
+            {
+              "id": "cl_low",
+              "emoji": "⏱️",
+              "label": "几个小时",
+              "fact": "每周跑模型几个小时"
+            },
+            {
+              "id": "cl_mid",
+              "emoji": "📆",
+              "label": "十几二十小时",
+              "fact": "每周跑模型十几二十小时"
+            },
+            {
+              "id": "cl_high",
+              "emoji": "🔥",
+              "label": "天天跑",
+              "fact": "几乎天天跑模型，租卡可能比买卡贵"
+            }
+          ],
+          "if": {
+            "any": [
+              "dir_cloud"
+            ]
+          }
+        },
+        {
+          "id": "p_games",
+          "who": "ajie",
+          "q": "主要玩哪几款游戏？",
+          "options": [
+            {
+              "id": "gm_aaa",
+              "emoji": "🎮",
+              "label": "3A 大作",
+              "fact": "主要玩 3A 大作，要高画质"
+            },
+            {
+              "id": "gm_esports",
+              "emoji": "🎯",
+              "label": "竞技网游",
+              "fact": "主要玩竞技网游，要高帧率"
+            },
+            {
+              "id": "gm_light",
+              "emoji": "🕹️",
+              "label": "轻度游戏",
+              "fact": "主要玩轻度游戏"
+            }
+          ],
+          "free": {
+            "placeholder": "比如：黑神话、CS2",
+            "fact": "用户常玩的游戏：{v}",
+            "chips": [
+              "黑神话",
+              "CS2",
+              "原神"
+            ],
+            "reply": [
+              {
+                "who": "ajie",
+                "say": "记下了，这决定显卡档位。",
+                "mood": "thinking"
+              }
+            ]
+          }
+        },
+        {
+          "who": "ajie",
+          "say": "行，剩下的交给 AI 出配置单。",
+          "mood": "happy"
+        }
+      ],
+      "bring": [
+        {
+          "id": "b_games",
+          "emoji": "🎮",
+          "label": "常玩游戏和画质",
+          "fact": "常玩的游戏、想要的分辨率和帧率"
+        },
+        {
+          "id": "b_model",
+          "emoji": "🤖",
+          "label": "要跑的模型",
+          "fact": "想跑的模型名字和参数量（比如 7B、14B）"
+        },
+        {
+          "id": "b_space",
+          "emoji": "📏",
+          "label": "放电脑的空间",
+          "fact": "桌下或桌面放机箱的尺寸，散热通风情况"
+        },
+        {
+          "id": "b_monitor",
+          "emoji": "🖥️",
+          "label": "现有显示器",
+          "fact": "现在的显示器型号、分辨率和刷新率"
+        }
+      ]
     }
   ],
   "secret": "CPU 买散片就行，把钱砸在显存和一线电源上"
