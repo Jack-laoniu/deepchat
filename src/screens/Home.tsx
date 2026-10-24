@@ -9,7 +9,13 @@ import { Emoji } from '../ui/Emoji';
 import { Btn, Mascot } from '../ui/kit';
 import { copyText } from '../ui/copy';
 import { Generating } from './Generating';
-import { detectLang, t } from '../i18n';
+import { detectLang, getLang, t } from '../i18n';
+import { CHAT_AT, friends } from '../bond';
+import { Character } from '../chars/Character';
+import { charById } from '../chars/library';
+import { sfx } from '../fx/fx';
+import { Hearts } from '../ui/Hearts';
+import { FriendChat } from './FriendChat';
 import { loadCode, requestLesson, saveCode, useCanGenerate } from '../api';
 import { forget, memories, memoryOn, memoryText, setMemoryOn, type QuestMemory } from '../memory';
 
@@ -90,6 +96,7 @@ export function Home() {
       </div>
 
       <MemoryCard onPick={(m) => setNeed(m.need)} />
+      <FriendsRow />
 
       {samples.length > 0 && <div className="mt-6 text-sm font-black text-slate-400">{t('orTry')}</div>}
       <div className="mt-2 space-y-3">
@@ -118,6 +125,44 @@ export function Home() {
       </button>
 
       <AnimatePresence>{studio && <Studio initialNeed={need} onClose={() => setStudio(false)} onLoad={(l) => g.open(l)} />}</AnimatePresence>
+    </div>
+  );
+}
+
+/** 熟人：交情 > 0 的角色和他们的心数；点一下单独聊天（1 颗心起） */
+function FriendsRow() {
+  const [list] = useState(friends);
+  const [open, setOpen] = useState<string | null>(null);
+  const [hint, setHint] = useState('');
+  if (!list.length) return null;
+  return (
+    <div className="mt-5 rounded-3xl border-2 border-rose-200 bg-rose-50 p-3">
+      <div className="flex items-baseline justify-between">
+        <span className="text-base font-black text-rose-600">{t('friendsTitle')}</span>
+        <span className="text-[11px] font-bold text-rose-400">{t('friendsNote')}</span>
+      </div>
+      <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+        {list.map((f) => {
+          const locked = f.hearts < CHAT_AT;
+          const name = charById(f.id)!.name[getLang()];
+          return (
+            <motion.button
+              key={f.id}
+              whileTap={{ scale: 0.94 }}
+              onClick={() => (locked ? setHint(t('friendLocked', { name })) : (sfx.tap(), setOpen(f.id)))}
+              className="flex w-[76px] shrink-0 flex-col items-center rounded-2xl bg-white px-1 pb-1.5 pt-1 shadow-sm"
+            >
+              <div className={`overflow-hidden rounded-xl ${locked ? 'opacity-50 grayscale' : ''}`}>
+                <Character id={f.id} size={56} bust mood="happy" />
+              </div>
+              <span className="mt-0.5 text-xs font-black text-slate-600">{name}</span>
+              <Hearts n={f.hearts} size={9} />
+            </motion.button>
+          );
+        })}
+      </div>
+      {hint && <div className="mt-1 text-center text-xs font-black text-rose-400">{hint}</div>}
+      <AnimatePresence>{open && <FriendChat id={open} onClose={() => setOpen(null)} />}</AnimatePresence>
     </div>
   );
 }

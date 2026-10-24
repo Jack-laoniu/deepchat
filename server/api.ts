@@ -6,7 +6,8 @@ import { ttsFromConfig, type Tts } from './tts';
 import { genericLesson } from '../src/lesson/generic';
 import { dropDecided } from '../src/lesson/salvage';
 import { parseLesson } from '../src/lesson/schema';
-import { chatFromConfig, discussNeed, finaleFor, generateLesson, reactLine, UpstreamError, type GenerateResult, type ModelChoice, type StartChat, type Turn } from './generate';
+import { charById } from '../src/chars/library';
+import { chatFromConfig, discussNeed, finaleFor, friendChat, generateLesson, reactLine, UpstreamError, type GenerateResult, type ModelChoice, type StartChat, type Turn } from './generate';
 
 /**
  * 网页版的生成接口：
@@ -134,6 +135,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   if (path === '/api/tts') return speech(req, res, cfg);
   if (path === '/api/clientlog') return clientLog(req, res);
   if (path === '/api/finale') return finale(req, res, cfg);
+  if (path === '/api/friend') return friend(req, res, cfg);
   if (path !== '/api/generate') return false;
   if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
   if (!client) return void json(res, 503, { error: 'disabled' }), true;
@@ -239,7 +241,7 @@ function upstreamFailed(res: ServerResponse, what: string, e: unknown) {
 async function finale(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<typeof settings>): Promise<boolean> {
   if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
   if (!cfg.client) return void json(res, 503, { error: 'disabled' }), true;
-  let body: { lesson?: unknown; journey?: unknown; code?: unknown; memory?: unknown };
+  let body: { lesson?: unknown; journey?: unknown; code?: unknown; memory?: unknown; guest?: unknown };
   try {
     body = (await readBody(req, 96_000)) as typeof body;
   } catch {
@@ -258,11 +260,59 @@ async function finale(req: IncomingMessage, res: ServerResponse, cfg: ReturnType
   running++;
   const t0 = Date.now();
   try {
-    const r = await finaleFor(cfg.client, { lesson: parsed.lesson, journey, memory }, t0 + 90_000);
+    const guest = typeof body?.guest === 'string' && parsed.lesson.cast.some((c) => c.id === body.guest) ? body.guest : undefined;
+    const r = await finaleFor(cfg.client, { lesson: parsed.lesson, journey, memory, guest }, t0 + 90_000);
     console.error(`finale: ${r ? 'ok' : 'kept the original'} after ${Math.round((Date.now() - t0) / 1000)}s ${parsed.lesson.title.slice(0, 30)}`);
     json(res, 200, r ?? {});
   } catch (e) {
     upstreamFailed(res, 'finale', e);
+  } finally {
+    running--;
+  }
+  return true;
+}
+
+/** 和熟人单独聊天：交情、讲过的故事、一起闯过的需求由前端带来（只存在用户设备上） */
+async function friend(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<typeof settings>): Promise<boolean> {
+  if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
+  if (!cfg.client) return void json(res, 503, { error: 'disabled' }), true;
+  let body: Record<string, unknown>;
+  try {
+    body = (await readBody(req, 48_000)) as Record<string, unknown>;
+  } catch {
+    return void json(res, 400, { error: 'bad_request' }), true;
+  }
+  if (cfg.accessCode && body?.code !== cfg.accessCode) return void json(res, 403, { error: 'code' }), true;
+  const who = typeof body?.who === 'string' && charById(body.who) && body.who !== 'me' ? body.who : '';
+  const message = typeof body?.message === 'string' ? body.message.trim() : '';
+  if (!who || !message || [...message].length > MAX_MESSAGE_CHARS) return void json(res, 400, { error: 'need' }), true;
+  const strings = (v: unknown, n: number, len: number) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string').slice(-n).map((x) => x.slice(0, len)) : []);
+  const history: Turn[] = (Array.isArray(body.history) ? body.history : [])
+    .filter((t): t is Turn => (t?.role === 'user' || t?.role === 'assistant') && typeof t?.content === 'string')
+    .slice(-MAX_TURNS)
+    .map((t) => ({ role: t.role, content: t.content.slice(0, 1200) }));
+  while (history[0]?.role === 'assistant') history.shift();
+
+  const verdict = allow(clientIp(req), cfg.discussPerIpPerHour, cfg.perDay, talkHits);
+  if (verdict !== 'ok') return void json(res, 429, { error: verdict === 'ip' ? 'rate_ip' : 'rate_day' }), true;
+  if (running >= cfg.concurrency) return void json(res, 429, { error: 'busy' }), true;
+  running++;
+  try {
+    const r = await friendChat(cfg.client, {
+      who,
+      lang: body.lang === 'en' ? 'en' : 'zh',
+      hearts: Math.max(0, Math.min(5, Number(body.hearts) || 0)),
+      history,
+      message,
+      stories: strings(body.stories, 8, 160),
+      quests: strings(body.quests, 10, 40),
+      memory: typeof body.memory === 'string' ? body.memory.slice(0, 4000) : undefined,
+      plan: typeof body.plan === 'string' ? body.plan.slice(0, MAX_PLAN_CHARS) : undefined,
+    });
+    if (!r) return void json(res, 502, { error: 'upstream', detail: 'refused' }), true;
+    json(res, 200, r);
+  } catch (e) {
+    upstreamFailed(res, 'friend', e);
   } finally {
     running--;
   }

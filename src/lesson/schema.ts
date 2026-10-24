@@ -412,7 +412,8 @@ export const LessonShape = z.object({
      * 之后所有 price / 预算滑块 / 合计都按这个单位算和显示。
      */
     goal: z.object({ name: short(4), unit: short(4), emoji }).optional(),
-    cast: z.array(CastMember).max(6).default([]),
+    /** 最多 6 个，被请进来帮忙的熟人可以再加 2 个 */
+    cast: z.array(CastMember).max(8).default([]),
     guess: z.object({
       line: short(28),
       items: z.array(Item).min(2).max(8),

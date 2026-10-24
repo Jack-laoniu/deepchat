@@ -93,3 +93,24 @@ describe('personal finale', () => {
     expect(calls).toHaveLength(2);
   });
 });
+
+describe('friend chat', async () => {
+  const { friendChat, friendRules, storiesAllowed } = await import('./generate');
+  const base = { who: 'wang', lang: 'zh' as const, history: [], message: '讲讲你自己的事吧', stories: [], quests: ['第一辆车'] };
+
+  it('opens up more stories as closeness grows', () => {
+    expect(storiesAllowed(1)).toBe(0);
+    expect(friendRules({ ...base, hearts: 1 })).toContain('do not know each other well enough');
+    expect(friendRules({ ...base, hearts: 3 })).toContain('at most 2 more');
+    expect(friendRules({ ...base, hearts: 3, stories: ['a', 'b'] })).toContain('shared all the stories');
+    expect(friendRules({ ...base, hearts: 2, plan: '# 第一辆车' })).toContain('# 第一辆车');
+  });
+
+  it('pulls out the summary of a newly told story', async () => {
+    const { client } = fakeClient(['[story: 第一次卖车被骗了两万] 说起来丢人，我刚入行那年……']);
+    const r = await friendChat(client, { ...base, hearts: 2 });
+    expect(r).toEqual({ reply: '说起来丢人，我刚入行那年……', story: '第一次卖车被骗了两万' });
+    const { client: c2 } = fakeClient(['[story: 又一段] 哈哈下次再说']);
+    expect(await friendChat(c2, { ...base, hearts: 1 })).toEqual({ reply: '哈哈下次再说', story: undefined });
+  });
+});

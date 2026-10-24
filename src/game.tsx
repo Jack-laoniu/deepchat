@@ -32,6 +32,10 @@ interface Game {
   finaleWaiting: boolean;
   /** 不等个性化终章了，用关卡里原来的 */
   skipFinaleWait(): void;
+  /** 被请来帮忙的熟人 */
+  guest: string | null;
+  /** 把一个熟人请进这一关：他来主持终章，个性化终章按他的角度重写 */
+  invite(id: string): void;
   open(lesson: Lesson): void;
   begin(): void;
   choose(round: Round, optionId: string): void;
@@ -70,6 +74,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   // 个性化终章：玩到只剩两关 + 终章时，把这一局的选择和原话交给模型，在后台重写终章；
   // 用户玩完那两关的工夫就生成好了。没有服务器、失败、超时都用关卡里原来的终章。
   const [custom, setCustom] = useState<'idle' | 'pending' | 'done'>('idle');
+  const [guest, setGuest] = useState<string | null>(null);
   const job = useRef(0);
   useEffect(() => {
     if (phase !== 'play' || custom !== 'idle' || !lesson || !played?.current) return;
@@ -80,7 +85,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const journey = journeyText(lesson, played);
     setCustom('pending');
     void serverConfig()
-      .then((c) => (c.generate ? requestFinale(base, journey) : null))
+      .then((c) => (c.generate ? requestFinale(base, journey, guest) : null))
       .then((r) => {
         if (job.current !== my) return;
         if (r) {
@@ -90,7 +95,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
         setCustom('done');
       });
-  }, [phase, custom, lesson, played]);
+  }, [phase, custom, lesson, played, guest]);
 
   const commit = (a: Answer, fb: (before: Played, after: Played, problem: FixRound | null) => Feedback) => {
     if (!lesson) return;
@@ -123,9 +128,26 @@ export function GameProvider({ children }: { children: ReactNode }) {
       job.current++;
       setCustom('done');
     },
+    guest,
+    invite(id) {
+      if (!lesson || guest) return;
+      const boss = bossOf(lesson);
+      setGuest(id);
+      setLesson({
+        ...lesson,
+        cast: lesson.cast.some((c) => c.id === id) ? lesson.cast : [...lesson.cast, { id }],
+        rounds: lesson.rounds.map((r) => (r === boss ? { ...boss, who: id } : r)),
+      });
+      // 终章已经在生成 / 生成好了：按他的角度重来
+      if (custom !== 'idle') {
+        job.current++;
+        setCustom('idle');
+      }
+    },
     open(l) {
       job.current++;
       setCustom('idle');
+      setGuest(null);
       setLocale(l.lang, l.currency, l.goal);
       setLesson(l);
       setAnswers([]);

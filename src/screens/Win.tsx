@@ -6,6 +6,13 @@ import { jingle, playMusic } from '../fx/music';
 import { hostFollowUp, inHost } from '../host';
 import { superPrompt, yuan } from '../lesson/output';
 import { remember } from '../memory';
+import { CHAT_AT, earn, friends } from '../bond';
+import { Character } from '../chars/Character';
+import { charById } from '../chars/library';
+import type { Played } from '../lesson/engine';
+import type { Lesson } from '../lesson/schema';
+import { Hearts } from '../ui/Hearts';
+import { FriendChat } from './FriendChat';
 import { filledOf, puzzleOf } from '../lesson/puzzle';
 import { PuzzleBoard } from '../ui/Puzzle';
 import { Emoji } from '../ui/Emoji';
@@ -15,6 +22,13 @@ import { getLang, t } from '../i18n';
 import { type Turn } from './Discuss';
 import { NextStep } from './NextStep';
 import { ShareSheet } from './ShareSheet';
+
+/** 每一局只记一次交情（开发模式下 effect / 初始化会跑两次） */
+const earned = new WeakMap<object, ReturnType<typeof earn>>();
+function earnOnce(l: Lesson, p: Played, guest: string | null) {
+  if (!earned.has(p)) earned.set(p, earn(l, p, guest));
+  return earned.get(p)!;
+}
 
 function Ring({ value, emoji, label, delay }: { value: number; emoji: string; label: string; delay: number }) {
   const r = 30;
@@ -58,8 +72,10 @@ export function Win() {
   const guessTotal = l.guess.items.reduce((s, i) => s + i.price, 0);
   const saved = guessTotal - p.total;
 
-  // 记住这一局：下次生成新关卡时，角色会记得用户的情况
+  // 记住这一局：下次生成新关卡时，角色会记得用户的情况；和一起闯关的角色交情涨了
   useEffect(() => remember(l, p), []); // eslint-disable-line react-hooks/exhaustive-deps
+  const [bonds] = useState(() => earnOnce(l, p, g.guest));
+  const [chatWith, setChatWith] = useState<string | null>(null);
 
   useEffect(() => {
     celebrate();
@@ -112,6 +128,39 @@ export function Win() {
         <div className="mb-2 text-center text-sm font-black text-violet-600">🧩 {t('puzzleTitle')}</div>
         <PuzzleBoard pieces={puzzleOf(l, p)} filled={filledOf(l, p)} size="sm" />
       </div>
+
+      {bonds.length > 0 && (
+        <div className="mt-4 rounded-3xl bg-gradient-to-b from-rose-50 to-white p-3">
+          <div className="mb-2 text-center text-sm font-black text-rose-500">❤️ {t('bondTitle')}</div>
+          <div className="flex flex-wrap justify-center gap-2">
+            {bonds.map((b, i) => (
+              <motion.button
+                key={b.id}
+                initial={{ y: 16, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4 + i * 0.1 }}
+                onClick={() => b.after >= CHAT_AT && setChatWith(b.id)}
+                className="flex w-[72px] flex-col items-center rounded-2xl bg-white pb-1 shadow-sm"
+              >
+                <Character id={b.id} size={52} bust mood={b.after > b.before ? 'happy' : 'neutral'} />
+                <Hearts n={b.after} size={8} pop={b.after - b.before} />
+                <span className="text-[10px] font-black text-rose-400">+{b.gain}</span>
+              </motion.button>
+            ))}
+          </div>
+          {/* 交情够了的熟人（不管这一关有没有出场）：请他从自己的角度看看这个需求 */}
+          <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+            {friends()
+              .filter((f) => f.hearts >= CHAT_AT)
+              .slice(0, 3)
+              .map((f) => (
+                <button key={f.id} onClick={() => setChatWith(f.id)} className="rounded-full border-2 border-b-4 border-rose-200 bg-white px-3 py-1 text-xs font-black text-rose-600">
+                  💬 {t('bondAsk', { name: charById(f.id)!.name[getLang()] })}
+                </button>
+              ))}
+          </div>
+        </div>
+      )}
 
       <button onClick={() => setShowList(true)} className="mt-5 flex flex-wrap justify-center gap-2">
         {p.cart.map((it, i) => (
@@ -215,6 +264,7 @@ export function Win() {
         )}
       </AnimatePresence>
       <AnimatePresence>{sharing && <ShareSheet onClose={() => setSharing(false)} />}</AnimatePresence>
+      <AnimatePresence>{chatWith && <FriendChat id={chatWith} plan={plan} onClose={() => setChatWith(null)} />}</AnimatePresence>
     </div>
   );
 }

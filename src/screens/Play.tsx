@@ -1,5 +1,11 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { friends, INVITE_AT } from '../bond';
+import { Character } from '../chars/Character';
+import { charById } from '../chars/library';
+import { sfx } from '../fx/fx';
+import { speakNow } from '../fx/voice';
+import { Hearts } from '../ui/Hearts';
 import { playMusic, type Theme } from '../fx/music';
 import { useGame } from '../game';
 import type { Round } from '../lesson/schema';
@@ -18,7 +24,7 @@ import { FeedbackSheet } from '../ui/FeedbackSheet';
 import { RoundGuard } from '../ui/RoundGuard';
 import { filledOf, puzzleOf } from '../lesson/puzzle';
 import { TopBar } from '../ui/kit';
-import { money, t } from '../i18n';
+import { getLang, money, t } from '../i18n';
 import { Emoji } from '../ui/Emoji';
 
 function RoundView({ round }: { round: Round }) {
@@ -139,7 +145,95 @@ export function Play() {
           />
         )}
       </AnimatePresence>
+      {current && current.type !== 'boss' && !g.feedback && <InviteFriend />}
       <FeedbackSheet fb={g.feedback} onNext={g.next} />
+    </motion.div>
+  );
+}
+
+/**
+ * 叫熟人：交情够了、但这一关没出场的角色，可以请进来帮忙（每关一位）。
+ * 他会马上打个招呼，终章由他来主持、按他的角度重写。
+ */
+function InviteFriend() {
+  const g = useGame();
+  const [open, setOpen] = useState(false);
+  const [hello, setHello] = useState<string | null>(null);
+  const list = useMemo(() => friends().filter((f) => f.hearts >= INVITE_AT && !g.lesson!.cast.some((c) => c.id === f.id)), [g.lesson]);
+  useEffect(() => {
+    if (!hello) return;
+    const id = setTimeout(() => setHello(null), 3500);
+    return () => clearTimeout(id);
+  }, [hello]);
+  if (g.guest && hello) return <Hello id={hello} />;
+  if (g.guest || !list.length) return null;
+  return (
+    <>
+      <motion.button
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => (sfx.tap(), setOpen(true))}
+        className="absolute bottom-2 left-3 z-20 flex items-center gap-1 rounded-full border-2 border-b-4 border-rose-200 bg-white py-0.5 pl-0.5 pr-2.5 shadow-sm"
+      >
+        <span className="overflow-hidden rounded-full bg-rose-50">
+          <Character id={list[0].id} size={28} bust mood="happy" />
+        </span>
+        <span className="text-xs font-black text-rose-500">{t('inviteBtn')}</span>
+      </motion.button>
+      <AnimatePresence>
+        {open && (
+          <motion.div className="fixed inset-0 z-40 flex items-end justify-center bg-slate-900/40" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(false)}>
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 26, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md rounded-t-3xl bg-white p-5"
+            >
+              <div className="text-lg font-black text-slate-700">{t('inviteTitle')}</div>
+              <div className="text-xs font-bold text-slate-400">{t('inviteNote', { n: INVITE_AT })}</div>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {list.map((f) => (
+                  <button
+                    key={f.id}
+                    onClick={() => {
+                      sfx.good();
+                      g.invite(f.id);
+                      setOpen(false);
+                      setHello(f.id);
+                      const c = charById(f.id)!;
+                      void speakNow(t('inviteJoined'), c.voice);
+                    }}
+                    className="flex flex-col items-center rounded-2xl border-2 border-b-4 border-rose-100 bg-rose-50 p-2"
+                  >
+                    <Character id={f.id} size={64} bust mood="happy" />
+                    <span className="text-sm font-black text-slate-700">{charById(f.id)!.name[getLang()]}</span>
+                    <Hearts n={f.hearts} size={10} />
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+/** 熟人进场：从左边探出来打个招呼（在题目上方，不挡按钮） */
+function Hello({ id }: { id: string }) {
+  return (
+    <motion.div
+      initial={{ x: -140, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: -140, opacity: 0 }}
+      transition={{ type: 'spring', damping: 18, stiffness: 220 }}
+      className="pointer-events-none absolute left-2 top-24 z-30 flex flex-row-reverse items-start gap-1"
+    >
+      <div className="mt-3 max-w-[12rem] rounded-2xl rounded-tl-sm border-2 border-rose-100 bg-white px-3 py-2 text-sm font-black text-slate-700 shadow-md">{t('inviteJoined')}</div>
+      <Character id={id} size={72} bust mood="happy" talking />
     </motion.div>
   );
 }

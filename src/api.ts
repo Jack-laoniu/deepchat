@@ -117,17 +117,41 @@ export async function requestReact(input: {
  * 个性化终章：把这一局到目前为止的选择和原话发给服务器，换回按用户写的终章。
  * 后台进行，失败或超时返回 null（用关卡里原来的终章）。
  */
-export async function requestFinale(lesson: Lesson, journey: string, signal?: AbortSignal): Promise<{ boss: BossRound; cast: Lesson['cast'] } | null> {
+export async function requestFinale(lesson: Lesson, journey: string, guest?: string | null, signal?: AbortSignal): Promise<{ boss: BossRound; cast: Lesson['cast'] } | null> {
   try {
     const res = await fetch('/api/finale', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ lesson, journey, code: loadCode(), memory: memoryText(lesson.need) || undefined }),
+      body: JSON.stringify({ lesson, journey, guest: guest ?? undefined, code: loadCode(), memory: memoryText(lesson.need) || undefined }),
       signal: AbortSignal.any ? AbortSignal.any([AbortSignal.timeout(100_000), ...(signal ? [signal] : [])]) : signal,
     });
     const data = (await res.json().catch(() => ({}))) as { boss?: BossRound; cast?: Lesson['cast'] };
     return res.ok && data.boss && Array.isArray(data.cast) ? { boss: data.boss, cast: data.cast } : null;
   } catch {
     return null;
+  }
+}
+
+/** 和熟人单独聊天；失败返回错误码 */
+export async function requestFriend(input: {
+  who: string;
+  hearts: number;
+  history: { role: 'user' | 'assistant'; content: string }[];
+  message: string;
+  stories: string[];
+  quests: string[];
+  plan?: string;
+}): Promise<{ reply: string; story?: string } | { error: string }> {
+  try {
+    const res = await fetch('/api/friend', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ...input, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode(), memory: memoryText() || undefined }),
+      signal: AbortSignal.timeout(90_000),
+    });
+    const d = (await res.json().catch(() => ({}))) as { reply?: string; story?: string; error?: string };
+    return d.reply ? { reply: d.reply, story: d.story } : { error: d.error ?? 'fail' };
+  } catch {
+    return { error: 'fail' };
   }
 }
