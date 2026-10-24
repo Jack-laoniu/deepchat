@@ -25,7 +25,22 @@ export type Answer =
   /** 无文字的一天：时刻 id → 选项 id */
   | { round: string; day: Record<string, string> }
   /** 终章：选的做法、追问的回答、每样资料 有 / 没有 / 不确定 */
-  | { round: string; finale: { option: string; replies: Replies; bring: Record<string, Material['state']> } };
+  | {
+      round: string;
+      finale: {
+        option: string;
+        replies: Replies;
+        bring: Record<string, Material['state']>;
+        /** 我们读到的你：对 / 不太对（可附上用户自己的说法） */
+        read?: Record<string, ReadAnswer>;
+        /** 矛盾二选一 */
+        clash?: Record<string, 'a' | 'b'>;
+      };
+    };
+
+export type ReadAnswer = { ok: true } | { ok: false; text?: string };
+/** 用户确认 / 纠正过的需求画像 */
+export type Portrait = { text: string; fact: string; ok: boolean; note?: string };
 
 export type Material = { label: string; fact: string; state: 'have' | 'no' | 'unsure' };
 
@@ -98,6 +113,8 @@ export interface Played {
   gifts: { emoji: string; label: string; from: string }[];
   /** 终章里确认的资料：用户手头有没有 */
   materials: Material[];
+  /** 终章里用户确认 / 纠正过的需求画像 */
+  portrait: Portrait[];
 }
 
 /** 无文字的一天：时刻没写具体时间时用这个表示 */
@@ -154,6 +171,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
   const decisions: Played['decisions'] = [];
   const gifts: Played['gifts'] = [];
   const materials: Material[] = [];
+  const portrait: Portrait[] = [];
   let sacrificed: Meter | undefined;
   let budget: number | null = null;
   let current: Round | null = null;
@@ -220,7 +238,20 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
       risks.push(`${r.problem} → 「${r.gamble.label}」${r.gamble.ok ? `: ${r.gamble.ok}` : ""}`);
       score.safe -= 15;
     } else if ('finale' in a && r.type === 'boss') {
-      // 终章：选了哪种做法、追问的回答、手头有没有那些资料
+      // 终章：读到的需求确认了没有、矛盾怎么取舍、选了哪种做法、追问的回答、手头有没有那些资料
+      for (const it of r.read) {
+        const ans = a.finale.read?.[it.id];
+        if (!ans) continue;
+        const note = !ans.ok && ans.text?.trim() ? ans.text.trim() : undefined;
+        portrait.push({ text: it.text, fact: it.fact, ok: ans.ok, note });
+        if (note) quotes.push({ q: it.text, text: note });
+      }
+      for (const c of r.clash) {
+        const side = a.finale.clash?.[c.id];
+        if (!side) continue;
+        applyOption(c[side]);
+        decisions.push({ thing: c.q, choice: c[side].label });
+      }
       const o = r.options.find((x) => x.id === a.finale.option);
       if (o) {
         applyOption(o);
@@ -319,6 +350,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
     decisions,
     gifts,
     materials,
+    portrait,
   };
 }
 

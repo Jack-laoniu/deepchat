@@ -381,12 +381,12 @@ export async function finaleFor(startChat: StartChat, input: { lesson: Lesson; j
     const r = parseLesson(withBoss(lesson, round));
     const pick = (l: Lesson) => {
       const b = bossOf(l);
-      return b && b.id === old.id && b.options.length >= 2 ? { boss: b, cast: l.cast } : null;
+      return b && b.id === old.id && b.options.length >= 2 && b.read.length > 0 ? { boss: b, cast: l.cast } : null;
     };
     if (r.ok) {
       const b = pick(r.lesson);
       if (b) return b;
-      prompt = 'The finale needs 2–4 options (approaches people really use). Output the complete corrected finale round JSON only.';
+      prompt = 'The finale needs 2–4 "options" shaped by this user and 2–4 "read" insights about their real need. Output the complete corrected finale round JSON only.';
       continue;
     }
     // 只看终章自己的问题；小毛病（截短文字、补 cast…）自己修

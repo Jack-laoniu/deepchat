@@ -6,7 +6,7 @@ import { sfx } from '../fx/fx';
 import { playMusic } from '../fx/music';
 import { useGame } from '../game';
 import { t } from '../i18n';
-import { optionDelta, walkBeats, type Material, type Replies } from '../lesson/engine';
+import { optionDelta, walkBeats, type Material, type ReadAnswer, type Replies } from '../lesson/engine';
 import { filledOf, puzzleOf, type Piece } from '../lesson/puzzle';
 import type { BossRound } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
@@ -14,12 +14,14 @@ import { Btn, PriceBadge } from '../ui/kit';
 import { PuzzleBoard } from '../ui/Puzzle';
 import { Dialogue, useCast } from './Talk';
 
-type Step = 'recap' | 'pick' | 'probe' | 'bring' | 'done';
+type Step = 'recap' | 'read' | 'clash' | 'pick' | 'probe' | 'bring' | 'done';
 
 /**
  * 终章（boss）：不是打怪，而是把需求说透，补上拼图的最后几块。
  * ① 回顾：已经点亮的拼图 + 用户亲口说的话；② 行业里常见的几种做法（带优缺点），选一个方向；
  * ③ 针对这个方向追问几句；④ 出方案前还需要的资料，逐项点 有 / 没有 / 不确定；拼图补齐，通关。
+ * 个性化终章（按用户这一局的回答重写的）在 ② 之前还有两步：「我是这么理解你的」逐条确认 / 纠正，
+ * 以及回答里互相打架的地方二选一；② 的每条路都写着为什么适合他。
  */
 export function Finale({ round }: { round: BossRound }) {
   const g = useGame();
@@ -34,7 +36,11 @@ export function Finale({ round }: { round: BossRound }) {
   const [replies, setReplies] = useState<Replies>({});
   const [bring, setBring] = useState<Record<string, Material['state']>>({});
   const [sent, setSent] = useState(false);
+  const [read, setRead] = useState<Record<string, ReadAnswer>>({});
+  const [clash, setClash] = useState<Record<string, 'a' | 'b'>>({});
   const option = round.options.find((o) => o.id === picked);
+  // 最适合他的那条排在最前面
+  const options = [...round.options].sort((a, b) => Number(!!b.best) - Number(!!a.best));
 
   // 追问按选的方向出现：在已有标记上加上这个选项设的标记
   const flags = useMemo(() => new Set([...played.flags, ...(option?.set ?? [])]), [played.flags, option]);
@@ -47,6 +53,8 @@ export function Finale({ round }: { round: BossRound }) {
   else if (picked && step !== 'pick') filled.add('direction');
   const missing = pieces.filter((p) => !filled.has(p));
 
+  const afterRecap = () => (round.read.length ? go('read') : afterRead());
+  const afterRead = () => (round.clash.length ? go('clash') : go('pick'));
   const go = (s: Step) => {
     sfx.whoosh();
     setStep(s);
@@ -58,7 +66,7 @@ export function Finale({ round }: { round: BossRound }) {
     setSent(true);
     setStep('done');
     playMusic('home');
-    setTimeout(() => g.finale(round, { option: picked!, replies, bring }), 1900);
+    setTimeout(() => g.finale(round, { option: picked!, replies, bring, read, clash }), 1900);
   };
 
   return (
@@ -96,7 +104,112 @@ export function Finale({ round }: { round: BossRound }) {
                 ))}
               </div>
               {missing.length > 0 && <div className="mt-3 text-center text-sm font-black text-violet-600">{t('finaleMissing', { n: missing.length })}</div>}
-              <Btn className="mt-auto" onClick={() => go('pick')}>
+              <Btn className="mt-auto" onClick={afterRecap}>
+                {t('next')}
+              </Btn>
+            </motion.div>
+          )}
+
+          {step === 'read' && (
+            <motion.div key="read" className="flex h-full flex-col" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }}>
+              <HostSays host={host} mood="thinking" text={t('finaleRead')} />
+              <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pb-2">
+                {round.read.map((it, i) => {
+                  const a = read[it.id];
+                  return (
+                    <motion.div
+                      key={it.id}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      className={`rounded-3xl border-2 p-3 ${a?.ok ? 'border-emerald-300 bg-emerald-50' : a ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-white'}`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <Emoji e={it.emoji} size={30} />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[16px] font-black leading-snug text-slate-700">{it.text}</div>
+                          {it.from && (
+                            <div className="mt-0.5 text-xs font-bold text-slate-400">💬 {it.from}</div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="mt-2 grid grid-cols-2 gap-1.5">
+                        <button
+                          onClick={() => {
+                            sfx.good();
+                            setRead((x) => ({ ...x, [it.id]: { ok: true } }));
+                          }}
+                          className={`rounded-xl border-2 border-b-4 py-1.5 text-sm font-black ${a?.ok ? 'border-emerald-400 bg-emerald-100 text-emerald-700' : 'border-slate-200 bg-white text-slate-500'}`}
+                        >
+                          👍 {t('finaleReadOk')}
+                        </button>
+                        <button
+                          onClick={() => {
+                            sfx.tap();
+                            setRead((x) => ({ ...x, [it.id]: { ok: false, text: x[it.id] && !x[it.id].ok ? (x[it.id] as { text?: string }).text : '' } }));
+                          }}
+                          className={`rounded-xl border-2 border-b-4 py-1.5 text-sm font-black ${a && !a.ok ? 'border-amber-400 bg-amber-100 text-amber-700' : 'border-slate-200 bg-white text-slate-500'}`}
+                        >
+                          ✏️ {t('finaleReadFix')}
+                        </button>
+                      </div>
+                      {a && !a.ok && (
+                        <motion.input
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          autoFocus
+                          value={a.text ?? ''}
+                          maxLength={80}
+                          onChange={(e) => setRead((x) => ({ ...x, [it.id]: { ok: false, text: e.target.value } }))}
+                          placeholder={t('finaleReadPlaceholder')}
+                          className="mt-2 w-full rounded-xl border-2 border-amber-200 bg-white px-3 py-2 text-[15px] font-bold text-slate-700 outline-none focus:border-amber-400"
+                        />
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+              <Btn disabled={round.read.some((it) => !read[it.id])} onClick={afterRead}>
+                {t('next')}
+              </Btn>
+            </motion.div>
+          )}
+
+          {step === 'clash' && (
+            <motion.div key="clash" className="flex h-full flex-col" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }}>
+              <HostSays host={host} mood="thinking" text={t('finaleClash')} />
+              <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pb-2">
+                {round.clash.map((c, i) => (
+                  <motion.div key={c.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.12 }} className="rounded-3xl bg-slate-50 p-3">
+                    <div className="mb-2 flex items-center justify-center gap-2 text-center text-[16px] font-black text-slate-600">
+                      <Emoji e={c.emoji} size={24} /> {c.q}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(['a', 'b'] as const).map((side) => {
+                        const o = c[side];
+                        const on = clash[c.id] === side;
+                        const delta = optionDelta(played.cart, o);
+                        return (
+                          <motion.button
+                            key={side}
+                            animate={{ scale: on ? 1.04 : 1 }}
+                            onClick={() => {
+                              sfx.tap();
+                              setClash((x) => ({ ...x, [c.id]: side }));
+                            }}
+                            className={`relative flex flex-col items-center gap-1 rounded-2xl border-2 border-b-[5px] px-2 py-3 ${on ? 'border-violet-500 bg-violet-50' : 'border-slate-200 bg-white'}`}
+                          >
+                            <Emoji e={o.emoji} size={40} />
+                            <span className="text-[15px] font-black leading-tight text-slate-700">{o.label}</span>
+                            {delta !== 0 && <PriceBadge delta={delta} />}
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+              <Btn disabled={round.clash.some((c) => !clash[c.id])} onClick={() => go('pick')}>
                 {t('next')}
               </Btn>
             </motion.div>
@@ -108,10 +221,10 @@ export function Finale({ round }: { round: BossRound }) {
                 <div className="overflow-hidden rounded-xl bg-violet-50">
                   <Character id={host} size={40} bust mood="thinking" />
                 </div>
-                <div className="text-[15px] font-black text-slate-600">{t('finalePick')}</div>
+                <div className="text-[15px] font-black text-slate-600">{t(round.read.length ? 'finalePickYou' : 'finalePick')}</div>
               </div>
               <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pb-2">
-                {round.options.map((o, i) => {
+                {options.map((o, i) => {
                   const on = picked === o.id;
                   const delta = optionDelta(played.cart, o);
                   return (
@@ -128,7 +241,11 @@ export function Finale({ round }: { round: BossRound }) {
                     >
                       <Emoji e={o.emoji} size={44} />
                       <div className="min-w-0 flex-1">
-                        <div className="text-lg font-black text-slate-700">{o.label}</div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-lg font-black text-slate-700">{o.label}</span>
+                          {o.best && <span className="rounded-full bg-violet-600 px-2 py-0.5 text-[11px] font-black text-white">{t('finaleBest')}</span>}
+                        </div>
+                        {o.why && <div className="text-sm font-black text-violet-600">💡 {o.why}</div>}
                         {o.pros && <div className="text-sm font-bold text-emerald-600">👍 {o.pros}</div>}
                         {o.cons && <div className="text-sm font-bold text-rose-500">👎 {o.cons}</div>}
                         {!o.pros && !o.cons && o.tip && <div className="text-sm font-bold text-slate-400">{o.tip}</div>}
@@ -229,6 +346,18 @@ export function Finale({ round }: { round: BossRound }) {
           )}
         </AnimatePresence>
       </div>
+    </div>
+  );
+}
+
+/** 主持人头像 + 一句话 */
+function HostSays({ host, mood, text }: { host: string; mood: 'thinking' | 'happy' | 'neutral'; text: string }) {
+  return (
+    <div className="mb-2 flex items-center gap-2">
+      <div className="overflow-hidden rounded-xl bg-violet-50">
+        <Character id={host} size={40} bust mood={mood} />
+      </div>
+      <div className="text-[15px] font-black text-slate-600">{text}</div>
     </div>
   );
 }

@@ -61,6 +61,10 @@ export const Option = z.object({
   /** 终章里「行业常见做法」卡片上的一句优点 / 缺点 */
   pros: upto(16).optional(),
   cons: upto(16).optional(),
+  /** 个性化终章：为什么这条路适合这个用户（引用他说过的话 / 做过的选择） */
+  why: upto(30).optional(),
+  /** 个性化终章：按用户的情况最合适的那条 */
+  best: z.boolean().optional(),
 });
 export type Option = z.infer<typeof Option>;
 
@@ -180,6 +184,14 @@ export type TalkRound = z.infer<typeof TalkRound>;
 export const Bring = z.object({ id, emoji, label: short(10), fact: short(120) });
 export type Bring = z.infer<typeof Bring>;
 
+/** 个性化终章：从用户的回答里读出来的一条需求，用户确认或纠正；from = 依据（他说过的话 / 做过的选择） */
+export const Insight = z.object({ id, emoji, text: short(30), from: upto(24).default(''), fact: short(160) });
+export type Insight = z.infer<typeof Insight>;
+
+/** 个性化终章：用户的回答里互相打架的两样（如预算 vs 想要的配置），二选一 */
+export const Clash = z.object({ id, emoji, q: short(24), a: Option, b: Option });
+export type Clash = z.infer<typeof Clash>;
+
 /**
  * 终章（boss，最后一关）：不是打怪，而是把需求说透。
  * ① 回顾已经弄清楚的；② options = 行业里常见的 2–4 种做法（带 pros / cons），用户选一个方向；
@@ -197,6 +209,10 @@ export const BossRound = z.object({
   gamble: Gamble.optional(),
   probe: z.array(Beat).max(10).default([]),
   bring: z.array(Bring).max(5).default([]),
+  /** 个性化终章才有：我们读到的你（逐条确认 / 纠正） */
+  read: z.array(Insight).max(4).default([]),
+  /** 个性化终章才有：回答里的矛盾，二选一 */
+  clash: z.array(Clash).max(2).default([]),
 });
 
 /** 地图关：在小镇里走动，找几个人打听情况 */
@@ -417,6 +433,7 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
     const settable = new Set(
       l.rounds.flatMap((r) => [
         ...(r.type === 'pick' || r.type === 'fix' || r.type === 'boss' ? r.options.flatMap((o) => o.set) : []),
+        ...(r.type === 'boss' ? r.clash.flatMap((c) => [...c.a.set, ...c.b.set]) : []),
         ...(r.type === 'swipe' ? [...r.yes.set, ...r.no.set] : []),
         ...(r.type === 'chain' ? r.cards.flatMap((c) => [...c.left.set, ...c.right.set]) : []),
         ...(r.type === 'sort' ? r.cards.flatMap((c) => r.bins.map((b) => `${c.id}_${b.id}`)) : []),

@@ -78,12 +78,15 @@ The user has almost finished the level. You get the level (its cast, the AI's in
 
 The finale ("type": "boss"): ${BOSS_RULE}
 
-Make it personal:
-- "q" and the options start from what the user actually said and chose (their budget, constraints, worries, their own words). Drop approaches that clearly contradict what they settled; prefer the 2–4 approaches people in their exact situation really pick today.
-- "probe" asks only what is STILL unclear after their answers — never re-ask anything already answered. Refer back to their words ("你说过「…」，那…").
+This is the payoff of everything the user did: the finale must USE their data, not hand them a generic industry menu. Fill these fields:
+- "read": 2–4 insights — what you concluded about this user's REAL need by combining their answers (things they never said in one sentence, e.g. 「你真正怕的是春节长途，不是日常通勤」, 「预算其实卡在月供，不是总价」). Each {id, emoji, text ≤ 30 (spoken to the user, second person), from ≤ 24 (the evidence: their words or choice, e.g. 「过年要回老家」 or 选了「分期」 — no 「你说」 prefix), fact (the full statement for the downstream AI)}. The user will confirm or correct each one, so be specific and a little bold — a vague insight is useless.
+- "clash": 0–2 real contradictions between their own answers (budget vs. what they picked, "low effort" vs. a choice that needs effort…). Each {id, emoji, q ≤ 24 naming both sides, "a" and "b" options (label ≤ 8, fact, set a flag, and add / remove / price so the plan follows the choice)}. Leave empty if there is no real conflict.
+- "options": 2–4 directions shaped by THIS user's numbers and constraints (concrete: size, spec range, price band, timing), not a generic list. Each has "why" (≤ 30) quoting their data (e.g. 你单程 20km、家里能装桩), pros/cons for them, and exactly one has "best": true (the one their answers point to). Still a direction, not a final product pick — the downstream AI writes the plan.
+- "probe" asks only what is STILL unclear after their answers — never re-ask anything already answered. Refer back to their words.
 - "bring" lists only materials still missing for a concrete plan, given what they told us.
-- The plan items marked "never touched" are only the AI's blind guess. If one is redundant, outdated or contradicts the user's answers, the options should fix it: "remove" its id, or "add" an item with the SAME id at today's realistic price. Never add an item the user already ruled out.
-- Use only characters from the cast. Keep the round id given. Text limits: q ≤ 14, option label ≤ 8, pros / cons ≤ 16, line say ≤ 40, dialogue question q ≤ 24, bring label ≤ 10 (a CJK char = 1 width). Every option needs an emoji and a full "fact" for the downstream AI. Flags used in probe "if" must be set by an option.
+- The plan items marked "never touched" are only the AI's blind guess. If one is redundant, outdated or contradicts the user's answers, fix it in an option or a clash side: "remove" its id, or "add" an item with the SAME id at today's realistic price. Never add an item the user already ruled out.
+- "q" (≤ 14) is about their decision, in their terms.
+- Use only characters from the cast. Keep the round id given. Text limits: q ≤ 14, option label ≤ 8, pros / cons ≤ 16, why ≤ 30, read text ≤ 30, read from ≤ 24, clash q ≤ 24, line say ≤ 40, dialogue question q ≤ 24, bring label ≤ 10 (a CJK char = 1 width). Every option needs an emoji and a full "fact" for the downstream AI. Flags used in probe "if" must be set by an option.
 - ids use lowercase letters, digits, underscores only. Never put a raw double quote (") inside a string; use 「」.
 
 Output the finale round as a single JSON object only (with "type": "boss"), no explanation.`;

@@ -8,6 +8,7 @@ export const yuan = (n: number) => money(n);
 
 const H: Record<Lang, Record<string, string>> = {
   zh: {
+    portrait: '需求画像（根据用户在游戏里的回答归纳，用户已逐条确认或纠正，以此为准）', portraitOk: '用户确认', portraitFix: '用户说不对', portraitNote: '用户的说法',
     intro: '以下是用户通过「需求闯关」逐项确认过的真实需求（这是需求，不是方案）。请你基于它出具体方案。', plan: '目前的初步清单（估算）', haveMat: '用户手头已有的资料', needMat: '还需要用户补充的资料（出方案前请先向用户要）', 
     goalNote: '这个需求不以花钱为主：下面所有「价格 / 合计 / 上限」都是用户的「{name}」，单位：{unit}。请按这个资源来规划，不要换算成钱。',
     need: '用户原话', quotes: '用户自己说的话（原话，最能代表真实意图）', ask: '问', facts: '用户亲自确认的情况',
@@ -17,6 +18,7 @@ const H: Record<Lang, Record<string, string>> = {
     lang: '请用中文回答。',
   },
   en: {
+    portrait: "Need profile (summarised from the user's answers in the game; the user confirmed or corrected each line — treat it as authoritative)", portraitOk: 'confirmed', portraitFix: 'user says this is wrong', portraitNote: 'user says',
     intro: 'Below is the user\'s real need, confirmed item by item in the game "Need Quest" (a need, not a plan). Please build the actual plan from it.', plan: 'Draft list so far (estimates)', haveMat: 'Materials the user already has', needMat: 'Materials still needed from the user (ask for them first)', 
     goalNote: 'This need is not mainly about money: every price / total / cap below is the user\'s "{name}", in {unit}. Plan around that resource; do not convert it to money.',
     need: "User's original request", quotes: "In the user's own words (best signal of real intent)", ask: 'Asked', facts: 'Confirmed by the user',
@@ -26,6 +28,7 @@ const H: Record<Lang, Record<string, string>> = {
     lang: 'Answer in English.',
   },
   ja: {
+    portrait: 'ニーズの要約（ゲーム内の回答から要約し、ユーザーが一つずつ確認・訂正済み。これを優先）', portraitOk: '確認済み', portraitFix: 'ユーザーは違うと回答', portraitNote: 'ユーザーの言葉',
     intro: '以下は「ニーズクエスト」でユーザーが一つずつ確認した本当のニーズです（プランではありません）。これをもとに具体的なプランを作ってください。', haveMat: 'ユーザーの手元にある資料', needMat: 'まだユーザーに用意してもらう資料（先に依頼）', 
     goalNote: 'お金が主ではない要望です：以下の価格・合計・上限はすべてユーザーの「{name}」（単位：{unit}）。お金に換算せず、この資源で計画してください。',
     need: 'ユーザーの元の要望', quotes: 'ユーザー自身の言葉（本当の意図に最も近い）', ask: '質問', facts: 'ユーザーが確認した事実', plan: '現在のプラン',
@@ -35,6 +38,7 @@ const H: Record<Lang, Record<string, string>> = {
     lang: '日本語で回答してください。',
   },
   es: {
+    portrait: 'Perfil de la necesidad (resumido de las respuestas del usuario; confirmado o corregido punto por punto — tómalo como referencia)', portraitOk: 'confirmado', portraitFix: 'el usuario dice que no es así', portraitNote: 'el usuario dice',
     intro: 'Esta es la necesidad real del usuario, confirmada punto por punto en el juego «Need Quest» (una necesidad, no un plan). Construye el plan a partir de ella.', haveMat: 'Materiales que el usuario ya tiene', needMat: 'Materiales que aún faltan (pídelos primero)', 
     goalNote: 'Esta necesidad no es principalmente de dinero: cada precio / total / límite de abajo es el «{name}» del usuario, en {unit}. Planifica con ese recurso; no lo conviertas a dinero.',
     need: 'Petición original del usuario', quotes: 'En palabras del usuario (la mejor señal de su intención real)', ask: 'Pregunta', facts: 'Confirmado por el usuario', plan: 'Plan actual',
@@ -58,6 +62,12 @@ export function superPrompt(lesson: Lesson, p: Played, crashes: Crash[]): string
   if (p.quotes.length) {
     L.push(`## ${h.quotes}`);
     p.quotes.forEach((q) => L.push(`- ${h.ask}「${q.q}」→「${q.text}」`));
+    L.push('');
+  }
+
+  if (p.portrait.length) {
+    L.push(`## ${h.portrait}`);
+    p.portrait.forEach((x) => L.push(x.ok ? `- ✅ ${x.fact} (${h.portraitOk})` : `- ✏️ ~~${x.fact}~~ (${h.portraitFix})${x.note ? ` — ${h.portraitNote}:「${x.note}」` : ''}`));
     L.push('');
   }
 
