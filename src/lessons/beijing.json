@@ -7,20 +7,65 @@
   "lang": "en",
   "currency": "USD",
   "cast": [
-    { "id": "ajie", "as": "Travel buddy" },
-    { "id": "wang", "as": "Hutong uncle" },
-    { "id": "daliu", "as": "Tour hawker" },
-    { "id": "ayi", "as": "Noodle boss" },
-    { "id": "xiaobei", "as": "Local guide" }
+    {
+      "id": "ajie",
+      "as": "Travel buddy"
+    },
+    {
+      "id": "wang",
+      "as": "Hutong uncle"
+    },
+    {
+      "id": "daliu",
+      "as": "Tour hawker"
+    },
+    {
+      "id": "ayi",
+      "as": "Noodle boss"
+    },
+    {
+      "id": "xiaobei",
+      "as": "Local guide"
+    }
   ],
   "guess": {
     "line": "My guess: 4 days, hotel downtown, a bus tour",
     "items": [
-      { "id": "hotel", "emoji": "🏨", "name": "Hotel 4 nights", "price": 480, "spec": "Mid-range chain hotel near Wangfujing, per room" },
-      { "id": "tour", "emoji": "🚌", "name": "Bus tour", "price": 90, "spec": "Great Wall + Ming Tombs day tour, with shopping stops" },
-      { "id": "tickets", "emoji": "🎟️", "name": "Tickets", "price": 60, "spec": "Forbidden City, Temple of Heaven, Summer Palace" },
-      { "id": "food", "emoji": "🥟", "name": "Food", "price": 160, "spec": "4 days of meals, including one Peking duck dinner" },
-      { "id": "rides", "emoji": "🚕", "name": "Taxis & metro", "price": 60, "spec": "Didi rides and metro" }
+      {
+        "id": "hotel",
+        "emoji": "🏨",
+        "name": "Hotel 4 nights",
+        "price": 480,
+        "spec": "Mid-range chain hotel near Wangfujing, per room"
+      },
+      {
+        "id": "tour",
+        "emoji": "🚌",
+        "name": "Bus tour",
+        "price": 90,
+        "spec": "Great Wall + Ming Tombs day tour, with shopping stops"
+      },
+      {
+        "id": "tickets",
+        "emoji": "🎟️",
+        "name": "Tickets",
+        "price": 60,
+        "spec": "Forbidden City, Temple of Heaven, Summer Palace"
+      },
+      {
+        "id": "food",
+        "emoji": "🥟",
+        "name": "Food",
+        "price": 160,
+        "spec": "4 days of meals, including one Peking duck dinner"
+      },
+      {
+        "id": "rides",
+        "emoji": "🚕",
+        "name": "Taxis & metro",
+        "price": 60,
+        "spec": "Didi rides and metro"
+      }
     ]
   },
   "rounds": [
@@ -31,29 +76,143 @@
       "title": "Wheels down",
       "emoji": "🛬",
       "beats": [
-        { "who": "narrator", "say": "Beijing airport. Instagram won't load. Neither will Google." },
-        { "who": "xiaofang", "say": "Welcome! Rule one: Google doesn't work here. Rule two: don't panic.", "mood": "happy" },
-        { "who": "ajie", "say": "Too late. How do I even pay for a bottle of water?", "mood": "worried" },
-        { "who": "xiaofang", "say": "Your phone. Everything is your phone. Cash is for museums and grandmas.", "mood": "smug" },
+        {
+          "who": "narrator",
+          "say": "Beijing airport. Instagram won't load. Neither will Google."
+        },
+        {
+          "who": "xiaofang",
+          "say": "Welcome! Rule one: Google doesn't work here. Rule two: don't panic.",
+          "mood": "happy"
+        },
+        {
+          "who": "ajie",
+          "say": "Too late. How do I even pay for a bottle of water?",
+          "mood": "worried"
+        },
+        {
+          "who": "xiaofang",
+          "say": "Your phone. Everything is your phone. Cash is for museums and grandmas.",
+          "mood": "smug"
+        },
         {
           "id": "why",
           "who": "xiaofang",
           "q": "What pulled you to Beijing?",
           "options": [
-            { "id": "w_history", "emoji": "🏯", "label": "Emperors & history", "fact": "Main draw: imperial history — Forbidden City, temples, palaces", "set": ["history"], "reply": [{ "who": "xiaofang", "say": "Good. That's about 20,000 steps of history a day.", "mood": "happy" }] },
-            { "id": "w_wall", "emoji": "🧱", "label": "The Great Wall", "fact": "Main draw: the Great Wall", "set": ["wall"], "reply": [{ "who": "ajie", "say": "One wall. Several thousand stairs. Can't wait.", "mood": "sad" }] },
-            { "id": "w_food", "emoji": "🦆", "label": "Honestly? The food", "fact": "Main draw: food — Peking duck, street snacks, noodles", "set": ["foodie"], "reply": [{ "who": "xiaofang", "say": "Then we plan meals first and fit sights in between.", "mood": "smug" }] },
-            { "id": "w_local", "emoji": "🏮", "label": "Real everyday life", "fact": "Main draw: everyday local life — hutongs, markets, parks", "set": ["local"], "reply": [{ "who": "xiaofang", "say": "Hutongs, then. Real life, real laundry lines.", "mood": "happy" }] }
+            {
+              "id": "w_history",
+              "emoji": "🏯",
+              "label": "Emperors & history",
+              "fact": "Main draw: imperial history — Forbidden City, temples, palaces",
+              "set": [
+                "history"
+              ],
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "Good. That's about 20,000 steps of history a day.",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "w_wall",
+              "emoji": "🧱",
+              "label": "The Great Wall",
+              "fact": "Main draw: the Great Wall",
+              "set": [
+                "wall"
+              ],
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "One wall. Several thousand stairs. Can't wait.",
+                  "mood": "sad"
+                }
+              ]
+            },
+            {
+              "id": "w_food",
+              "emoji": "🦆",
+              "label": "Honestly? The food",
+              "fact": "Main draw: food — Peking duck, street snacks, noodles",
+              "set": [
+                "foodie"
+              ],
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "Then we plan meals first and fit sights in between.",
+                  "mood": "smug"
+                }
+              ]
+            },
+            {
+              "id": "w_local",
+              "emoji": "🏮",
+              "label": "Real everyday life",
+              "fact": "Main draw: everyday local life — hutongs, markets, parks",
+              "set": [
+                "local"
+              ],
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "Hutongs, then. Real life, real laundry lines.",
+                  "mood": "happy"
+                }
+              ]
+            }
           ],
           "free": {
             "placeholder": "e.g. my grandpa studied here",
-            "chips": ["Bucket list", "Work trip + extras", "Saw it in a film"],
+            "chips": [
+              "Bucket list",
+              "Work trip + extras",
+              "Saw it in a film"
+            ],
             "fact": "Why Beijing, in their words: {v}",
             "match": [
-              { "words": ["kid", "kids", "children", "son", "daughter"], "set": ["kids"], "fact": "Traveling with children", "reply": [{ "who": "ajie", "say": "Kids plus Great Wall stairs. Someone's getting carried." }] },
-              { "words": ["parents", "mom", "dad", "mother", "father"], "set": ["seniors"], "fact": "Traveling with parents" }
+              {
+                "words": [
+                  "kid",
+                  "kids",
+                  "children",
+                  "son",
+                  "daughter"
+                ],
+                "set": [
+                  "kids"
+                ],
+                "fact": "Traveling with children",
+                "reply": [
+                  {
+                    "who": "ajie",
+                    "say": "Kids plus Great Wall stairs. Someone's getting carried."
+                  }
+                ]
+              },
+              {
+                "words": [
+                  "parents",
+                  "mom",
+                  "dad",
+                  "mother",
+                  "father"
+                ],
+                "set": [
+                  "seniors"
+                ],
+                "fact": "Traveling with parents"
+              }
             ],
-            "reply": [{ "who": "xiaofang", "say": "Love it. I'm writing that down word for word." }]
+            "reply": [
+              {
+                "who": "xiaofang",
+                "say": "Love it. I'm writing that down word for word."
+              }
+            ]
           }
         },
         {
@@ -61,13 +220,75 @@
           "who": "xiaofang",
           "q": "Who's coming with you?",
           "options": [
-            { "id": "g_solo", "emoji": "🎒", "label": "Just me", "fact": "Traveling solo", "set": ["solo"], "reply": [{ "who": "xiaofang", "say": "Solo! Nobody to argue with about lunch." }] },
-            { "id": "g_partner", "emoji": "💑", "label": "My partner", "fact": "Traveling as a couple", "set": ["couple"], "reply": [{ "who": "ajie", "say": "Pro tip: agree on the Great Wall section BEFORE the bus." }] },
-            { "id": "g_kids", "emoji": "👨‍👩‍👧", "label": "Family with kids", "fact": "Traveling with children", "set": ["kids"], "reply": [{ "who": "xiaofang", "say": "Then the plan needs snacks, shade and a toboggan.", "mood": "happy" }] },
-            { "id": "g_parents", "emoji": "👵", "label": "My parents", "fact": "Traveling with older parents", "set": ["seniors"], "reply": [{ "who": "xiaofang", "say": "Then we plan for knees, not for Instagram.", "mood": "thinking" }] }
+            {
+              "id": "g_solo",
+              "emoji": "🎒",
+              "label": "Just me",
+              "fact": "Traveling solo",
+              "set": [
+                "solo"
+              ],
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "Solo! Nobody to argue with about lunch."
+                }
+              ]
+            },
+            {
+              "id": "g_partner",
+              "emoji": "💑",
+              "label": "My partner",
+              "fact": "Traveling as a couple",
+              "set": [
+                "couple"
+              ],
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "Pro tip: agree on the Great Wall section BEFORE the bus."
+                }
+              ]
+            },
+            {
+              "id": "g_kids",
+              "emoji": "👨‍👩‍👧",
+              "label": "Family with kids",
+              "fact": "Traveling with children",
+              "set": [
+                "kids"
+              ],
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "Then the plan needs snacks, shade and a toboggan.",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "g_parents",
+              "emoji": "👵",
+              "label": "My parents",
+              "fact": "Traveling with older parents",
+              "set": [
+                "seniors"
+              ],
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "Then we plan for knees, not for Instagram.",
+                  "mood": "thinking"
+                }
+              ]
+            }
           ]
         },
-        { "who": "ajie", "say": "Also, the hotel Wi-Fi password is not 'pandas'. I tried.", "mood": "sad" }
+        {
+          "who": "ajie",
+          "say": "Also, the hotel Wi-Fi password is not 'pandas'. I tried.",
+          "mood": "sad"
+        }
       ]
     },
     {
@@ -76,9 +297,32 @@
       "q": "How many days?",
       "emoji": "📅",
       "options": [
-        { "id": "d3", "emoji": "3️⃣", "label": "3 days", "fact": "3 days in Beijing", "price": -120, "set": ["short"] },
-        { "id": "d4", "emoji": "4️⃣", "label": "4 days", "fact": "4 days in Beijing" },
-        { "id": "d6", "emoji": "6️⃣", "label": "5–6 days", "fact": "5–6 days in Beijing, room for a slow day or a day trip", "price": 240, "set": ["long"] }
+        {
+          "id": "d3",
+          "emoji": "3️⃣",
+          "label": "3 days",
+          "fact": "3 days in Beijing",
+          "price": -120,
+          "set": [
+            "short"
+          ]
+        },
+        {
+          "id": "d4",
+          "emoji": "4️⃣",
+          "label": "4 days",
+          "fact": "4 days in Beijing"
+        },
+        {
+          "id": "d6",
+          "emoji": "6️⃣",
+          "label": "5–6 days",
+          "fact": "5–6 days in Beijing, room for a slow day or a day trip",
+          "price": 240,
+          "set": [
+            "long"
+          ]
+        }
       ]
     },
     {
@@ -87,10 +331,39 @@
       "q": "When are you going?",
       "emoji": "🗓️",
       "options": [
-        { "id": "m_spring", "emoji": "🌸", "label": "Spring", "fact": "Traveling in spring (Mar–May)" },
-        { "id": "m_summer", "emoji": "☀️", "label": "Summer", "fact": "Traveling in summer (hot, humid, school-holiday crowds)", "set": ["hot"] },
-        { "id": "m_oct", "emoji": "🇨🇳", "label": "Early October", "fact": "Traveling in early October, around China's National Day holiday", "set": ["golden"] },
-        { "id": "m_winter", "emoji": "❄️", "label": "Winter", "fact": "Traveling in winter (cold, dry, few crowds)", "set": ["cold"] }
+        {
+          "id": "m_spring",
+          "emoji": "🌸",
+          "label": "Spring",
+          "fact": "Traveling in spring (Mar–May)"
+        },
+        {
+          "id": "m_summer",
+          "emoji": "☀️",
+          "label": "Summer",
+          "fact": "Traveling in summer (hot, humid, school-holiday crowds)",
+          "set": [
+            "hot"
+          ]
+        },
+        {
+          "id": "m_oct",
+          "emoji": "🇨🇳",
+          "label": "Early October",
+          "fact": "Traveling in early October, around China's National Day holiday",
+          "set": [
+            "golden"
+          ]
+        },
+        {
+          "id": "m_winter",
+          "emoji": "❄️",
+          "label": "Winter",
+          "fact": "Traveling in winter (cold, dry, few crowds)",
+          "set": [
+            "cold"
+          ]
+        }
       ]
     },
     {
@@ -100,31 +373,130 @@
       "title": "The Forbidden queue",
       "emoji": "🏯",
       "beats": [
-        { "who": "narrator", "say": "8:40 AM, Forbidden City. A sea of matching hats." },
-        { "who": "daliu", "say": "No ticket? I have ticket! Also a tour, a hat, a bus, a cousin.", "mood": "smug" },
-        { "who": "wang", "say": "Sold out last week. You book online, with your passport.", "mood": "thinking" },
-        { "who": "ajie", "say": "We booked nothing. We booked vibes.", "mood": "sad" },
+        {
+          "who": "narrator",
+          "say": "8:40 AM, Forbidden City. A sea of matching hats."
+        },
+        {
+          "who": "daliu",
+          "say": "No ticket? I have ticket! Also a tour, a hat, a bus, a cousin.",
+          "mood": "smug"
+        },
+        {
+          "who": "wang",
+          "say": "Sold out last week. You book online, with your passport.",
+          "mood": "thinking"
+        },
+        {
+          "who": "ajie",
+          "say": "We booked nothing. We booked vibes.",
+          "mood": "sad"
+        },
         {
           "id": "crowd",
           "who": "wang",
           "q": "Crowds like this — how do you feel?",
           "options": [
-            { "id": "cr_hats", "emoji": "🧢", "label": "Join the hats", "fact": "Fine with crowds and a group-tour atmosphere", "set": ["crowd_ok"], "reply": [{ "who": "daliu", "say": "A person of the people! Hat is five dollars.", "mood": "happy" }] },
-            { "id": "cr_early", "emoji": "⏰", "label": "Come at opening", "fact": "Willing to get up early to beat the crowds", "set": ["early"], "reply": [{ "who": "wang", "say": "Gates open 8:30. The first hour is the quiet hour.", "mood": "happy" }] },
-            { "id": "cr_guide", "emoji": "🧑‍🏫", "label": "Get me a guide", "fact": "Interested in a private guide who handles tickets and tells the stories", "set": ["guide"], "reply": [{ "who": "wang", "say": "A good guide books it, and knows the palace gossip.", "mood": "smug" }] },
-            { "id": "cr_skip", "emoji": "⛰️", "label": "Skip it, find a view", "fact": "Would skip packed top sights for quieter views", "set": ["quiet"], "reply": [{ "who": "wang", "say": "Jingshan hill. The whole palace, zero queue.", "mood": "happy" }] }
+            {
+              "id": "cr_hats",
+              "emoji": "🧢",
+              "label": "Join the hats",
+              "fact": "Fine with crowds and a group-tour atmosphere",
+              "set": [
+                "crowd_ok"
+              ],
+              "reply": [
+                {
+                  "who": "daliu",
+                  "say": "A person of the people! Hat is five dollars.",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "cr_early",
+              "emoji": "⏰",
+              "label": "Come at opening",
+              "fact": "Willing to get up early to beat the crowds",
+              "set": [
+                "early"
+              ],
+              "reply": [
+                {
+                  "who": "wang",
+                  "say": "Gates open 8:30. The first hour is the quiet hour.",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "cr_guide",
+              "emoji": "🧑‍🏫",
+              "label": "Get me a guide",
+              "fact": "Interested in a private guide who handles tickets and tells the stories",
+              "set": [
+                "guide"
+              ],
+              "reply": [
+                {
+                  "who": "wang",
+                  "say": "A good guide books it, and knows the palace gossip.",
+                  "mood": "smug"
+                }
+              ]
+            },
+            {
+              "id": "cr_skip",
+              "emoji": "⛰️",
+              "label": "Skip it, find a view",
+              "fact": "Would skip packed top sights for quieter views",
+              "set": [
+                "quiet"
+              ],
+              "reply": [
+                {
+                  "who": "wang",
+                  "say": "Jingshan hill. The whole palace, zero queue.",
+                  "mood": "happy"
+                }
+              ]
+            }
           ],
           "free": {
             "placeholder": "e.g. I hate queues but I must see it",
             "fact": "How they handle crowds, in their words: {v}",
             "match": [
-              { "words": ["hate", "anxious", "claustro", "panic"], "set": ["quiet"], "fact": "Strongly dislikes crowds" }
+              {
+                "words": [
+                  "hate",
+                  "anxious",
+                  "claustro",
+                  "panic"
+                ],
+                "set": [
+                  "quiet"
+                ],
+                "fact": "Strongly dislikes crowds"
+              }
             ],
-            "reply": [{ "who": "wang", "say": "Noted. Beijing has a quiet side. It's just up early." }]
+            "reply": [
+              {
+                "who": "wang",
+                "say": "Noted. Beijing has a quiet side. It's just up early."
+              }
+            ]
           }
         },
-        { "who": "wang", "say": "And it's closed on Mondays. Every tourist learns that once.", "mood": "smug" },
-        { "who": "ajie", "say": "Today is Monday, isn't it.", "mood": "surprised" }
+        {
+          "who": "wang",
+          "say": "And it's closed on Mondays. Every tourist learns that once.",
+          "mood": "smug"
+        },
+        {
+          "who": "ajie",
+          "say": "Today is Monday, isn't it.",
+          "mood": "surprised"
+        }
       ]
     },
     {
@@ -134,10 +506,48 @@
       "emoji": "🎫",
       "problem": "Palace sold out",
       "options": [
-        { "id": "book_ahead", "emoji": "📲", "label": "Book ahead", "fact": "Will reserve Forbidden City tickets online with a passport as soon as their date opens (about a week ahead; they sell out)", "tip": "Book the moment your date opens", "score": { "safe": 20, "easy": 10 } },
-        { "id": "with_guide", "emoji": "🧑‍🏫", "label": "Guide books it", "fact": "Wants a private guide who books the tickets and leads the visit", "set": ["guide"], "add": [{ "id": "guide", "emoji": "🧑‍🏫", "name": "Private guide", "price": 150, "spec": "Half day, includes booking and the stories" }], "tip": "Tickets, route and stories, sorted", "score": { "easy": 25, "good": 15 } }
+        {
+          "id": "book_ahead",
+          "emoji": "📲",
+          "label": "Book ahead",
+          "fact": "Will reserve Forbidden City tickets online with a passport as soon as their date opens (about a week ahead; they sell out)",
+          "tip": "Book the moment your date opens",
+          "score": {
+            "safe": 20,
+            "easy": 10
+          }
+        },
+        {
+          "id": "with_guide",
+          "emoji": "🧑‍🏫",
+          "label": "Guide books it",
+          "fact": "Wants a private guide who books the tickets and leads the visit",
+          "set": [
+            "guide"
+          ],
+          "add": [
+            {
+              "id": "guide",
+              "emoji": "🧑‍🏫",
+              "name": "Private guide",
+              "price": 150,
+              "spec": "Half day, includes booking and the stories"
+            }
+          ],
+          "tip": "Tickets, route and stories, sorted",
+          "score": {
+            "easy": 25,
+            "good": 15
+          }
+        }
       ],
-      "gamble": { "label": "Try the gate", "fact": "Plans to buy tickets at the gate", "crash_if": "always", "crash": "Online only. Enjoy the wall outside.", "loss": 0 }
+      "gamble": {
+        "label": "Try the gate",
+        "fact": "Plans to buy tickets at the gate",
+        "crash_if": "always",
+        "crash": "Online only. Enjoy the wall outside.",
+        "loss": 0
+      }
     },
     {
       "type": "chain",
@@ -146,29 +556,151 @@
       "emoji": "🎢",
       "cards": [
         {
-          "id": "c_snack", "who": "ayi", "say": "Duck hearts on a stick. Very fresh. This morning they were a duck.", "emoji": "🍢",
-          "left": { "id": "c_snack_no", "emoji": "🙅", "label": "I'm good", "fact": "Prefers familiar food over street snacks", "set": ["safe_food"], "score": { "easy": 5, "good": -5 } },
-          "right": { "id": "c_snack_yes", "emoji": "😋", "label": "Bite it", "fact": "Adventurous eater, happy to try street snacks", "set": ["adventurous"], "price": 3, "score": { "good": 15 } }
+          "id": "c_snack",
+          "who": "ayi",
+          "say": "Duck hearts on a stick. Very fresh. This morning they were a duck.",
+          "emoji": "🍢",
+          "left": {
+            "id": "c_snack_no",
+            "emoji": "🙅",
+            "label": "I'm good",
+            "fact": "Prefers familiar food over street snacks",
+            "set": [
+              "safe_food"
+            ],
+            "score": {
+              "easy": 5,
+              "good": -5
+            }
+          },
+          "right": {
+            "id": "c_snack_yes",
+            "emoji": "😋",
+            "label": "Bite it",
+            "fact": "Adventurous eater, happy to try street snacks",
+            "set": [
+              "adventurous"
+            ],
+            "price": 3,
+            "score": {
+              "good": 15
+            }
+          }
         },
         {
-          "id": "c_wall", "who": "wang", "say": "Badaling: close and packed. Mutianyu: farther, quieter, toboggan down.", "emoji": "🧱",
-          "left": { "id": "c_wall_bad", "emoji": "🚌", "label": "Badaling, easy", "fact": "Prefers Badaling: closer and easier, but very crowded", "score": { "easy": 15, "good": -10 } },
-          "right": { "id": "c_wall_mut", "emoji": "🛷", "label": "Mutianyu!", "fact": "Prefers Mutianyu: quieter, cable car and toboggan, about 1.5 h from the city", "set": ["mutianyu"], "price": 40, "score": { "good": 20, "easy": -5 } }
+          "id": "c_wall",
+          "who": "wang",
+          "say": "Badaling: close and packed. Mutianyu: farther, quieter, toboggan down.",
+          "emoji": "🧱",
+          "left": {
+            "id": "c_wall_bad",
+            "emoji": "🚌",
+            "label": "Badaling, easy",
+            "fact": "Prefers Badaling: closer and easier, but very crowded",
+            "score": {
+              "easy": 15,
+              "good": -10
+            }
+          },
+          "right": {
+            "id": "c_wall_mut",
+            "emoji": "🛷",
+            "label": "Mutianyu!",
+            "fact": "Prefers Mutianyu: quieter, cable car and toboggan, about 1.5 h from the city",
+            "set": [
+              "mutianyu"
+            ],
+            "price": 40,
+            "score": {
+              "good": 20,
+              "easy": -5
+            }
+          }
         },
         {
-          "id": "c_pay", "who": "ajie", "say": "This place only takes WeChat Pay. My card says 'pending'. Forever.", "emoji": "📱",
-          "left": { "id": "c_pay_cash", "emoji": "💵", "label": "Find an ATM", "fact": "Would rely on cash when mobile pay fails", "score": { "easy": -15 } },
-          "right": { "id": "c_pay_setup", "emoji": "✅", "label": "Set it up now", "fact": "Will link a foreign card to Alipay / WeChat Pay before the trip", "set": ["pay_ready"], "score": { "easy": 15, "safe": 10 } }
+          "id": "c_pay",
+          "who": "ajie",
+          "say": "This place only takes WeChat Pay. My card says 'pending'. Forever.",
+          "emoji": "📱",
+          "left": {
+            "id": "c_pay_cash",
+            "emoji": "💵",
+            "label": "Find an ATM",
+            "fact": "Would rely on cash when mobile pay fails",
+            "score": {
+              "easy": -15
+            }
+          },
+          "right": {
+            "id": "c_pay_setup",
+            "emoji": "✅",
+            "label": "Set it up now",
+            "fact": "Will link a foreign card to Alipay / WeChat Pay before the trip",
+            "set": [
+              "pay_ready"
+            ],
+            "score": {
+              "easy": 15,
+              "safe": 10
+            }
+          }
         },
         {
-          "id": "c_tea", "who": "daliu", "say": "Tea tasting! Free! Totally free! (It is not free.)", "emoji": "🍵",
-          "left": { "id": "c_tea_no", "emoji": "🚶", "label": "Walk away", "fact": "Recognizes and avoids tourist upsell traps", "score": { "safe": 15 } },
-          "right": { "id": "c_tea_yes", "emoji": "🫖", "label": "Sure, why not", "fact": "Might fall for a friendly-stranger tea house upsell", "set": ["trap"], "price": 80, "score": { "safe": -25, "good": 5 } }
+          "id": "c_tea",
+          "who": "daliu",
+          "say": "Tea tasting! Free! Totally free! (It is not free.)",
+          "emoji": "🍵",
+          "left": {
+            "id": "c_tea_no",
+            "emoji": "🚶",
+            "label": "Walk away",
+            "fact": "Recognizes and avoids tourist upsell traps",
+            "score": {
+              "safe": 15
+            }
+          },
+          "right": {
+            "id": "c_tea_yes",
+            "emoji": "🫖",
+            "label": "Sure, why not",
+            "fact": "Might fall for a friendly-stranger tea house upsell",
+            "set": [
+              "trap"
+            ],
+            "price": 80,
+            "score": {
+              "safe": -25,
+              "good": 5
+            }
+          }
         },
         {
-          "id": "c_sunrise", "who": "xiaofang", "say": "Great Wall at sunrise? Alarm at 5:30. I'll bring the coffee.", "emoji": "🌅",
-          "left": { "id": "c_sun_no", "emoji": "😴", "label": "Sleep in", "fact": "Prefers sleeping in over sunrise outings", "score": { "easy": 10 } },
-          "right": { "id": "c_sun_yes", "emoji": "☕", "label": "Let's go", "fact": "Happy to wake up very early for a special experience", "set": ["early"], "score": { "good": 15, "easy": -15 } }
+          "id": "c_sunrise",
+          "who": "xiaofang",
+          "say": "Great Wall at sunrise? Alarm at 5:30. I'll bring the coffee.",
+          "emoji": "🌅",
+          "left": {
+            "id": "c_sun_no",
+            "emoji": "😴",
+            "label": "Sleep in",
+            "fact": "Prefers sleeping in over sunrise outings",
+            "score": {
+              "easy": 10
+            }
+          },
+          "right": {
+            "id": "c_sun_yes",
+            "emoji": "☕",
+            "label": "Let's go",
+            "fact": "Happy to wake up very early for a special experience",
+            "set": [
+              "early"
+            ],
+            "score": {
+              "good": 15,
+              "easy": -15
+            }
+          }
         }
       ]
     },
@@ -180,66 +712,304 @@
       "scene": "street",
       "spots": [
         {
-          "id": "uncle", "emoji": "🪑", "label": "Doorstep", "who": "wang", "x": 22, "y": 30, "prop": "bench",
+          "id": "uncle",
+          "emoji": "🪑",
+          "label": "Doorstep",
+          "who": "wang",
+          "x": 22,
+          "y": 30,
+          "prop": "bench",
           "beats": [
-            { "who": "wang", "say": "Forty years in this hutong. My rooster is younger, and louder.", "mood": "smug" },
+            {
+              "who": "wang",
+              "say": "Forty years in this hutong. My rooster is younger, and louder.",
+              "mood": "smug"
+            },
             {
               "id": "stay",
               "who": "wang",
               "q": "Where do you want to sleep?",
               "options": [
-                { "id": "st_courtyard", "emoji": "🏮", "label": "Courtyard hotel", "fact": "Wants a courtyard (siheyuan) hotel inside a hutong", "set": ["courtyard"], "add": [{ "id": "hotel", "emoji": "🏨", "name": "Courtyard hotel", "price": 560, "spec": "4 nights in a hutong courtyard hotel; charming, small rooms" }], "reply": [{ "who": "wang", "say": "Charming. Thin walls. You'll meet the rooster.", "mood": "happy" }] },
-                { "id": "st_modern", "emoji": "🏨", "label": "Modern hotel", "fact": "Prefers a modern international-style hotel near a metro line", "reply": [{ "who": "wang", "say": "Big shower, elevator. Your knees say thank you." }] },
-                { "id": "st_budget", "emoji": "🛏️", "label": "Cheap and central", "fact": "Wants a budget hostel or simple hotel, location over comfort", "add": [{ "id": "hotel", "emoji": "🏨", "name": "Hostel 4 nights", "price": 200, "spec": "Private room in a central hostel" }], "reply": [{ "who": "wang", "say": "Smart. You only sleep there anyway." }] }
+                {
+                  "id": "st_courtyard",
+                  "emoji": "🏮",
+                  "label": "Courtyard hotel",
+                  "fact": "Wants a courtyard (siheyuan) hotel inside a hutong",
+                  "set": [
+                    "courtyard"
+                  ],
+                  "add": [
+                    {
+                      "id": "hotel",
+                      "emoji": "🏨",
+                      "name": "Courtyard hotel",
+                      "price": 560,
+                      "spec": "4 nights in a hutong courtyard hotel; charming, small rooms"
+                    }
+                  ],
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "Charming. Thin walls. You'll meet the rooster.",
+                      "mood": "happy"
+                    }
+                  ]
+                },
+                {
+                  "id": "st_modern",
+                  "emoji": "🏨",
+                  "label": "Modern hotel",
+                  "fact": "Prefers a modern international-style hotel near a metro line",
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "Big shower, elevator. Your knees say thank you."
+                    }
+                  ]
+                },
+                {
+                  "id": "st_budget",
+                  "emoji": "🛏️",
+                  "label": "Cheap and central",
+                  "fact": "Wants a budget hostel or simple hotel, location over comfort",
+                  "add": [
+                    {
+                      "id": "hotel",
+                      "emoji": "🏨",
+                      "name": "Hostel 4 nights",
+                      "price": 200,
+                      "spec": "Private room in a central hostel"
+                    }
+                  ],
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "Smart. You only sleep there anyway."
+                    }
+                  ]
+                }
               ]
             },
-            { "who": "wang", "say": "Check the hotel takes foreigners. Not all of them can.", "mood": "thinking" }
+            {
+              "who": "wang",
+              "say": "Check the hotel takes foreigners. Not all of them can.",
+              "mood": "thinking"
+            }
           ]
         },
         {
-          "id": "noodles", "emoji": "🍜", "label": "Noodles", "who": "ayi", "x": 74, "y": 26, "prop": "kiosk",
+          "id": "noodles",
+          "emoji": "🍜",
+          "label": "Noodles",
+          "who": "ayi",
+          "x": 74,
+          "y": 26,
+          "prop": "kiosk",
           "beats": [
-            { "who": "ayi", "say": "Menu is in Chinese. Pictures are also in Chinese.", "mood": "smug" },
+            {
+              "who": "ayi",
+              "say": "Menu is in Chinese. Pictures are also in Chinese.",
+              "mood": "smug"
+            },
             {
               "id": "diet",
               "who": "ayi",
               "q": "Anything you can't eat?",
               "options": [
-                { "id": "di_any", "emoji": "😋", "label": "I eat everything", "fact": "No dietary restrictions", "reply": [{ "who": "ayi", "say": "My favorite customer. Sit." }] },
-                { "id": "di_veg", "emoji": "🥬", "label": "Vegetarian", "fact": "Vegetarian — needs to explain it clearly; many dishes use meat stock", "set": ["veg"], "reply": [{ "who": "ayi", "say": "No meat… and no meat soup. I'll tell the cook twice." }] },
-                { "id": "di_spice", "emoji": "🌶️", "label": "No spicy, please", "fact": "Avoids spicy food", "reply": [{ "who": "ayi", "say": "Beijing food is gentle. Sichuan restaurants are not." }] },
-                { "id": "di_allergy", "emoji": "🥜", "label": "I have allergies", "fact": "Has a food allergy — needs a written allergy card in Chinese", "set": ["allergy"], "reply": [{ "who": "ayi", "say": "Write it on a card. In Chinese. Show everyone.", "mood": "worried" }] }
+                {
+                  "id": "di_any",
+                  "emoji": "😋",
+                  "label": "I eat everything",
+                  "fact": "No dietary restrictions",
+                  "reply": [
+                    {
+                      "who": "ayi",
+                      "say": "My favorite customer. Sit."
+                    }
+                  ]
+                },
+                {
+                  "id": "di_veg",
+                  "emoji": "🥬",
+                  "label": "Vegetarian",
+                  "fact": "Vegetarian — needs to explain it clearly; many dishes use meat stock",
+                  "set": [
+                    "veg"
+                  ],
+                  "reply": [
+                    {
+                      "who": "ayi",
+                      "say": "No meat… and no meat soup. I'll tell the cook twice."
+                    }
+                  ]
+                },
+                {
+                  "id": "di_spice",
+                  "emoji": "🌶️",
+                  "label": "No spicy, please",
+                  "fact": "Avoids spicy food",
+                  "reply": [
+                    {
+                      "who": "ayi",
+                      "say": "Beijing food is gentle. Sichuan restaurants are not."
+                    }
+                  ]
+                },
+                {
+                  "id": "di_allergy",
+                  "emoji": "🥜",
+                  "label": "I have allergies",
+                  "fact": "Has a food allergy — needs a written allergy card in Chinese",
+                  "set": [
+                    "allergy"
+                  ],
+                  "reply": [
+                    {
+                      "who": "ayi",
+                      "say": "Write it on a card. In Chinese. Show everyone.",
+                      "mood": "worried"
+                    }
+                  ]
+                }
               ],
               "free": {
                 "placeholder": "e.g. no pork, peanut allergy",
-                "chips": ["Halal", "No pork", "Gluten-free"],
+                "chips": [
+                  "Halal",
+                  "No pork",
+                  "Gluten-free"
+                ],
                 "fact": "Food needs, in their words: {v}",
                 "match": [
-                  { "words": ["halal", "muslim", "pork"], "fact": "Needs halal food — Niujie area has many halal restaurants" },
-                  { "words": ["peanut", "nut", "shellfish", "gluten", "allerg"], "set": ["allergy"], "fact": "Has a food allergy — needs an allergy card in Chinese" }
+                  {
+                    "words": [
+                      "halal",
+                      "muslim",
+                      "pork"
+                    ],
+                    "fact": "Needs halal food — Niujie area has many halal restaurants"
+                  },
+                  {
+                    "words": [
+                      "peanut",
+                      "nut",
+                      "shellfish",
+                      "gluten",
+                      "allerg"
+                    ],
+                    "set": [
+                      "allergy"
+                    ],
+                    "fact": "Has a food allergy — needs an allergy card in Chinese"
+                  }
                 ],
-                "reply": [{ "who": "ayi", "say": "Got it. I'll make sure the cook gets it too." }]
+                "reply": [
+                  {
+                    "who": "ayi",
+                    "say": "Got it. I'll make sure the cook gets it too."
+                  }
+                ]
               }
             }
           ],
-          "gift": { "id": "allergy_card", "emoji": "📇", "label": "Diet card", "fact": "Has a card in Chinese explaining their diet to restaurant staff", "if": { "any": ["veg", "allergy"] }, "say": "Show this card. Cooks listen to me." }
+          "gift": {
+            "id": "allergy_card",
+            "emoji": "📇",
+            "label": "Diet card",
+            "fact": "Has a card in Chinese explaining their diet to restaurant staff",
+            "if": {
+              "any": [
+                "veg",
+                "allergy"
+              ]
+            },
+            "say": "Show this card. Cooks listen to me."
+          }
         },
         {
-          "id": "buddy", "emoji": "📶", "label": "Corner", "who": "ajie", "x": 72, "y": 72, "prop": "building",
+          "id": "buddy",
+          "emoji": "📶",
+          "label": "Corner",
+          "who": "ajie",
+          "x": 72,
+          "y": 72,
+          "prop": "building",
           "beats": [
-            { "who": "ajie", "say": "Maps, translate, ride-hailing… I need my apps to work.", "mood": "worried" },
+            {
+              "who": "ajie",
+              "say": "Maps, translate, ride-hailing… I need my apps to work.",
+              "mood": "worried"
+            },
             {
               "id": "phone",
               "who": "ajie",
               "q": "Is your phone China-ready?",
               "options": [
-                { "id": "ph_ready", "emoji": "✅", "label": "All set up", "fact": "Phone ready: eSIM with roaming data and Alipay/WeChat Pay linked", "set": ["pay_ready"], "reply": [{ "who": "ajie", "say": "Teach me. I'll carry your bags." }] },
-                { "id": "ph_half", "emoji": "🤏", "label": "Half of it", "fact": "Phone partly ready; needs to finish the payment or data setup", "set": ["no_setup"], "reply": [{ "who": "ajie", "say": "Half a phone. Same as no phone at lunch." }] },
-                { "id": "ph_none", "emoji": "🤷", "label": "What's Alipay?", "fact": "Has not set up mobile payment or data for China", "set": ["no_setup"], "reply": [{ "who": "ajie", "say": "Oh no. Oh no no.", "mood": "surprised" }] }
+                {
+                  "id": "ph_ready",
+                  "emoji": "✅",
+                  "label": "All set up",
+                  "fact": "Phone ready: eSIM with roaming data and Alipay/WeChat Pay linked",
+                  "set": [
+                    "pay_ready"
+                  ],
+                  "reply": [
+                    {
+                      "who": "ajie",
+                      "say": "Teach me. I'll carry your bags."
+                    }
+                  ]
+                },
+                {
+                  "id": "ph_half",
+                  "emoji": "🤏",
+                  "label": "Half of it",
+                  "fact": "Phone partly ready; needs to finish the payment or data setup",
+                  "set": [
+                    "no_setup"
+                  ],
+                  "reply": [
+                    {
+                      "who": "ajie",
+                      "say": "Half a phone. Same as no phone at lunch."
+                    }
+                  ]
+                },
+                {
+                  "id": "ph_none",
+                  "emoji": "🤷",
+                  "label": "What's Alipay?",
+                  "fact": "Has not set up mobile payment or data for China",
+                  "set": [
+                    "no_setup"
+                  ],
+                  "reply": [
+                    {
+                      "who": "ajie",
+                      "say": "Oh no. Oh no no.",
+                      "mood": "surprised"
+                    }
+                  ]
+                }
               ]
             }
           ],
-          "gift": { "id": "esim_tip", "emoji": "📶", "label": "Travel eSIM", "fact": "Will get a travel eSIM with roaming data so their usual apps keep working", "add": [{ "id": "esim", "emoji": "📶", "name": "Travel eSIM", "price": 20, "spec": "Roaming data, 10 GB" }], "say": "Roaming eSIM. Your apps just work." }
+          "gift": {
+            "id": "esim_tip",
+            "emoji": "📶",
+            "label": "Travel eSIM",
+            "fact": "Will get a travel eSIM with roaming data so their usual apps keep working",
+            "add": [
+              {
+                "id": "esim",
+                "emoji": "📶",
+                "name": "Travel eSIM",
+                "price": 20,
+                "spec": "Roaming data, 10 GB"
+              }
+            ],
+            "say": "Roaming eSIM. Your apps just work."
+          }
         }
       ]
     },
@@ -249,9 +1019,49 @@
       "q": "Your daily pace?",
       "emoji": "🚶",
       "options": [
-        { "id": "pc_slow", "emoji": "🐢", "label": "Slow & cozy", "fact": "Prefers 1–2 sights a day with long breaks", "set": ["slow"], "score": { "easy": 15 } },
-        { "id": "pc_fast", "emoji": "⚡", "label": "Pack it in", "fact": "Wants to see as much as possible each day", "set": ["fast"], "score": { "good": 10, "easy": -10 } },
-        { "id": "pc_eat", "emoji": "🥢", "label": "Eat-a-thon", "fact": "Wants days built around food, sights in between", "set": ["foodie"], "add": [{ "id": "food", "emoji": "🥟", "name": "Food tour", "price": 260, "spec": "Meals plus one guided food walk" }] }
+        {
+          "id": "pc_slow",
+          "emoji": "🐢",
+          "label": "Slow & cozy",
+          "fact": "Prefers 1–2 sights a day with long breaks",
+          "set": [
+            "slow"
+          ],
+          "score": {
+            "easy": 15
+          }
+        },
+        {
+          "id": "pc_fast",
+          "emoji": "⚡",
+          "label": "Pack it in",
+          "fact": "Wants to see as much as possible each day",
+          "set": [
+            "fast"
+          ],
+          "score": {
+            "good": 10,
+            "easy": -10
+          }
+        },
+        {
+          "id": "pc_eat",
+          "emoji": "🥢",
+          "label": "Eat-a-thon",
+          "fact": "Wants days built around food, sights in between",
+          "set": [
+            "foodie"
+          ],
+          "add": [
+            {
+              "id": "food",
+              "emoji": "🥟",
+              "name": "Food tour",
+              "price": 260,
+              "spec": "Meals plus one guided food walk"
+            }
+          ]
+        }
       ]
     },
     {
@@ -260,12 +1070,47 @@
       "q": "Can't pay for lunch!",
       "emoji": "💳",
       "problem": "Mobile pay not set up",
-      "if": { "any": ["no_setup"] },
+      "if": {
+        "any": [
+          "no_setup"
+        ]
+      },
       "options": [
-        { "id": "setup_home", "emoji": "🏠", "label": "Set up at home", "fact": "Will link a foreign card to Alipay and WeChat Pay and test a small payment before flying", "set": ["pay_ready"], "tip": "Test it once before you fly", "score": { "easy": 20, "safe": 10 } },
-        { "id": "cash_backup", "emoji": "💵", "label": "Cash backup", "fact": "Will carry some cash (small notes) as a backup", "tip": "Small notes; not every place has change", "score": { "safe": 10 } }
+        {
+          "id": "setup_home",
+          "emoji": "🏠",
+          "label": "Set up at home",
+          "fact": "Will link a foreign card to Alipay and WeChat Pay and test a small payment before flying",
+          "set": [
+            "pay_ready"
+          ],
+          "tip": "Test it once before you fly",
+          "score": {
+            "easy": 20,
+            "safe": 10
+          }
+        },
+        {
+          "id": "cash_backup",
+          "emoji": "💵",
+          "label": "Cash backup",
+          "fact": "Will carry some cash (small notes) as a backup",
+          "tip": "Small notes; not every place has change",
+          "score": {
+            "safe": 10
+          }
+        }
       ],
-      "gamble": { "label": "Wing it", "fact": "No payment setup, plans to figure it out on arrival", "crash_if": ["no_setup"], "crash": "Noodles ordered. No way to pay.", "loss": 0, "ok": "A kind stranger paid. Lucky." }
+      "gamble": {
+        "label": "Wing it",
+        "fact": "No payment setup, plans to figure it out on arrival",
+        "crash_if": [
+          "no_setup"
+        ],
+        "crash": "Noodles ordered. No way to pay.",
+        "loss": 0,
+        "ok": "A kind stranger paid. Lucky."
+      }
     },
     {
       "type": "fix",
@@ -273,12 +1118,47 @@
       "q": "Everyone's on holiday!",
       "emoji": "🇨🇳",
       "problem": "National Day crowds",
-      "if": { "any": ["golden"] },
+      "if": {
+        "any": [
+          "golden"
+        ]
+      },
       "options": [
-        { "id": "gw_shift", "emoji": "📆", "label": "Shift a week", "fact": "Will move the trip away from the Oct 1–7 National Day holiday", "price": -60, "tip": "Same city, a fraction of the crowd", "score": { "easy": 25, "good": 10 } },
-        { "id": "gw_early", "emoji": "⏰", "label": "Go at dawn", "fact": "Keeps October dates; books everything early and visits big sights at opening", "set": ["early"], "price": 80, "tip": "Book trains and tickets the day they open", "score": { "easy": -10, "safe": 10 } }
+        {
+          "id": "gw_shift",
+          "emoji": "📆",
+          "label": "Shift a week",
+          "fact": "Will move the trip away from the Oct 1–7 National Day holiday",
+          "price": -60,
+          "tip": "Same city, a fraction of the crowd",
+          "score": {
+            "easy": 25,
+            "good": 10
+          }
+        },
+        {
+          "id": "gw_early",
+          "emoji": "⏰",
+          "label": "Go at dawn",
+          "fact": "Keeps October dates; books everything early and visits big sights at opening",
+          "set": [
+            "early"
+          ],
+          "price": 80,
+          "tip": "Book trains and tickets the day they open",
+          "score": {
+            "easy": -10,
+            "safe": 10
+          }
+        }
       ],
-      "gamble": { "label": "It'll be fine", "fact": "Keeps National Day dates with no special planning", "crash_if": "always", "crash": "Great Wall of people. Literally.", "loss": 150 }
+      "gamble": {
+        "label": "It'll be fine",
+        "fact": "Keeps National Day dates with no special planning",
+        "crash_if": "always",
+        "crash": "Great Wall of people. Literally.",
+        "loss": 150
+      }
     },
     {
       "type": "slider",
@@ -299,22 +1179,86 @@
       "emoji": "🧭",
       "who": "xiaobei",
       "options": [
-        { "id": "dir_diy", "emoji": "📱", "label": "DIY with apps", "fact": "Plans and books everything themselves with apps", "set": ["dir_diy"], "pros": "Cheapest, flexible", "cons": "You fix every glitch" },
-        { "id": "dir_mix", "emoji": "🧩", "label": "DIY + a guide", "fact": "Mostly independent, with a private guide for the biggest sights", "set": ["dir_mix"], "pros": "Easy where it's hard", "cons": "One pricey day" },
-        { "id": "dir_guide", "emoji": "🧑‍🏫", "label": "Guided trip", "fact": "Wants a private guide or driver for most days", "set": ["dir_guide"], "pros": "Zero hassle + stories", "cons": "Costs the most" },
-        { "id": "dir_tour", "emoji": "🚌", "label": "Group tours", "fact": "Prefers group day tours for the main sights", "set": ["dir_tour"], "pros": "Cheap and easy", "cons": "Shopping stops, rush" }
+        {
+          "id": "dir_diy",
+          "emoji": "📱",
+          "label": "DIY with apps",
+          "fact": "Plans and books everything themselves with apps",
+          "set": [
+            "dir_diy"
+          ],
+          "pros": "Cheapest, flexible",
+          "cons": "You fix every glitch"
+        },
+        {
+          "id": "dir_mix",
+          "emoji": "🧩",
+          "label": "DIY + a guide",
+          "fact": "Mostly independent, with a private guide for the biggest sights",
+          "set": [
+            "dir_mix"
+          ],
+          "pros": "Easy where it's hard",
+          "cons": "One pricey day"
+        },
+        {
+          "id": "dir_guide",
+          "emoji": "🧑‍🏫",
+          "label": "Guided trip",
+          "fact": "Wants a private guide or driver for most days",
+          "set": [
+            "dir_guide"
+          ],
+          "pros": "Zero hassle + stories",
+          "cons": "Costs the most"
+        },
+        {
+          "id": "dir_tour",
+          "emoji": "🚌",
+          "label": "Group tours",
+          "fact": "Prefers group day tours for the main sights",
+          "set": [
+            "dir_tour"
+          ],
+          "pros": "Cheap and easy",
+          "cons": "Shopping stops, rush"
+        }
       ],
       "probe": [
-        { "who": "xiaobei", "say": "Twelve years guiding here. A few questions, then your Trip Brief.", "mood": "happy" },
+        {
+          "who": "xiaobei",
+          "say": "Twelve years guiding here. A few questions, then your Trip Brief.",
+          "mood": "happy"
+        },
         {
           "id": "p_mobility",
           "who": "xiaobei",
           "q": "Are long walks and stairs OK?",
-          "if": { "any": ["kids", "seniors"] },
+          "if": {
+            "any": [
+              "kids",
+              "seniors"
+            ]
+          },
           "options": [
-            { "id": "mob_ok", "emoji": "💪", "label": "No problem", "fact": "Group can handle long walks and stairs" },
-            { "id": "mob_some", "emoji": "🪑", "label": "Need breaks", "fact": "Someone needs frequent breaks; avoid steep Wall sections, plan cable cars" },
-            { "id": "mob_wheel", "emoji": "♿", "label": "Wheelchair / stroller", "fact": "Needs step-free routes (wheelchair or stroller)" }
+            {
+              "id": "mob_ok",
+              "emoji": "💪",
+              "label": "No problem",
+              "fact": "Group can handle long walks and stairs"
+            },
+            {
+              "id": "mob_some",
+              "emoji": "🪑",
+              "label": "Need breaks",
+              "fact": "Someone needs frequent breaks; avoid steep Wall sections, plan cable cars"
+            },
+            {
+              "id": "mob_wheel",
+              "emoji": "♿",
+              "label": "Wheelchair / stroller",
+              "fact": "Needs step-free routes (wheelchair or stroller)"
+            }
           ]
         },
         {
@@ -322,9 +1266,24 @@
           "who": "xiaobei",
           "q": "Do you know your dates?",
           "options": [
-            { "id": "dt_yes", "emoji": "✅", "label": "Exact dates", "fact": "Has exact travel dates" },
-            { "id": "dt_month", "emoji": "🗓️", "label": "Just the month", "fact": "Knows the month, not the dates" },
-            { "id": "dt_no", "emoji": "🤔", "label": "Not yet", "fact": "No dates yet" }
+            {
+              "id": "dt_yes",
+              "emoji": "✅",
+              "label": "Exact dates",
+              "fact": "Has exact travel dates"
+            },
+            {
+              "id": "dt_month",
+              "emoji": "🗓️",
+              "label": "Just the month",
+              "fact": "Knows the month, not the dates"
+            },
+            {
+              "id": "dt_no",
+              "emoji": "🤔",
+              "label": "Not yet",
+              "fact": "No dates yet"
+            }
           ]
         },
         {
@@ -333,23 +1292,65 @@
           "q": "What would you hate to miss?",
           "free": {
             "placeholder": "e.g. Peking duck with a view",
-            "chips": ["Peking duck", "Sunrise on the Wall", "A hutong breakfast", "Pandas"],
+            "chips": [
+              "Peking duck",
+              "Sunrise on the Wall",
+              "A hutong breakfast",
+              "Pandas"
+            ],
             "fact": "Would hate to miss: {v}",
             "match": [
-              { "words": ["panda"], "fact": "Wants to see pandas — Beijing Zoo has some; Chengdu is the panda city" }
+              {
+                "words": [
+                  "panda"
+                ],
+                "fact": "Wants to see pandas — Beijing Zoo has some; Chengdu is the panda city"
+              }
             ],
-            "reply": [{ "who": "xiaobei", "say": "Good. That goes at the top of your plan.", "mood": "happy" }]
+            "reply": [
+              {
+                "who": "xiaobei",
+                "say": "Good. That goes at the top of your plan.",
+                "mood": "happy"
+              }
+            ]
           }
         },
-        { "who": "xiaobei", "say": "Done. Your AI can now write the day-by-day plan.", "mood": "happy" }
+        {
+          "who": "xiaobei",
+          "say": "Done. Your AI can now write the day-by-day plan.",
+          "mood": "happy"
+        }
       ],
       "bring": [
-        { "id": "b_passport", "emoji": "🛂", "label": "Passport country", "fact": "Passport nationality, to check visa-free or 240-hour transit eligibility" },
-        { "id": "b_dates", "emoji": "📅", "label": "Travel dates", "fact": "Arrival and departure dates; check they avoid Mondays for the Forbidden City" },
-        { "id": "b_pay", "emoji": "💳", "label": "Card for Alipay", "fact": "A Visa/Mastercard to link to Alipay and WeChat Pay" },
-        { "id": "b_next", "emoji": "🚄", "label": "Next city?", "fact": "Whether Beijing is the whole trip or one stop (Xi'an, Shanghai…)" }
+        {
+          "id": "b_passport",
+          "emoji": "🛂",
+          "label": "Passport country",
+          "fact": "Passport nationality, to check visa-free or 240-hour transit eligibility"
+        },
+        {
+          "id": "b_dates",
+          "emoji": "📅",
+          "label": "Travel dates",
+          "fact": "Arrival and departure dates; check they avoid Mondays for the Forbidden City"
+        },
+        {
+          "id": "b_pay",
+          "emoji": "💳",
+          "label": "Card for Alipay",
+          "fact": "A Visa/Mastercard to link to Alipay and WeChat Pay"
+        },
+        {
+          "id": "b_next",
+          "emoji": "🚄",
+          "label": "Next city?",
+          "fact": "Whether Beijing is the whole trip or one stop (Xi'an, Shanghai…)"
+        }
       ]
     }
   ],
-  "secret": "The Forbidden City is closed on Mondays (except some holidays) — check your dates before booking."
+  "secret": "The Forbidden City is closed on Mondays (except some holidays) — check your dates before booking.",
+  "curated": true,
+  "city": "beijing"
 }

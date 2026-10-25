@@ -85,7 +85,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const job = useRef(0);
   useEffect(() => {
     if (phase !== 'play' || custom !== 'idle' || !lesson || !played?.current) return;
-    if (!bossOf(lesson) || played.current.type === 'boss') return void setCustom('done');
+    if (lesson.curated || !bossOf(lesson) || played.current.type === 'boss') return void setCustom('done');
     if (played.estimate - played.done > 3) return;
     const my = ++job.current;
     const base = lesson;
@@ -103,6 +103,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
         setCustom('done');
       });
   }, [phase, custom, lesson, played, guest]);
+
+  // 玩到终章时个性化的还没好：不让用户等，直接用关卡里原来的终章（晚到的结果作废）
+  useEffect(() => {
+    if (custom === 'pending' && played?.current?.type === 'boss' && !feedback) {
+      job.current++;
+      setCustom('done');
+    }
+  }, [custom, played, feedback]);
 
   const commit = (a: Answer, fb: (before: Played, after: Played, problem: FixRound | null) => Feedback) => {
     if (!lesson) return;
@@ -130,7 +138,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     streak,
     crashes,
     feedback,
-    finaleWaiting: custom === 'pending' && played?.current?.type === 'boss' && !feedback,
+    finaleWaiting: false,
     skipFinaleWait() {
       job.current++;
       setCustom('done');

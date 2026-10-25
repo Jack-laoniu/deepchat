@@ -7,20 +7,65 @@
   "lang": "en",
   "currency": "USD",
   "cast": [
-    { "id": "ajie", "as": "Travel buddy" },
-    { "id": "wang", "as": "Local uncle" },
-    { "id": "daliu", "as": "Hustler" },
-    { "id": "ayi", "as": "Paomo boss" },
-    { "id": "xiaobei", "as": "Local guide" }
+    {
+      "id": "ajie",
+      "as": "Travel buddy"
+    },
+    {
+      "id": "wang",
+      "as": "Local uncle"
+    },
+    {
+      "id": "daliu",
+      "as": "Hustler"
+    },
+    {
+      "id": "ayi",
+      "as": "Paomo boss"
+    },
+    {
+      "id": "xiaobei",
+      "as": "Local guide"
+    }
   ],
   "guess": {
     "line": "My guess: 3 days, a bus tour, lots of noodles",
     "items": [
-      { "id": "hotel", "emoji": "🏨", "name": "Hotel 3 nights", "price": 240, "spec": "Mid-range hotel inside the city wall, near the Bell Tower" },
-      { "id": "tour", "emoji": "🚌", "name": "Terracotta tour", "price": 70, "spec": "Group day tour, with a 'factory visit' on the way" },
-      { "id": "tickets", "emoji": "🎟️", "name": "Tickets", "price": 35, "spec": "Terracotta Army, City Wall, Bell & Drum Towers" },
-      { "id": "food", "emoji": "🍜", "name": "Food", "price": 90, "spec": "3 days of noodles, paomo and skewers" },
-      { "id": "rides", "emoji": "🚕", "name": "Rides", "price": 40, "spec": "Metro and Didi" }
+      {
+        "id": "hotel",
+        "emoji": "🏨",
+        "name": "Hotel 3 nights",
+        "price": 240,
+        "spec": "Mid-range hotel inside the city wall, near the Bell Tower"
+      },
+      {
+        "id": "tour",
+        "emoji": "🚌",
+        "name": "Terracotta tour",
+        "price": 70,
+        "spec": "Group day tour, with a 'factory visit' on the way"
+      },
+      {
+        "id": "tickets",
+        "emoji": "🎟️",
+        "name": "Tickets",
+        "price": 35,
+        "spec": "Terracotta Army, City Wall, Bell & Drum Towers"
+      },
+      {
+        "id": "food",
+        "emoji": "🍜",
+        "name": "Food",
+        "price": 90,
+        "spec": "3 days of noodles, paomo and skewers"
+      },
+      {
+        "id": "rides",
+        "emoji": "🚕",
+        "name": "Rides",
+        "price": 40,
+        "spec": "Metro and Didi"
+      }
     ]
   },
   "rounds": [
@@ -31,31 +76,153 @@
       "title": "Xi'an North",
       "emoji": "🚄",
       "beats": [
-        { "who": "narrator", "say": "Xi'an North Station. The map says: city center, 12 km." },
-        { "who": "ajie", "say": "Twelve kilometers? I thought the station was IN the city.", "mood": "surprised" },
-        { "who": "xiaofang", "say": "Metro Line 2, 27 minutes. Welcome to the start of the Silk Road!", "mood": "happy" },
-        { "who": "xiaofang", "say": "In 629 a monk left this city with a travel pass. You get one too.", "mood": "smug" },
-        { "who": "xiaofang", "say": "Every good day earns a stamp. Fill it, and your plan is ready.", "mood": "happy" },
+        {
+          "who": "narrator",
+          "say": "Xi'an North Station. The map says: city center, 12 km."
+        },
+        {
+          "who": "ajie",
+          "say": "Twelve kilometers? I thought the station was IN the city.",
+          "mood": "surprised"
+        },
+        {
+          "who": "xiaofang",
+          "say": "Metro Line 2, 27 minutes. Welcome to the start of the Silk Road!",
+          "mood": "happy"
+        },
+        {
+          "who": "xiaofang",
+          "say": "In 629 a monk left this city with a travel pass. You get one too.",
+          "mood": "smug"
+        },
+        {
+          "who": "xiaofang",
+          "say": "Every good day earns a stamp. Fill it, and your plan is ready.",
+          "mood": "happy"
+        },
         {
           "id": "why",
           "who": "xiaofang",
           "q": "What brings you to Xi'an?",
           "options": [
-            { "id": "w_army", "emoji": "🏺", "label": "The Terracotta Army", "fact": "Main draw: the Terracotta Army", "set": ["history"], "reply": [{ "who": "ajie", "say": "Eight thousand soldiers and not one of them will move. My kind of crowd." }] },
-            { "id": "w_food", "emoji": "🍜", "label": "Noodles. So many noodles", "fact": "Main draw: Xi'an food — noodles, paomo, the Muslim Quarter", "set": ["foodie"], "reply": [{ "who": "xiaofang", "say": "Correct answer. We'll schedule history between meals.", "mood": "smug" }] },
-            { "id": "w_mountain", "emoji": "⛰️", "label": "Mountains & views", "fact": "Main draw: nature, especially Mount Hua", "set": ["nature"], "reply": [{ "who": "ajie", "say": "Please tell me mountains come with elevators." }] },
-            { "id": "w_silk", "emoji": "🐫", "label": "Ancient capital vibes", "fact": "Main draw: ancient-capital history and atmosphere — walls, pagodas, the Silk Road", "set": ["history"], "reply": [{ "who": "xiaofang", "say": "Thirteen dynasties ruled from here. You picked well." }] }
+            {
+              "id": "w_army",
+              "emoji": "🏺",
+              "label": "The Terracotta Army",
+              "fact": "Main draw: the Terracotta Army",
+              "set": [
+                "history"
+              ],
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "Eight thousand soldiers and not one of them will move. My kind of crowd."
+                }
+              ]
+            },
+            {
+              "id": "w_food",
+              "emoji": "🍜",
+              "label": "Noodles. So many noodles",
+              "fact": "Main draw: Xi'an food — noodles, paomo, the Muslim Quarter",
+              "set": [
+                "foodie"
+              ],
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "Correct answer. We'll schedule history between meals.",
+                  "mood": "smug"
+                }
+              ]
+            },
+            {
+              "id": "w_mountain",
+              "emoji": "⛰️",
+              "label": "Mountains & views",
+              "fact": "Main draw: nature, especially Mount Hua",
+              "set": [
+                "nature"
+              ],
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "Please tell me mountains come with elevators."
+                }
+              ]
+            },
+            {
+              "id": "w_silk",
+              "emoji": "🐫",
+              "label": "Ancient capital vibes",
+              "fact": "Main draw: ancient-capital history and atmosphere — walls, pagodas, the Silk Road",
+              "set": [
+                "history"
+              ],
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "Thirteen dynasties ruled from here. You picked well."
+                }
+              ]
+            }
           ],
           "free": {
             "placeholder": "e.g. my kid loves emperors",
-            "chips": ["Bucket list", "Saw a documentary", "Coming from Beijing"],
+            "chips": [
+              "Bucket list",
+              "Saw a documentary",
+              "Coming from Beijing"
+            ],
             "fact": "Why Xi'an, in their words: {v}",
             "match": [
-              { "words": ["kid", "kids", "son", "daughter", "children"], "set": ["kids"], "fact": "Traveling with children" },
-              { "words": ["mom", "dad", "parents", "mother", "father", "grandma"], "set": ["seniors"], "fact": "Traveling with older parents" },
-              { "words": ["knee", "knees", "wheelchair", "can't walk", "cane"], "set": ["mobility_low"], "fact": "Someone can't walk far" }
+              {
+                "words": [
+                  "kid",
+                  "kids",
+                  "son",
+                  "daughter",
+                  "children"
+                ],
+                "set": [
+                  "kids"
+                ],
+                "fact": "Traveling with children"
+              },
+              {
+                "words": [
+                  "mom",
+                  "dad",
+                  "parents",
+                  "mother",
+                  "father",
+                  "grandma"
+                ],
+                "set": [
+                  "seniors"
+                ],
+                "fact": "Traveling with older parents"
+              },
+              {
+                "words": [
+                  "knee",
+                  "knees",
+                  "wheelchair",
+                  "can't walk",
+                  "cane"
+                ],
+                "set": [
+                  "mobility_low"
+                ],
+                "fact": "Someone can't walk far"
+              }
             ],
-            "reply": [{ "who": "xiaofang", "say": "Writing that on page one of your pass." }]
+            "reply": [
+              {
+                "who": "xiaofang",
+                "say": "Writing that on page one of your pass."
+              }
+            ]
           }
         },
         {
@@ -63,10 +230,60 @@
           "who": "xiaofang",
           "q": "Who's on this trip?",
           "options": [
-            { "id": "g_solo", "emoji": "🎒", "label": "Just me", "fact": "Traveling solo", "reply": [{ "who": "ajie", "say": "And me. I'm basically luggage with opinions." }] },
-            { "id": "g_partner", "emoji": "💑", "label": "Me and my partner", "fact": "Traveling as a couple", "reply": [{ "who": "xiaofang", "say": "Tandem bikes on the wall. You'll see." }] },
-            { "id": "g_kids", "emoji": "👨‍👩‍👧", "label": "Family with kids", "fact": "Traveling with children", "set": ["kids"], "reply": [{ "who": "xiaofang", "say": "Kids love it: 8,000 faces, all different. Spot-the-difference!" }] },
-            { "id": "g_parents", "emoji": "👵", "label": "My parents", "fact": "Traveling with older parents", "set": ["seniors"], "reply": [{ "who": "xiaofang", "say": "Then we plan for knees, not for Instagram." }] }
+            {
+              "id": "g_solo",
+              "emoji": "🎒",
+              "label": "Just me",
+              "fact": "Traveling solo",
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "And me. I'm basically luggage with opinions."
+                }
+              ]
+            },
+            {
+              "id": "g_partner",
+              "emoji": "💑",
+              "label": "Me and my partner",
+              "fact": "Traveling as a couple",
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "Tandem bikes on the wall. You'll see."
+                }
+              ]
+            },
+            {
+              "id": "g_kids",
+              "emoji": "👨‍👩‍👧",
+              "label": "Family with kids",
+              "fact": "Traveling with children",
+              "set": [
+                "kids"
+              ],
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "Kids love it: 8,000 faces, all different. Spot-the-difference!"
+                }
+              ]
+            },
+            {
+              "id": "g_parents",
+              "emoji": "👵",
+              "label": "My parents",
+              "fact": "Traveling with older parents",
+              "set": [
+                "seniors"
+              ],
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "Then we plan for knees, not for Instagram."
+                }
+              ]
+            }
           ]
         },
         {
@@ -74,9 +291,43 @@
           "who": "xiaofang",
           "q": "How are everyone's legs?",
           "options": [
-            { "id": "l_strong", "emoji": "🥾", "label": "We can hike all day", "fact": "Group is fit; long walks and stairs are fine", "set": ["strong"], "reply": [{ "who": "ajie", "say": "Speak for yourself." }] },
-            { "id": "l_some", "emoji": "🚶", "label": "Walking's fine, hiking no", "fact": "Comfortable walking, but no long hikes" },
-            { "id": "l_knees", "emoji": "🦵", "label": "Someone's knees complain", "fact": "Someone can't walk far or climb many stairs", "set": ["mobility_low"], "reply": [{ "who": "xiaofang", "say": "Got it. Flat routes, short walks, more sitting with a view.", "mood": "thinking" }] }
+            {
+              "id": "l_strong",
+              "emoji": "🥾",
+              "label": "We can hike all day",
+              "fact": "Group is fit; long walks and stairs are fine",
+              "set": [
+                "strong"
+              ],
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "Speak for yourself."
+                }
+              ]
+            },
+            {
+              "id": "l_some",
+              "emoji": "🚶",
+              "label": "Walking's fine, hiking no",
+              "fact": "Comfortable walking, but no long hikes"
+            },
+            {
+              "id": "l_knees",
+              "emoji": "🦵",
+              "label": "Someone's knees complain",
+              "fact": "Someone can't walk far or climb many stairs",
+              "set": [
+                "mobility_low"
+              ],
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "Got it. Flat routes, short walks, more sitting with a view.",
+                  "mood": "thinking"
+                }
+              ]
+            }
           ]
         }
       ]
@@ -87,9 +338,32 @@
       "q": "How many days?",
       "emoji": "📅",
       "options": [
-        { "id": "d2", "emoji": "2️⃣", "label": "2 days", "fact": "2 days in Xi'an — Terracotta plus the old city", "price": -80, "set": ["short"] },
-        { "id": "d3", "emoji": "3️⃣", "label": "3 days", "fact": "3 days in Xi'an" },
-        { "id": "d4", "emoji": "4️⃣", "label": "4–5 days", "fact": "4–5 days in Xi'an — room for Mount Hua or a slow day", "price": 120, "set": ["long"] }
+        {
+          "id": "d2",
+          "emoji": "2️⃣",
+          "label": "2 days",
+          "fact": "2 days in Xi'an — Terracotta plus the old city",
+          "price": -80,
+          "set": [
+            "short"
+          ]
+        },
+        {
+          "id": "d3",
+          "emoji": "3️⃣",
+          "label": "3 days",
+          "fact": "3 days in Xi'an"
+        },
+        {
+          "id": "d4",
+          "emoji": "4️⃣",
+          "label": "4–5 days",
+          "fact": "4–5 days in Xi'an — room for Mount Hua or a slow day",
+          "price": 120,
+          "set": [
+            "long"
+          ]
+        }
       ]
     },
     {
@@ -98,10 +372,39 @@
       "q": "When are you going?",
       "emoji": "🗓️",
       "options": [
-        { "id": "m_spring", "emoji": "🌸", "label": "Spring", "fact": "Traveling in spring (Apr–May is mild; crowds spike around May Day)" },
-        { "id": "m_summer", "emoji": "☀️", "label": "Summer", "fact": "Traveling in summer (hot; Mount Hua often foggy Jul–Aug)", "set": ["hot"] },
-        { "id": "m_oct", "emoji": "🇨🇳", "label": "Early October", "fact": "Traveling in early October, around the National Day holiday (1–7 Oct)", "set": ["golden"] },
-        { "id": "m_winter", "emoji": "❄️", "label": "Nov – March", "fact": "Traveling Nov–Mar (cold, quiet; Shaanxi History Museum closed Mondays after 14 Nov)", "set": ["cold"] }
+        {
+          "id": "m_spring",
+          "emoji": "🌸",
+          "label": "Spring",
+          "fact": "Traveling in spring (Apr–May is mild; crowds spike around May Day)"
+        },
+        {
+          "id": "m_summer",
+          "emoji": "☀️",
+          "label": "Summer",
+          "fact": "Traveling in summer (hot; Mount Hua often foggy Jul–Aug)",
+          "set": [
+            "hot"
+          ]
+        },
+        {
+          "id": "m_oct",
+          "emoji": "🇨🇳",
+          "label": "Early October",
+          "fact": "Traveling in early October, around the National Day holiday (1–7 Oct)",
+          "set": [
+            "golden"
+          ]
+        },
+        {
+          "id": "m_winter",
+          "emoji": "❄️",
+          "label": "Nov – March",
+          "fact": "Traveling Nov–Mar (cold, quiet; Shaanxi History Museum closed Mondays after 14 Nov)",
+          "set": [
+            "cold"
+          ]
+        }
       ]
     },
     {
@@ -111,24 +414,133 @@
       "title": "The 'official' bus",
       "emoji": "🚌",
       "beats": [
-        { "who": "narrator", "say": "Xi'an Railway Station square, 8 AM. Someone in a uniform waves at you." },
-        { "who": "daliu", "say": "Terracotta! Official bus! Very official! I have a lanyard!", "mood": "happy" },
-        { "who": "ajie", "say": "He has a lanyard. That's basically a government ID.", "mood": "happy" },
-        { "who": "daliu", "say": "Small stop at a jade factory. Also official. Very educational.", "mood": "smug" },
-        { "who": "wang", "say": "Young man. The real bus 306 leaves from Xi'an East Station now.", "mood": "thinking" },
-        { "who": "wang", "say": "This one goes to a jade shop. The soldiers are 40 km the other way.", "mood": "smug" },
+        {
+          "who": "narrator",
+          "say": "Xi'an Railway Station square, 8 AM. Someone in a uniform waves at you."
+        },
+        {
+          "who": "daliu",
+          "say": "Terracotta! Official bus! Very official! I have a lanyard!",
+          "mood": "happy"
+        },
+        {
+          "who": "ajie",
+          "say": "He has a lanyard. That's basically a government ID.",
+          "mood": "happy"
+        },
+        {
+          "who": "daliu",
+          "say": "Small stop at a jade factory. Also official. Very educational.",
+          "mood": "smug"
+        },
+        {
+          "who": "wang",
+          "say": "Young man. The real bus 306 leaves from Xi'an East Station now.",
+          "mood": "thinking"
+        },
+        {
+          "who": "wang",
+          "say": "This one goes to a jade shop. The soldiers are 40 km the other way.",
+          "mood": "smug"
+        },
         {
           "id": "how",
           "who": "wang",
           "q": "So how do you get to the warriors?",
           "options": [
-            { "id": "h_metro", "emoji": "🚇", "label": "Metro + bus 306", "fact": "Will take the metro to Fangzhicheng hub, then public bus 306 (Tourism Line 5); pay the conductor on board, no transit cards", "remove": ["tour"], "price": 5, "set": ["budget"], "reply": [{ "who": "wang", "say": "A few yuan and a window seat. Locals' way.", "mood": "happy" }] },
-            { "id": "h_didi", "emoji": "🚕", "label": "Didi, door to door", "fact": "Will take Didi to the North Gate (¥120–180 each way)", "remove": ["tour"], "add": [{ "id": "rides", "emoji": "🚕", "name": "Rides", "price": 80, "spec": "Didi to the Terracotta Army and back, plus metro" }], "reply": [{ "who": "ajie", "say": "Air conditioning and zero jade. Worth it." }] },
-            { "id": "h_guide", "emoji": "🧑‍🏫", "label": "A guide with a car", "fact": "Wants a private guide with a car for the Terracotta day (handles tickets, transport and the stories)", "set": ["guide"], "add": [{ "id": "tour", "emoji": "🧑‍🏫", "name": "Guide + car", "price": 180, "spec": "Private guide and car for the Terracotta day (estimate)" }], "reply": [{ "who": "wang", "say": "Good guides know which soldier has a sense of humor.", "mood": "smug" }] },
-            { "id": "h_lanyard", "emoji": "🪪", "label": "Trust the lanyard", "fact": "Would get on an unofficial tour bus from a street tout", "set": ["trap"], "price": 60, "reply": [{ "who": "ajie", "say": "Update: I now own a jade dragon. The warriors remain unseen.", "mood": "sad" }] }
+            {
+              "id": "h_metro",
+              "emoji": "🚇",
+              "label": "Metro + bus 306",
+              "fact": "Will take the metro to Fangzhicheng hub, then public bus 306 (Tourism Line 5); pay the conductor on board, no transit cards",
+              "remove": [
+                "tour"
+              ],
+              "price": 5,
+              "set": [
+                "budget"
+              ],
+              "reply": [
+                {
+                  "who": "wang",
+                  "say": "A few yuan and a window seat. Locals' way.",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "h_didi",
+              "emoji": "🚕",
+              "label": "Didi, door to door",
+              "fact": "Will take Didi to the North Gate (¥120–180 each way)",
+              "remove": [
+                "tour"
+              ],
+              "add": [
+                {
+                  "id": "rides",
+                  "emoji": "🚕",
+                  "name": "Rides",
+                  "price": 80,
+                  "spec": "Didi to the Terracotta Army and back, plus metro"
+                }
+              ],
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "Air conditioning and zero jade. Worth it."
+                }
+              ]
+            },
+            {
+              "id": "h_guide",
+              "emoji": "🧑‍🏫",
+              "label": "A guide with a car",
+              "fact": "Wants a private guide with a car for the Terracotta day (handles tickets, transport and the stories)",
+              "set": [
+                "guide"
+              ],
+              "add": [
+                {
+                  "id": "tour",
+                  "emoji": "🧑‍🏫",
+                  "name": "Guide + car",
+                  "price": 180,
+                  "spec": "Private guide and car for the Terracotta day (estimate)"
+                }
+              ],
+              "reply": [
+                {
+                  "who": "wang",
+                  "say": "Good guides know which soldier has a sense of humor.",
+                  "mood": "smug"
+                }
+              ]
+            },
+            {
+              "id": "h_lanyard",
+              "emoji": "🪪",
+              "label": "Trust the lanyard",
+              "fact": "Would get on an unofficial tour bus from a street tout",
+              "set": [
+                "trap"
+              ],
+              "price": 60,
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "Update: I now own a jade dragon. The warriors remain unseen.",
+                  "mood": "sad"
+                }
+              ]
+            }
           ]
         },
-        { "who": "xiaofang", "say": "You spotted the fake bus. First stamp: 🔍 Sharp Eyes.", "mood": "happy" }
+        {
+          "who": "xiaofang",
+          "say": "You spotted the fake bus. First stamp: 🔍 Sharp Eyes.",
+          "mood": "happy"
+        }
       ]
     },
     {
@@ -138,10 +550,51 @@
       "emoji": "🎫",
       "problem": "Terracotta sold out",
       "options": [
-        { "id": "book_wechat", "emoji": "📲", "label": "Book on WeChat", "fact": "Will book real-name tickets in the official WeChat account 秦始皇帝陵博物院 with a passport, 3–7 days ahead (up to 10 days for holidays)", "set": ["wechat"], "tip": "No ticket windows on site. Book early.", "score": { "safe": 25, "easy": 10 } },
-        { "id": "guide_books", "emoji": "🧑‍🏫", "label": "Guide books it", "fact": "Wants a guide to handle the Terracotta booking", "set": ["guide"], "add": [{ "id": "tour", "emoji": "🧑‍🏫", "name": "Guide + car", "price": 180, "spec": "Private guide and car for the Terracotta day (estimate)" }], "tip": "Tickets, route and stories, sorted", "score": { "easy": 25, "good": 10 } }
+        {
+          "id": "book_wechat",
+          "emoji": "📲",
+          "label": "Book on WeChat",
+          "fact": "Will book real-name tickets in the official WeChat account 秦始皇帝陵博物院 with a passport, 3–7 days ahead (up to 10 days for holidays)",
+          "set": [
+            "wechat"
+          ],
+          "tip": "No ticket windows on site. Book early.",
+          "score": {
+            "safe": 25,
+            "easy": 10
+          }
+        },
+        {
+          "id": "guide_books",
+          "emoji": "🧑‍🏫",
+          "label": "Guide books it",
+          "fact": "Wants a guide to handle the Terracotta booking",
+          "set": [
+            "guide"
+          ],
+          "add": [
+            {
+              "id": "tour",
+              "emoji": "🧑‍🏫",
+              "name": "Guide + car",
+              "price": 180,
+              "spec": "Private guide and car for the Terracotta day (estimate)"
+            }
+          ],
+          "tip": "Tickets, route and stories, sorted",
+          "score": {
+            "easy": 25,
+            "good": 10
+          }
+        }
       ],
-      "gamble": { "label": "At the gate", "fact": "Plans to buy Terracotta tickets on arrival", "crash_if": "always", "crash": "There's no ticket window. Only regret.", "loss": 0 }
+      "gamble": {
+        "label": "At the gate",
+        "fact": "Plans to buy Terracotta tickets on arrival",
+        "crash_if": "always",
+        "crash": "There's no ticket window. Only regret.",
+        "loss": 0
+      }
     },
     {
       "type": "talk",
@@ -150,23 +603,95 @@
       "title": "Pit No. 1",
       "emoji": "🏺",
       "beats": [
-        { "who": "narrator", "say": "You step into Pit No. 1. Six thousand soldiers stand in formation." },
-        { "who": "ajie", "say": "…oh. Oh wow.", "mood": "surprised" },
-        { "who": "xiaofang", "say": "Look closer. Every face is different. Every single one.", "mood": "happy" },
-        { "who": "ajie", "say": "That one looks like me before coffee.", "mood": "happy" },
-        { "who": "xiaofang", "say": "2,200 years on guard duty. Respect the commute.", "mood": "smug" },
+        {
+          "who": "narrator",
+          "say": "You step into Pit No. 1. Six thousand soldiers stand in formation."
+        },
+        {
+          "who": "ajie",
+          "say": "…oh. Oh wow.",
+          "mood": "surprised"
+        },
+        {
+          "who": "xiaofang",
+          "say": "Look closer. Every face is different. Every single one.",
+          "mood": "happy"
+        },
+        {
+          "who": "ajie",
+          "say": "That one looks like me before coffee.",
+          "mood": "happy"
+        },
+        {
+          "who": "xiaofang",
+          "say": "2,200 years on guard duty. Respect the commute.",
+          "mood": "smug"
+        },
         {
           "id": "depth",
           "who": "xiaofang",
           "q": "How long do you want here?",
           "options": [
-            { "id": "dp_quick", "emoji": "📸", "label": "One hour, best photos", "fact": "Wants a quick visit focused on the highlights", "reply": [{ "who": "ajie", "say": "Efficient. The soldiers would approve." }] },
-            { "id": "dp_full", "emoji": "🎧", "label": "3–4 hours, the full story", "fact": "Wants 3–4 hours with an audio guide or guide, all three pits and the museum", "set": ["history"], "reply": [{ "who": "xiaofang", "say": "Then pack snacks. It's a big army.", "mood": "happy" }] },
-            { "id": "dp_guide", "emoji": "🧑‍🏫", "label": "A guide with gossip", "fact": "Wants a human guide for the stories behind the warriors", "set": ["guide"], "reply": [{ "who": "xiaofang", "say": "Ask about the kneeling archer. Long story." }] }
+            {
+              "id": "dp_quick",
+              "emoji": "📸",
+              "label": "One hour, best photos",
+              "fact": "Wants a quick visit focused on the highlights",
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "Efficient. The soldiers would approve."
+                }
+              ]
+            },
+            {
+              "id": "dp_full",
+              "emoji": "🎧",
+              "label": "3–4 hours, the full story",
+              "fact": "Wants 3–4 hours with an audio guide or guide, all three pits and the museum",
+              "set": [
+                "history"
+              ],
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "Then pack snacks. It's a big army.",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "dp_guide",
+              "emoji": "🧑‍🏫",
+              "label": "A guide with gossip",
+              "fact": "Wants a human guide for the stories behind the warriors",
+              "set": [
+                "guide"
+              ],
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "Ask about the kneeling archer. Long story."
+                }
+              ]
+            }
           ]
         },
-        { "who": "xiaofang", "say": "Inside it's 3–4 hours on your feet. We'll plan a rest after.", "if": { "any": ["mobility_low", "seniors"] } },
-        { "who": "xiaofang", "say": "Stamp two: 🏺 Met the Army.", "mood": "happy" }
+        {
+          "who": "xiaofang",
+          "say": "Inside it's 3–4 hours on your feet. We'll plan a rest after.",
+          "if": {
+            "any": [
+              "mobility_low",
+              "seniors"
+            ]
+          }
+        },
+        {
+          "who": "xiaofang",
+          "say": "Stamp two: 🏺 Met the Army.",
+          "mood": "happy"
+        }
       ]
     },
     {
@@ -177,55 +702,231 @@
       "scene": "street",
       "spots": [
         {
-          "id": "main", "emoji": "🍢", "label": "Main st.", "who": "daliu", "x": 24, "y": 28, "prop": "kiosk",
+          "id": "main",
+          "emoji": "🍢",
+          "label": "Main st.",
+          "who": "daliu",
+          "x": 24,
+          "y": 28,
+          "prop": "kiosk",
           "beats": [
-            { "who": "daliu", "say": "You again! Skewers! Twenty yuan! Famous since this morning!", "mood": "happy" },
-            { "who": "ajie", "say": "Twenty for one skewer? Is the lamb also official?", "mood": "worried" },
+            {
+              "who": "daliu",
+              "say": "You again! Skewers! Twenty yuan! Famous since this morning!",
+              "mood": "happy"
+            },
+            {
+              "who": "ajie",
+              "say": "Twenty for one skewer? Is the lamb also official?",
+              "mood": "worried"
+            },
             {
               "id": "skewer",
               "who": "daliu",
               "q": "Buy here, or look around?",
               "options": [
-                { "id": "sk_buy", "emoji": "🤑", "label": "I'm hungry. Buy.", "fact": "Would pay main-street tourist prices for convenience", "price": 10, "reply": [{ "who": "daliu", "say": "Excellent! Also, jade dragon? No? Okay.", "mood": "smug" }] },
-                { "id": "sk_look", "emoji": "👀", "label": "Let's look around", "fact": "Prefers to explore side lanes for better value", "reply": [{ "who": "daliu", "say": "Fine. But the side lanes have no lanyards.", "mood": "sad" }] }
+                {
+                  "id": "sk_buy",
+                  "emoji": "🤑",
+                  "label": "I'm hungry. Buy.",
+                  "fact": "Would pay main-street tourist prices for convenience",
+                  "price": 10,
+                  "reply": [
+                    {
+                      "who": "daliu",
+                      "say": "Excellent! Also, jade dragon? No? Okay.",
+                      "mood": "smug"
+                    }
+                  ]
+                },
+                {
+                  "id": "sk_look",
+                  "emoji": "👀",
+                  "label": "Let's look around",
+                  "fact": "Prefers to explore side lanes for better value",
+                  "reply": [
+                    {
+                      "who": "daliu",
+                      "say": "Fine. But the side lanes have no lanyards.",
+                      "mood": "sad"
+                    }
+                  ]
+                }
               ]
             }
           ]
         },
         {
-          "id": "lane", "emoji": "🪑", "label": "Side lane", "who": "wang", "x": 76, "y": 30, "prop": "bench",
+          "id": "lane",
+          "emoji": "🪑",
+          "label": "Side lane",
+          "who": "wang",
+          "x": 76,
+          "y": 30,
+          "prop": "bench",
           "beats": [
-            { "who": "wang", "say": "One lane west: Xiyangshi. Half the price, twice the taste.", "mood": "smug" },
+            {
+              "who": "wang",
+              "say": "One lane west: Xiyangshi. Half the price, twice the taste.",
+              "mood": "smug"
+            },
             {
               "id": "diet",
               "who": "wang",
               "q": "Anything you can't eat?",
               "options": [
-                { "id": "di_any", "emoji": "😋", "label": "I eat everything", "fact": "No dietary restrictions", "reply": [{ "who": "wang", "say": "Dangerous words in this street." }] },
-                { "id": "di_halal", "emoji": "🕌", "label": "I eat halal", "fact": "Eats halal — the Muslim Quarter is all halal; outside it, roujiamo is often pork and cooking wine is common", "set": ["halal"], "reply": [{ "who": "wang", "say": "Every stall here is halal. Outside the Quarter, look for 清真 signs." }] },
-                { "id": "di_veg", "emoji": "🥬", "label": "Vegetarian", "fact": "Vegetarian — this street is lamb-heavy; biangbiang noodles and liangpi work if toppings are checked", "set": ["veg"], "reply": [{ "who": "wang", "say": "This street is mostly lamb. Noodles are your friend." }] },
-                { "id": "di_mild", "emoji": "🌶️", "label": "Not too spicy", "fact": "Avoids spicy food; ask for 少辣 (less chili)", "set": ["spicy_averse"], "reply": [{ "who": "wang", "say": "Say 'shǎo là'. Less chili. They'll still add some." }] }
+                {
+                  "id": "di_any",
+                  "emoji": "😋",
+                  "label": "I eat everything",
+                  "fact": "No dietary restrictions",
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "Dangerous words in this street."
+                    }
+                  ]
+                },
+                {
+                  "id": "di_halal",
+                  "emoji": "🕌",
+                  "label": "I eat halal",
+                  "fact": "Eats halal — the Muslim Quarter is all halal; outside it, roujiamo is often pork and cooking wine is common",
+                  "set": [
+                    "halal"
+                  ],
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "Every stall here is halal. Outside the Quarter, look for 清真 signs."
+                    }
+                  ]
+                },
+                {
+                  "id": "di_veg",
+                  "emoji": "🥬",
+                  "label": "Vegetarian",
+                  "fact": "Vegetarian — this street is lamb-heavy; biangbiang noodles and liangpi work if toppings are checked",
+                  "set": [
+                    "veg"
+                  ],
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "This street is mostly lamb. Noodles are your friend."
+                    }
+                  ]
+                },
+                {
+                  "id": "di_mild",
+                  "emoji": "🌶️",
+                  "label": "Not too spicy",
+                  "fact": "Avoids spicy food; ask for 少辣 (less chili)",
+                  "set": [
+                    "spicy_averse"
+                  ],
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "Say 'shǎo là'. Less chili. They'll still add some."
+                    }
+                  ]
+                }
               ]
             }
           ],
-          "gift": { "id": "lane_map", "emoji": "🗺️", "label": "Lane map", "fact": "Eats in Xiyangshi and Dapiyuan side lanes instead of the main strip", "price": -20, "say": "Side lanes. Tell them Wang sent you." }
+          "gift": {
+            "id": "lane_map",
+            "emoji": "🗺️",
+            "label": "Lane map",
+            "fact": "Eats in Xiyangshi and Dapiyuan side lanes instead of the main strip",
+            "price": -20,
+            "say": "Side lanes. Tell them Wang sent you."
+          }
         },
         {
-          "id": "paomo", "emoji": "🍲", "label": "Paomo shop", "who": "ayi", "x": 70, "y": 72, "prop": "counter",
+          "id": "paomo",
+          "emoji": "🍲",
+          "label": "Paomo shop",
+          "who": "ayi",
+          "x": 70,
+          "y": 72,
+          "prop": "counter",
           "beats": [
-            { "who": "ayi", "say": "Paomo! You tear the bread, I add the lamb soup.", "mood": "happy", "if": { "none": ["veg"] } },
-            { "who": "ayi", "say": "Smaller. Smaller! Pea-sized. Like a monk with patience.", "mood": "angry", "if": { "none": ["veg"] } },
-            { "who": "ayi", "say": "No meat? Biangbiang noodles. 58 strokes to write, zero to eat.", "mood": "smug", "if": { "any": ["veg"] } },
+            {
+              "who": "ayi",
+              "say": "Paomo! You tear the bread, I add the lamb soup.",
+              "mood": "happy",
+              "if": {
+                "none": [
+                  "veg"
+                ]
+              }
+            },
+            {
+              "who": "ayi",
+              "say": "Smaller. Smaller! Pea-sized. Like a monk with patience.",
+              "mood": "angry",
+              "if": {
+                "none": [
+                  "veg"
+                ]
+              }
+            },
+            {
+              "who": "ayi",
+              "say": "No meat? Biangbiang noodles. 58 strokes to write, zero to eat.",
+              "mood": "smug",
+              "if": {
+                "any": [
+                  "veg"
+                ]
+              }
+            },
             {
               "id": "tear",
               "who": "ayi",
               "q": "Tear it yourself, or let me cut it?",
               "options": [
-                { "id": "t_monk", "emoji": "🧘", "label": "I'll tear like a monk", "fact": "Enjoys slow, hands-on local experiences", "set": ["slow"], "reply": [{ "who": "ayi", "say": "Twenty minutes. Perfect. Now you're from Xi'an.", "mood": "happy" }] },
-                { "id": "t_fast", "emoji": "🔪", "label": "Machine, please", "fact": "Prefers efficiency over ritual", "set": ["fast"], "reply": [{ "who": "ayi", "say": "Tourist. But a hungry one. Fine.", "mood": "smug" }] }
+                {
+                  "id": "t_monk",
+                  "emoji": "🧘",
+                  "label": "I'll tear like a monk",
+                  "fact": "Enjoys slow, hands-on local experiences",
+                  "set": [
+                    "slow"
+                  ],
+                  "reply": [
+                    {
+                      "who": "ayi",
+                      "say": "Twenty minutes. Perfect. Now you're from Xi'an.",
+                      "mood": "happy"
+                    }
+                  ]
+                },
+                {
+                  "id": "t_fast",
+                  "emoji": "🔪",
+                  "label": "Machine, please",
+                  "fact": "Prefers efficiency over ritual",
+                  "set": [
+                    "fast"
+                  ],
+                  "reply": [
+                    {
+                      "who": "ayi",
+                      "say": "Tourist. But a hungry one. Fine.",
+                      "mood": "smug"
+                    }
+                  ]
+                }
               ]
             },
-            { "who": "ajie", "say": "Best thing I've eaten this year. Don't tell my mother.", "mood": "happy" }
+            {
+              "who": "ajie",
+              "say": "Best thing I've eaten this year. Don't tell my mother.",
+              "mood": "happy"
+            }
           ]
         }
       ]
@@ -235,8 +936,24 @@
       "id": "heights",
       "q": "Cliffs and glass floors?",
       "emoji": "🧗",
-      "yes": { "id": "ht_yes", "emoji": "😎", "label": "Love them", "fact": "Comfortable with heights and exposed cliff paths", "set": ["heights_ok"] },
-      "no": { "id": "ht_no", "emoji": "😱", "label": "Absolutely not", "fact": "Afraid of heights", "set": ["heights_fear"] }
+      "yes": {
+        "id": "ht_yes",
+        "emoji": "😎",
+        "label": "Love them",
+        "fact": "Comfortable with heights and exposed cliff paths",
+        "set": [
+          "heights_ok"
+        ]
+      },
+      "no": {
+        "id": "ht_no",
+        "emoji": "😱",
+        "label": "Absolutely not",
+        "fact": "Afraid of heights",
+        "set": [
+          "heights_fear"
+        ]
+      }
     },
     {
       "type": "chain",
@@ -245,38 +962,190 @@
       "emoji": "🎲",
       "cards": [
         {
-          "id": "c_wall", "who": "wang", "say": "Cycle the city wall: 13.7 km, about 2 hours, ¥45 for 3 hours.", "emoji": "🚴",
-          "if": { "none": ["kids", "seniors", "mobility_low"] },
-          "left": { "id": "c_wall_walk", "emoji": "🚶", "label": "Walk a bit", "fact": "Would walk a section of the City Wall", "score": { "easy": 10 } },
-          "right": { "id": "c_wall_ride", "emoji": "🚴", "label": "Ride the loop", "fact": "Wants to cycle the full City Wall loop (13.7 km, 1.5–2 h)", "set": ["active"], "score": { "good": 15, "easy": -5 } }
+          "id": "c_wall",
+          "who": "wang",
+          "say": "Cycle the city wall: 13.7 km, about 2 hours, ¥45 for 3 hours.",
+          "emoji": "🚴",
+          "if": {
+            "none": [
+              "kids",
+              "seniors",
+              "mobility_low"
+            ]
+          },
+          "left": {
+            "id": "c_wall_walk",
+            "emoji": "🚶",
+            "label": "Walk a bit",
+            "fact": "Would walk a section of the City Wall",
+            "score": {
+              "easy": 10
+            }
+          },
+          "right": {
+            "id": "c_wall_ride",
+            "emoji": "🚴",
+            "label": "Ride the loop",
+            "fact": "Wants to cycle the full City Wall loop (13.7 km, 1.5–2 h)",
+            "set": [
+              "active"
+            ],
+            "score": {
+              "good": 15,
+              "easy": -5
+            }
+          }
         },
         {
-          "id": "c_wall_family", "who": "wang", "say": "No bikes for under 12 or over 65. Walk a section and catch the sunset?", "emoji": "🌇",
-          "if": { "any": ["kids", "seniors", "mobility_low"] },
-          "left": { "id": "c_wallf_skip", "emoji": "🛋️", "label": "Rest instead", "fact": "Would skip the City Wall to rest", "score": { "easy": 15, "good": -5 } },
-          "right": { "id": "c_wallf_sunset", "emoji": "🌇", "label": "Sunset stroll", "fact": "A short walk on the City Wall at sunset (bike rental not allowed under 12 / over 65)", "score": { "good": 15 } }
+          "id": "c_wall_family",
+          "who": "wang",
+          "say": "No bikes for under 12 or over 65. Walk a section and catch the sunset?",
+          "emoji": "🌇",
+          "if": {
+            "any": [
+              "kids",
+              "seniors",
+              "mobility_low"
+            ]
+          },
+          "left": {
+            "id": "c_wallf_skip",
+            "emoji": "🛋️",
+            "label": "Rest instead",
+            "fact": "Would skip the City Wall to rest",
+            "score": {
+              "easy": 15,
+              "good": -5
+            }
+          },
+          "right": {
+            "id": "c_wallf_sunset",
+            "emoji": "🌇",
+            "label": "Sunset stroll",
+            "fact": "A short walk on the City Wall at sunset (bike rental not allowed under 12 / over 65)",
+            "score": {
+              "good": 15
+            }
+          }
         },
         {
-          "id": "c_museum", "who": "xiaobei", "say": "History Museum: free. Tickets drop 5 days ahead, 17:00. Gone in minutes.", "emoji": "🏛️",
-          "left": { "id": "c_mus_skip", "emoji": "🤷", "label": "Skip it", "fact": "Will skip the Shaanxi History Museum", "score": { "easy": 10, "good": -5 } },
-          "right": { "id": "c_mus_alarm", "emoji": "⏰", "label": "Set an alarm", "fact": "Will try to book Shaanxi History Museum (free; real-name via WeChat, 5 days ahead at 17:00)", "set": ["museum", "wechat"], "score": { "good": 15, "easy": -10 } }
+          "id": "c_museum",
+          "who": "xiaobei",
+          "say": "History Museum: free. Tickets drop 5 days ahead, 17:00. Gone in minutes.",
+          "emoji": "🏛️",
+          "left": {
+            "id": "c_mus_skip",
+            "emoji": "🤷",
+            "label": "Skip it",
+            "fact": "Will skip the Shaanxi History Museum",
+            "score": {
+              "easy": 10,
+              "good": -5
+            }
+          },
+          "right": {
+            "id": "c_mus_alarm",
+            "emoji": "⏰",
+            "label": "Set an alarm",
+            "fact": "Will try to book Shaanxi History Museum (free; real-name via WeChat, 5 days ahead at 17:00)",
+            "set": [
+              "museum",
+              "wechat"
+            ],
+            "score": {
+              "good": 15,
+              "easy": -10
+            }
+          }
         },
         {
-          "id": "c_goose", "who": "ajie", "say": "Wild Goose Pagoda: temple ¥40, climbing it ¥25 more. Seven floors.", "emoji": "🛕",
-          "if": { "none": ["mobility_low"] },
-          "left": { "id": "c_goose_view", "emoji": "👀", "label": "Just look", "fact": "Will see the pagoda from the free squares", "score": { "easy": 10 } },
-          "right": { "id": "c_goose_climb", "emoji": "🧗", "label": "Climb it", "fact": "Will enter Da Ci'en Temple and climb the pagoda (¥40 + ¥25)", "price": 9, "score": { "good": 15, "easy": -5 } }
+          "id": "c_goose",
+          "who": "ajie",
+          "say": "Wild Goose Pagoda: temple ¥40, climbing it ¥25 more. Seven floors.",
+          "emoji": "🛕",
+          "if": {
+            "none": [
+              "mobility_low"
+            ]
+          },
+          "left": {
+            "id": "c_goose_view",
+            "emoji": "👀",
+            "label": "Just look",
+            "fact": "Will see the pagoda from the free squares",
+            "score": {
+              "easy": 10
+            }
+          },
+          "right": {
+            "id": "c_goose_climb",
+            "emoji": "🧗",
+            "label": "Climb it",
+            "fact": "Will enter Da Ci'en Temple and climb the pagoda (¥40 + ¥25)",
+            "price": 9,
+            "score": {
+              "good": 15,
+              "easy": -5
+            }
+          }
         },
         {
-          "id": "c_goose_flat", "who": "ajie", "say": "The pagoda squares are free and flat. Fountain show at night, free too.", "emoji": "⛲",
-          "if": { "any": ["mobility_low"] },
-          "left": { "id": "c_gf_skip", "emoji": "🛋️", "label": "Hotel nap", "fact": "Would rather rest in the evening", "score": { "easy": 15 } },
-          "right": { "id": "c_gf_go", "emoji": "⛲", "label": "Fountain night", "fact": "Will see the Big Wild Goose Pagoda squares and fountain (free, flat)", "score": { "good": 10 } }
+          "id": "c_goose_flat",
+          "who": "ajie",
+          "say": "The pagoda squares are free and flat. Fountain show at night, free too.",
+          "emoji": "⛲",
+          "if": {
+            "any": [
+              "mobility_low"
+            ]
+          },
+          "left": {
+            "id": "c_gf_skip",
+            "emoji": "🛋️",
+            "label": "Hotel nap",
+            "fact": "Would rather rest in the evening",
+            "score": {
+              "easy": 15
+            }
+          },
+          "right": {
+            "id": "c_gf_go",
+            "emoji": "⛲",
+            "label": "Fountain night",
+            "fact": "Will see the Big Wild Goose Pagoda squares and fountain (free, flat)",
+            "score": {
+              "good": 10
+            }
+          }
         },
         {
-          "id": "c_night", "who": "xiaofang", "say": "Tonight: free neon street, 50,000 people. Or a lake show from ¥199.", "emoji": "🌃",
-          "left": { "id": "c_night_neon", "emoji": "🏮", "label": "Neon party", "fact": "Wants Datang Everbright City at night (free, very crowded)", "score": { "good": 10, "easy": -5 } },
-          "right": { "id": "c_night_show", "emoji": "🎭", "label": "The lake show", "fact": "Wants to see the Song of Everlasting Sorrow at Huaqing Palace (from ¥199; times change with the season)", "set": ["shows"], "price": 30, "score": { "good": 15 } }
+          "id": "c_night",
+          "who": "xiaofang",
+          "say": "Tonight: free neon street, 50,000 people. Or a lake show from ¥199.",
+          "emoji": "🌃",
+          "left": {
+            "id": "c_night_neon",
+            "emoji": "🏮",
+            "label": "Neon party",
+            "fact": "Wants Datang Everbright City at night (free, very crowded)",
+            "score": {
+              "good": 10,
+              "easy": -5
+            }
+          },
+          "right": {
+            "id": "c_night_show",
+            "emoji": "🎭",
+            "label": "The lake show",
+            "fact": "Wants to see the Song of Everlasting Sorrow at Huaqing Palace (from ¥199; times change with the season)",
+            "set": [
+              "shows"
+            ],
+            "price": 30,
+            "score": {
+              "good": 15
+            }
+          }
         }
       ]
     },
@@ -286,12 +1155,33 @@
       "style": "story",
       "title": "About Mount Hua…",
       "emoji": "⛰️",
-      "if": { "any": ["mobility_low", "seniors"] },
+      "if": {
+        "any": [
+          "mobility_low",
+          "seniors"
+        ]
+      },
       "beats": [
-        { "who": "ajie", "say": "Everyone online says Mount Hua. Should we?", "mood": "thinking" },
-        { "who": "wang", "say": "8 to 11 hours of stone stairs. The knees have voted: no.", "mood": "smug" },
-        { "who": "xiaofang", "say": "Skipped for you — I'll note why. We'll add a slow morning instead.", "mood": "happy" },
-        { "who": "ajie", "say": "A slow morning. My favorite mountain.", "mood": "happy" }
+        {
+          "who": "ajie",
+          "say": "Everyone online says Mount Hua. Should we?",
+          "mood": "thinking"
+        },
+        {
+          "who": "wang",
+          "say": "8 to 11 hours of stone stairs. The knees have voted: no.",
+          "mood": "smug"
+        },
+        {
+          "who": "xiaofang",
+          "say": "Skipped for you — I'll note why. We'll add a slow morning instead.",
+          "mood": "happy"
+        },
+        {
+          "who": "ajie",
+          "say": "A slow morning. My favorite mountain.",
+          "mood": "happy"
+        }
       ]
     },
     {
@@ -300,12 +1190,58 @@
       "q": "Mount Hua, tomorrow?",
       "emoji": "⛰️",
       "problem": "A whole day of stairs",
-      "if": { "none": ["mobility_low", "seniors"] },
+      "if": {
+        "none": [
+          "mobility_low",
+          "seniors"
+        ]
+      },
       "options": [
-        { "id": "hua_cable", "emoji": "🚡", "label": "Cable cars", "fact": "Mount Hua day trip: early HSR, West Peak cable car up, North Peak down (entry ¥160 + cable cars and shuttles; about ¥450–530 all-in with trains)", "set": ["hua"], "add": [{ "id": "hua", "emoji": "⛰️", "name": "Mount Hua day", "price": 80, "spec": "HSR, entry, two cable cars + shuttles (estimate)" }], "tip": "Up West Peak, down North Peak", "score": { "good": 25, "easy": -10 } },
-        { "id": "hua_skip", "emoji": "🏙️", "label": "Stay in town", "fact": "Skips Mount Hua and spends the day in Xi'an", "tip": "More noodles, fewer stairs", "score": { "easy": 20 } }
+        {
+          "id": "hua_cable",
+          "emoji": "🚡",
+          "label": "Cable cars",
+          "fact": "Mount Hua day trip: early HSR, West Peak cable car up, North Peak down (entry ¥160 + cable cars and shuttles; about ¥450–530 all-in with trains)",
+          "set": [
+            "hua"
+          ],
+          "add": [
+            {
+              "id": "hua",
+              "emoji": "⛰️",
+              "name": "Mount Hua day",
+              "price": 80,
+              "spec": "HSR, entry, two cable cars + shuttles (estimate)"
+            }
+          ],
+          "tip": "Up West Peak, down North Peak",
+          "score": {
+            "good": 25,
+            "easy": -10
+          }
+        },
+        {
+          "id": "hua_skip",
+          "emoji": "🏙️",
+          "label": "Stay in town",
+          "fact": "Skips Mount Hua and spends the day in Xi'an",
+          "tip": "More noodles, fewer stairs",
+          "score": {
+            "easy": 20
+          }
+        }
       ],
-      "gamble": { "emoji": "🪵", "label": "Plank walk!", "fact": "Wants to try the Changkong plank walk on Mount Hua (harness ~¥30)", "crash_if": ["heights_fear"], "crash": "Jay froze on the plank. 40 minutes.", "loss": 0, "ok": "Terrifying. Glorious. Never again." }
+      "gamble": {
+        "emoji": "🪵",
+        "label": "Plank walk!",
+        "fact": "Wants to try the Changkong plank walk on Mount Hua (harness ~¥30)",
+        "crash_if": [
+          "heights_fear"
+        ],
+        "crash": "Jay froze on the plank. 40 minutes.",
+        "loss": 0,
+        "ok": "Terrifying. Glorious. Never again."
+      }
     },
     {
       "type": "fix",
@@ -313,12 +1249,45 @@
       "q": "Half of China is here!",
       "emoji": "🇨🇳",
       "problem": "National Day crowds",
-      "if": { "any": ["golden"] },
+      "if": {
+        "any": [
+          "golden"
+        ]
+      },
       "options": [
-        { "id": "gw_shift", "emoji": "📆", "label": "Shift dates", "fact": "Will move the trip to late September or after 8 October", "tip": "Same weather, a fraction of the crowd", "score": { "easy": 25, "good": 10 } },
-        { "id": "gw_early", "emoji": "⏰", "label": "Book early", "fact": "Keeps National Day dates; books Terracotta about 10 days ahead and everything else the day it opens", "set": ["wechat"], "tip": "Terracotta sells out first", "score": { "safe": 15, "easy": -10 } }
+        {
+          "id": "gw_shift",
+          "emoji": "📆",
+          "label": "Shift dates",
+          "fact": "Will move the trip to late September or after 8 October",
+          "tip": "Same weather, a fraction of the crowd",
+          "score": {
+            "easy": 25,
+            "good": 10
+          }
+        },
+        {
+          "id": "gw_early",
+          "emoji": "⏰",
+          "label": "Book early",
+          "fact": "Keeps National Day dates; books Terracotta about 10 days ahead and everything else the day it opens",
+          "set": [
+            "wechat"
+          ],
+          "tip": "Terracotta sells out first",
+          "score": {
+            "safe": 15,
+            "easy": -10
+          }
+        }
       ],
-      "gamble": { "label": "It'll be fine", "fact": "Keeps National Day dates with no special planning", "crash_if": "always", "crash": "Terracotta full. 3-hour cable car queue.", "loss": 100 }
+      "gamble": {
+        "label": "It'll be fine",
+        "fact": "Keeps National Day dates with no special planning",
+        "crash_if": "always",
+        "crash": "Terracotta full. 3-hour cable car queue.",
+        "loss": 100
+      }
     },
     {
       "type": "pick",
@@ -326,9 +1295,49 @@
       "q": "Your daily rhythm?",
       "emoji": "🚶",
       "options": [
-        { "id": "pc_slow", "emoji": "🐢", "label": "Slow & cozy", "fact": "Prefers 1–2 things a day with long breaks", "set": ["slow"], "score": { "easy": 15 } },
-        { "id": "pc_full", "emoji": "⚡", "label": "Pack it in", "fact": "Wants to see as much as possible each day", "set": ["fast"], "score": { "good": 10, "easy": -10 } },
-        { "id": "pc_eat", "emoji": "🥢", "label": "Eat-a-thon", "fact": "Wants days built around food, with sights in between", "set": ["foodie"], "add": [{ "id": "food", "emoji": "🍜", "name": "Food crawl", "price": 140, "spec": "Meals plus a guided Muslim Quarter food walk (estimate)" }] }
+        {
+          "id": "pc_slow",
+          "emoji": "🐢",
+          "label": "Slow & cozy",
+          "fact": "Prefers 1–2 things a day with long breaks",
+          "set": [
+            "slow"
+          ],
+          "score": {
+            "easy": 15
+          }
+        },
+        {
+          "id": "pc_full",
+          "emoji": "⚡",
+          "label": "Pack it in",
+          "fact": "Wants to see as much as possible each day",
+          "set": [
+            "fast"
+          ],
+          "score": {
+            "good": 10,
+            "easy": -10
+          }
+        },
+        {
+          "id": "pc_eat",
+          "emoji": "🥢",
+          "label": "Eat-a-thon",
+          "fact": "Wants days built around food, with sights in between",
+          "set": [
+            "foodie"
+          ],
+          "add": [
+            {
+              "id": "food",
+              "emoji": "🍜",
+              "name": "Food crawl",
+              "price": 140,
+              "spec": "Meals plus a guided Muslim Quarter food walk (estimate)"
+            }
+          ]
+        }
       ]
     },
     {
@@ -350,22 +1359,87 @@
       "emoji": "🧭",
       "who": "xiaobei",
       "options": [
-        { "id": "dir_diy", "emoji": "📱", "label": "DIY with apps", "fact": "Plans and books everything themselves", "set": ["dir_diy"], "pros": "Cheapest, flexible", "cons": "You chase every booking" },
-        { "id": "dir_mix", "emoji": "🧩", "label": "DIY + a guide", "fact": "Independent, with a private guide and car for the Terracotta day", "set": ["dir_mix"], "pros": "Easy where it's hard", "cons": "One pricey day" },
-        { "id": "dir_guide", "emoji": "🧑‍🏫", "label": "Guided trip", "fact": "Wants a private guide or driver for most days", "set": ["dir_guide"], "pros": "Zero hassle + stories", "cons": "Costs the most" },
-        { "id": "dir_tour", "emoji": "🚌", "label": "Group tours", "fact": "Prefers group day tours (check they don't include shopping stops)", "set": ["dir_tour"], "pros": "Cheap and easy", "cons": "Shopping stops, rush" }
+        {
+          "id": "dir_diy",
+          "emoji": "📱",
+          "label": "DIY with apps",
+          "fact": "Plans and books everything themselves",
+          "set": [
+            "dir_diy"
+          ],
+          "pros": "Cheapest, flexible",
+          "cons": "You chase every booking"
+        },
+        {
+          "id": "dir_mix",
+          "emoji": "🧩",
+          "label": "DIY + a guide",
+          "fact": "Independent, with a private guide and car for the Terracotta day",
+          "set": [
+            "dir_mix"
+          ],
+          "pros": "Easy where it's hard",
+          "cons": "One pricey day"
+        },
+        {
+          "id": "dir_guide",
+          "emoji": "🧑‍🏫",
+          "label": "Guided trip",
+          "fact": "Wants a private guide or driver for most days",
+          "set": [
+            "dir_guide"
+          ],
+          "pros": "Zero hassle + stories",
+          "cons": "Costs the most"
+        },
+        {
+          "id": "dir_tour",
+          "emoji": "🚌",
+          "label": "Group tours",
+          "fact": "Prefers group day tours (check they don't include shopping stops)",
+          "set": [
+            "dir_tour"
+          ],
+          "pros": "Cheap and easy",
+          "cons": "Shopping stops, rush"
+        }
       ],
       "probe": [
-        { "who": "xiaobei", "say": "Fifteen years guiding here. A few questions, then your pass is full.", "mood": "happy" },
+        {
+          "who": "xiaobei",
+          "say": "Fifteen years guiding here. A few questions, then your pass is full.",
+          "mood": "happy"
+        },
         {
           "id": "p_walk",
           "who": "xiaobei",
           "q": "Wheelchair or stroller needed?",
-          "if": { "any": ["mobility_low", "seniors", "kids"] },
+          "if": {
+            "any": [
+              "mobility_low",
+              "seniors",
+              "kids"
+            ]
+          },
           "options": [
-            { "id": "pw_no", "emoji": "🙂", "label": "No, just breaks", "fact": "Needs regular breaks, no special equipment" },
-            { "id": "pw_wheel", "emoji": "♿", "label": "Wheelchair", "fact": "Needs wheelchair-accessible routes" },
-            { "id": "pw_stroller", "emoji": "👶", "label": "Stroller", "fact": "Bringing a stroller" }
+            {
+              "id": "pw_no",
+              "emoji": "🙂",
+              "label": "No, just breaks",
+              "fact": "Needs regular breaks, no special equipment"
+            },
+            {
+              "id": "pw_wheel",
+              "emoji": "♿",
+              "label": "Wheelchair",
+              "fact": "Needs wheelchair-accessible routes"
+            },
+            {
+              "id": "pw_stroller",
+              "emoji": "👶",
+              "label": "Stroller",
+              "fact": "Bringing a stroller"
+            }
           ]
         },
         {
@@ -373,9 +1447,24 @@
           "who": "xiaobei",
           "q": "Do you know your dates?",
           "options": [
-            { "id": "dt_yes", "emoji": "✅", "label": "Exact dates", "fact": "Has exact travel dates" },
-            { "id": "dt_month", "emoji": "🗓️", "label": "Just the month", "fact": "Knows the month, not the dates" },
-            { "id": "dt_no", "emoji": "🤔", "label": "Not yet", "fact": "No dates yet" }
+            {
+              "id": "dt_yes",
+              "emoji": "✅",
+              "label": "Exact dates",
+              "fact": "Has exact travel dates"
+            },
+            {
+              "id": "dt_month",
+              "emoji": "🗓️",
+              "label": "Just the month",
+              "fact": "Knows the month, not the dates"
+            },
+            {
+              "id": "dt_no",
+              "emoji": "🤔",
+              "label": "Not yet",
+              "fact": "No dates yet"
+            }
           ]
         },
         {
@@ -384,21 +1473,63 @@
           "q": "What would you hate to miss?",
           "free": {
             "placeholder": "e.g. the kneeling archer",
-            "chips": ["The warriors", "Paomo", "Sunset on the wall", "Mount Hua"],
+            "chips": [
+              "The warriors",
+              "Paomo",
+              "Sunset on the wall",
+              "Mount Hua"
+            ],
             "fact": "Would hate to miss: {v}",
-            "reply": [{ "who": "xiaobei", "say": "Then that goes first in your plan.", "mood": "happy" }]
+            "reply": [
+              {
+                "who": "xiaobei",
+                "say": "Then that goes first in your plan.",
+                "mood": "happy"
+              }
+            ]
           }
         },
-        { "who": "xiaofang", "say": "Last stamp: 📜 Ready for the Silk Road. Your pass is full!", "mood": "happy" }
+        {
+          "who": "xiaofang",
+          "say": "Last stamp: 📜 Ready for the Silk Road. Your pass is full!",
+          "mood": "happy"
+        }
       ],
       "bring": [
-        { "id": "b_passport", "emoji": "🛂", "label": "Passport country", "fact": "Passport nationality — to check visa-free entry or 240-hour transit (Xianyang Airport is an eligible port)" },
-        { "id": "b_wechat", "emoji": "💬", "label": "WeChat account", "fact": "A WeChat account: Terracotta Army and Shaanxi History Museum are booked in their official WeChat accounts" },
-        { "id": "b_pay", "emoji": "💳", "label": "Card for Alipay", "fact": "A Visa/Mastercard linked to Alipay or WeChat Pay" },
-        { "id": "b_dates", "emoji": "📅", "label": "Travel dates", "fact": "Exact dates, to book the Terracotta Army 3–7 days ahead (10 for holidays)" },
-        { "id": "b_route", "emoji": "🚄", "label": "Before / after", "fact": "Where they come from and go next (e.g. Beijing, Chengdu), to plan trains" }
+        {
+          "id": "b_passport",
+          "emoji": "🛂",
+          "label": "Passport country",
+          "fact": "Passport nationality — to check visa-free entry or 240-hour transit (Xianyang Airport is an eligible port)"
+        },
+        {
+          "id": "b_wechat",
+          "emoji": "💬",
+          "label": "WeChat account",
+          "fact": "A WeChat account: Terracotta Army and Shaanxi History Museum are booked in their official WeChat accounts"
+        },
+        {
+          "id": "b_pay",
+          "emoji": "💳",
+          "label": "Card for Alipay",
+          "fact": "A Visa/Mastercard linked to Alipay or WeChat Pay"
+        },
+        {
+          "id": "b_dates",
+          "emoji": "📅",
+          "label": "Travel dates",
+          "fact": "Exact dates, to book the Terracotta Army 3–7 days ahead (10 for holidays)"
+        },
+        {
+          "id": "b_route",
+          "emoji": "🚄",
+          "label": "Before / after",
+          "fact": "Where they come from and go next (e.g. Beijing, Chengdu), to plan trains"
+        }
       ]
     }
   ],
-  "secret": "Bus 306 to the warriors now leaves from Xi'an East Station. 'Official' buses elsewhere are touts."
+  "secret": "Bus 306 to the warriors now leaves from Xi'an East Station. 'Official' buses elsewhere are touts.",
+  "curated": true,
+  "city": "xian"
 }

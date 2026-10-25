@@ -63,12 +63,12 @@ export function Finale({ round }: { round: BossRound }) {
   };
   const afterPick = () => (hasProbe ? go('probe') : round.bring.length ? go('bring') : finish());
   const afterProbe = () => (round.bring.length ? go('bring') : finish());
-  const finish = () => {
+  const finish = (packed: Record<string, Material['state']> = bring) => {
     if (sent) return;
     setSent(true);
     setStep('done');
     playMusic('home');
-    setTimeout(() => g.finale(round, { option: own !== null ? '' : picked!, own: own ?? undefined, replies, bring, read, clash }), 1900);
+    setTimeout(() => g.finale(round, { option: own !== null ? '' : picked!, own: own ?? undefined, replies, bring: packed, read, clash }), 1900);
   };
 
   return (
@@ -322,38 +322,45 @@ export function Finale({ round }: { round: BossRound }) {
                 </div>
                 <div className="text-[15px] font-black text-slate-600">{t('finaleBring')}</div>
               </div>
-              <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pb-2">
-                {round.bring.map((b, i) => (
-                  <motion.div key={b.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }} className="rounded-3xl border-2 border-slate-200 bg-white p-2.5">
-                    <div className="flex items-center gap-2">
-                      <Emoji e={b.emoji} size={32} />
-                      <span className="text-base font-black text-slate-700">{b.label}</span>
-                    </div>
-                    <div className="mt-2 grid grid-cols-3 gap-1.5">
-                      {(
-                        [
-                          ['have', '✅', t('finaleHave'), 'border-emerald-400 bg-emerald-50 text-emerald-700'],
-                          ['no', '❌', t('finaleNo'), 'border-rose-300 bg-rose-50 text-rose-600'],
-                          ['unsure', '🤷', t('finaleUnsure'), 'border-amber-300 bg-amber-50 text-amber-700'],
-                        ] as const
-                      ).map(([st, e, label, on]) => (
-                        <button
-                          key={st}
-                          onClick={() => {
-                            sfx.tap();
-                            setBring((x) => ({ ...x, [b.id]: st }));
-                          }}
-                          className={`rounded-xl border-2 border-b-4 py-1.5 text-sm font-black ${bring[b.id] === st ? on : 'border-slate-200 bg-white text-slate-400'}`}
-                        >
-                          {e} {label}
-                        </button>
-                      ))}
-                    </div>
-                  </motion.div>
-                ))}
+              {/* 收拾行李：已经有的点一下放进箱子，没放进去的就是还要准备的 */}
+              <div className="mb-2 flex items-center justify-center gap-2">
+                <motion.div key={round.bring.filter((b) => bring[b.id] === 'have').length} animate={{ scale: [1, 1.18, 1], rotate: [0, -6, 6, 0] }} transition={{ duration: 0.35 }}>
+                  <Emoji e="🧳" size={56} />
+                </motion.div>
+                <div className="text-sm font-black text-slate-500">{t('packHint')}</div>
               </div>
-              <Btn disabled={round.bring.some((b) => !bring[b.id])} onClick={finish}>
-                {t('confirm')}
+              <div className="grid min-h-0 flex-1 grid-cols-2 content-start gap-2 overflow-y-auto pb-2">
+                {round.bring.map((b, i) => {
+                  const packed = bring[b.id] === 'have';
+                  return (
+                    <motion.button
+                      key={b.id}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0, scale: packed ? 0.96 : 1 }}
+                      transition={{ delay: i * 0.06 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => {
+                        sfx.tap();
+                        setBring((x) => ({ ...x, [b.id]: packed ? 'no' : 'have' }));
+                      }}
+                      className={`relative flex flex-col items-center gap-1 rounded-3xl border-2 border-b-4 p-3 ${packed ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 bg-white'}`}
+                    >
+                      <Emoji e={b.emoji} size={36} />
+                      <span className={`text-center text-sm font-black leading-tight ${packed ? 'text-emerald-700' : 'text-slate-600'}`}>{b.label}</span>
+                      {packed && <span className="absolute right-2 top-2 text-sm">✅</span>}
+                    </motion.button>
+                  );
+                })}
+              </div>
+              <Btn
+                onClick={() => {
+                  // 没放进箱子的 = 还没有，交给 AI 时提醒去准备
+                  const packed = Object.fromEntries(round.bring.map((b) => [b.id, bring[b.id] === 'have' ? 'have' : 'no'] as const));
+                  setBring(packed);
+                  finish(packed);
+                }}
+              >
+                {round.bring.every((b) => bring[b.id] === 'have') ? t('packAll') : t('packDone', { n: round.bring.filter((b) => bring[b.id] !== 'have').length })}
               </Btn>
             </motion.div>
           )}

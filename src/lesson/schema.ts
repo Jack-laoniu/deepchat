@@ -420,6 +420,10 @@ export const LessonShape = z.object({
     }),
     rounds: z.array(Round).min(3).max(16),
     secret: upto(60).optional(),
+    /** 我们手写、审过的标杆关：终章不再让模型重写 */
+    curated: z.boolean().optional(),
+    /** 旅游关的城市 id（对应 src/travel/cities），结算页按它给预订入口 */
+    city: id.optional(),
 });
 
 export const Lesson = LessonShape.superRefine((l, ctx) => {
