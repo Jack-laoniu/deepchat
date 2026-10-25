@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { playMusic } from '../fx/music';
 import { useGame } from '../game';
-import { SAMPLES } from '../lessons';
+import { SHOWCASE } from '../lessons';
 import { generatorPrompt } from '../lesson/prompt';
 import { parseLesson, type Lesson } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
@@ -46,7 +46,7 @@ export function Home() {
   const abort = useRef<AbortController | null>(null);
   // 只展示和界面同一种语言的示例
   const samples = useMemo(
-    () => SAMPLES.map((s) => parseLesson(s)).flatMap((r) => (r.ok && r.lesson.lang === lang ? [r.lesson] : [])),
+    () => SHOWCASE.map((s) => parseLesson(s)).flatMap((r) => (r.ok && r.lesson.lang === lang ? [r.lesson] : [])),
     [lang],
   );
 

@@ -1,0 +1,1249 @@
+{
+  "v": 1,
+  "id": "xian",
+  "name": {
+    "en": "Xi'an",
+    "zh": "西安"
+  },
+  "checked": "2026-10-25",
+  "summary": "Ancient capital of 13 dynasties and start of the Silk Road. First-timers come for the Terracotta Army, the Ming city wall and the Muslim Quarter food lanes; Mount Hua is the big day trip. About 4–4.5 h by high-speed train from Beijing.",
+  "sources": [
+    {
+      "id": "s_cdisc_tw_tix",
+      "title": "China Discovery: How to Buy Terracotta Warriors Tickets 2026/2027",
+      "url": "https://www.chinadiscovery.com/shaanxi/xian/terracotta-warriors/terracotta-warriors-tickets.html",
+      "kind": "guide"
+    },
+    {
+      "id": "s_cxt_tw_tix",
+      "title": "China Xian Tour: Terracotta Warriors ticket purchasing 2026",
+      "url": "https://www.chinaxiantour.com/xian-travel-blog/new-ticket-purchasing-policy-of-terracotta-warriors-and-horses.html",
+      "kind": "guide"
+    },
+    {
+      "id": "s_ctd_tw",
+      "title": "China Travel Decider: Terracotta Army Tickets in 2026",
+      "url": "https://chinatraveldecider.com/essentials/terracotta-army-tickets/",
+      "kind": "blog"
+    },
+    {
+      "id": "s_trip_tw",
+      "title": "Trip.com: Terracotta Army tickets & opening times",
+      "url": "https://uk.trip.com/guide/attraction/terracotta-army-tickets.html",
+      "kind": "ota"
+    },
+    {
+      "id": "s_cdisc_scams",
+      "title": "China Discovery: Common Scams in Xi'an",
+      "url": "https://www.chinadiscovery.com/shaanxi/xian/scams.html",
+      "kind": "guide"
+    },
+    {
+      "id": "s_sino_tw_diy",
+      "title": "SinoTales: Terracotta Warriors DIY — tickets, route & scam guide",
+      "url": "https://sinotales.com/resources/transport/terracotta-warriors-diy-guide-tickets-scams/",
+      "kind": "blog"
+    },
+    {
+      "id": "s_wic_tw",
+      "title": "Wander in China: Terracotta Warriors transport guide 2026",
+      "url": "https://www.wanderinchina.com/destinations/xian/terracotta-warriors/transport/",
+      "kind": "blog"
+    },
+    {
+      "id": "s_cdisc_shm",
+      "title": "China Discovery: Shaanxi History Museum",
+      "url": "https://www.chinadiscovery.com/shaanxi/xian/shaanxi-history-museum.html",
+      "kind": "guide"
+    },
+    {
+      "id": "s_tc_shm",
+      "title": "TripChina: Shaanxi History Museum booking guide 2026",
+      "url": "https://tripchina.me/shaanxi-history-museum-booking-guide/",
+      "kind": "blog"
+    },
+    {
+      "id": "s_vx_shm",
+      "title": "VisitXian: Shaanxi History Museum",
+      "url": "https://www.visitxian.cn/en/attractions/shaanxi-history-museum",
+      "kind": "blog"
+    },
+    {
+      "id": "s_tcg_wall",
+      "title": "Top China Travel: Xi'an City Wall",
+      "url": "https://www.topchinatravel.com/china-attractions/xiancitywall.htm",
+      "kind": "guide"
+    },
+    {
+      "id": "s_cxt_wall",
+      "title": "China Xian Tour: Riding a bike on the City Wall",
+      "url": "https://www.chinaxiantour.com/xian-travel-guide/things-to-do-in-xian/riding-a-bike-on-city-wall-top.html",
+      "kind": "guide"
+    },
+    {
+      "id": "s_xct_wall",
+      "title": "Xi'an City Travel: City Wall guide",
+      "url": "https://xiancitytravel.com/city-wall.html",
+      "kind": "blog"
+    },
+    {
+      "id": "s_vx_goose",
+      "title": "VisitXian: Big Wild Goose Pagoda",
+      "url": "https://visitxian.cn/en/places/big-wild-goose-pagoda",
+      "kind": "blog"
+    },
+    {
+      "id": "s_wic_goose",
+      "title": "Wander in China: Giant Wild Goose Pagoda & fountain",
+      "url": "https://www.wanderinchina.com/destinations/xian/giant-wild-goose-pagoda/",
+      "kind": "blog"
+    },
+    {
+      "id": "s_trip_dtbyc",
+      "title": "Trip.com Moments: Datang Everbright City schedule",
+      "url": "https://us.trip.com/moments/detail/xi-an-7-144119683",
+      "kind": "ota"
+    },
+    {
+      "id": "s_vx_halal",
+      "title": "VisitXian: Halal food in Xi'an",
+      "url": "https://visitxian.cn/en/guides/halal",
+      "kind": "blog"
+    },
+    {
+      "id": "s_sino_food",
+      "title": "SinoTales: Xi'an Muslim Quarter food guide 2026",
+      "url": "https://sinotales.com/interests/food-drink/xian-muslim-quarter-food-guide/",
+      "kind": "blog"
+    },
+    {
+      "id": "s_cxt_halal",
+      "title": "China Xian Tour: Halal restaurants in Xi'an",
+      "url": "https://www.chinaxiantour.com/xian-travel-guide/halal-restaurants",
+      "kind": "guide"
+    },
+    {
+      "id": "s_cft_huashan",
+      "title": "China for Travelers: Hua Shan day trip from Xi'an 2026",
+      "url": "https://chinafortravelers.com/guides/hua-shan-day-trip-from-xian/",
+      "kind": "blog"
+    },
+    {
+      "id": "s_sino_huashan",
+      "title": "SinoTales: Mount Huashan day trip guide 2026",
+      "url": "https://sinotales.com/interests/nature-hiking/mount-huashan-day-trip-guide-2026/",
+      "kind": "blog"
+    },
+    {
+      "id": "s_mcg_huashan",
+      "title": "MyChina.guide: Hua Shan guide",
+      "url": "https://mychina.guide/blog/huashan-mountain-guide-xian-plank-walk",
+      "kind": "blog"
+    },
+    {
+      "id": "s_hq_tix",
+      "title": "Huaqing Palace official site: tickets",
+      "url": "https://www.hqpalaceglobal.com/en/tickets",
+      "kind": "official"
+    },
+    {
+      "id": "s_vx_show",
+      "title": "VisitXian: Song of Everlasting Sorrow",
+      "url": "https://visitxian.cn/en/places/song-of-everlasting-sorrow",
+      "kind": "blog"
+    },
+    {
+      "id": "s_tcg_show",
+      "title": "Travel China Guide: Song of Everlasting Sorrow booking",
+      "url": "https://www.travelchinaguide.com/song-of-everlasting-sorrow-show-booking.htm",
+      "kind": "guide"
+    },
+    {
+      "id": "s_cdisc_mosque",
+      "title": "China Discovery: Great Mosque of Xi'an",
+      "url": "https://www.chinadiscovery.com/shaanxi/xian/great-mosque.html",
+      "kind": "guide"
+    },
+    {
+      "id": "s_cdisc_bell",
+      "title": "China Discovery: Xi'an Bell Tower",
+      "url": "https://www.chinadiscovery.com/shaanxi/xian/bell-tower.html",
+      "kind": "guide"
+    },
+    {
+      "id": "s_cxt_bell",
+      "title": "China Xian Tour: Bell and Drum Tower Square",
+      "url": "https://www.chinaxiantour.com/xian-travel-guide/xian-attractions/the-bell-and-drum-tower.html",
+      "kind": "guide"
+    },
+    {
+      "id": "s_cft_airport",
+      "title": "China for Travelers: Xi'an Xianyang Airport guide 2026",
+      "url": "https://chinafortravelers.com/guides/xian-xianyang-airport-guide/",
+      "kind": "blog"
+    },
+    {
+      "id": "s_trip_airport",
+      "title": "Trip.com: Xianyang Airport to Bell Tower",
+      "url": "https://www.trip.com/transport/airport-poi/xi'an-xianyang-international-airport-to-xi'an-bell-tower.html",
+      "kind": "ota"
+    },
+    {
+      "id": "s_cft_north",
+      "title": "China for Travelers: Xi'an North Railway Station 2026",
+      "url": "https://chinafortravelers.com/guides/xian-north-railway-station/",
+      "kind": "blog"
+    },
+    {
+      "id": "s_wiki_l14",
+      "title": "Wikipedia: Line 14 (Xi'an Metro)",
+      "url": "https://en.wikipedia.org/wiki/Line_14_(Xi%27an_Metro)",
+      "kind": "guide"
+    },
+    {
+      "id": "s_ct_240",
+      "title": "ChinaTravel: 240-hour visa-free transit 2026",
+      "url": "https://www.chinatravel.com/guide/visa/240-hour-visa-free-in-china",
+      "kind": "guide"
+    },
+    {
+      "id": "s_wh_240",
+      "title": "Windhorse Tour: China 240-hour visa-free transit (2026 update)",
+      "url": "https://windhorsetour.com/china-travel-tips/china-visa-free-transit-240-hours-expansion",
+      "kind": "guide"
+    },
+    {
+      "id": "s_cxt_oct",
+      "title": "China Xian Tour: Xi'an weather in October & Golden Week",
+      "url": "https://www.chinaxiantour.com/xian-travel-guide/weather-october.html",
+      "kind": "guide"
+    },
+    {
+      "id": "s_tcg_oct",
+      "title": "Travel China Guide: Xi'an weather in October",
+      "url": "https://www.travelchinaguide.com/cityguides/xian/weather-october.htm",
+      "kind": "guide"
+    },
+    {
+      "id": "s_trip_gw",
+      "title": "Trip.com: China Golden Week 2026",
+      "url": "https://www.trip.com/guide/events/golden-week-china.html",
+      "kind": "ota"
+    },
+    {
+      "id": "s_trip_best",
+      "title": "Trip.com: Best time to visit Xi'an",
+      "url": "https://sg.trip.com/guide/info/best-time-to-visit-xi-an.html",
+      "kind": "ota"
+    }
+  ],
+  "entry": [
+    {
+      "id": "e_beijing_hsr",
+      "route": "Beijing West → Xi'an North",
+      "mode": "High-speed train",
+      "time": "about 4 h 10 min – 4 h 30 min",
+      "cost": "2nd class roughly US$75 (check 12306)",
+      "note": "Xi'an North is about 12 km north of the old city; Metro Line 2 to Bell Tower about 27 min.",
+      "conf": "medium",
+      "src": [
+        "s_cft_north"
+      ],
+      "verify": "Current fares and fastest trains on 12306 / Trip.com."
+    },
+    {
+      "id": "e_airport_metro",
+      "route": "Xianyang Airport (XIY) → Bell Tower",
+      "mode": "Metro Line 14 → Line 2 (change at Xi'an North)",
+      "time": "about 55–90 min",
+      "cost": "about ¥8–9",
+      "note": "Airport to Xi'an North alone is about 35–40 min.",
+      "conf": "medium",
+      "src": [
+        "s_cft_airport",
+        "s_trip_airport",
+        "s_wiki_l14"
+      ]
+    },
+    {
+      "id": "e_airport_tw_bus",
+      "route": "Xianyang Airport → Terracotta Army",
+      "mode": "Airport bus",
+      "time": "runs 09:30–21:00",
+      "cost": "¥45",
+      "conf": "low",
+      "src": [
+        "s_cdisc_tw_tix"
+      ],
+      "verify": "Single source; confirm the route still runs."
+    },
+    {
+      "id": "e_240h",
+      "route": "Fly into Xianyang Airport on 240-hour visa-free transit",
+      "mode": "Visa",
+      "time": "up to 240 h (10 days)",
+      "cost": "free",
+      "note": "XIY is an eligible port; the permitted area is Shaanxi Province. Requires an onward ticket to a THIRD country/region; clock starts 00:00 the day after entry; eligible nationalities list changes.",
+      "conf": "medium",
+      "src": [
+        "s_ct_240",
+        "s_wh_240"
+      ],
+      "verify": "Nationality list and whether travel beyond Shaanxi is allowed on the traveler's route — National Immigration Administration."
+    }
+  ],
+  "get_around": [
+    {
+      "id": "g_tw_metro",
+      "route": "City → Terracotta Army",
+      "mode": "Metro Line 9 to Huaqingchi, then a short bus",
+      "time": "about 1–1.5 h",
+      "cost": "a few yuan",
+      "note": "The 'last mile' from the metro to the gates confuses people.",
+      "conf": "medium",
+      "src": [
+        "s_wic_tw",
+        "s_sino_tw_diy"
+      ],
+      "verify": "Which bus connects Huaqingchi to the museum gate."
+    },
+    {
+      "id": "g_tw_bus306",
+      "route": "Xi'an Railway Station → Terracotta Army",
+      "mode": "Public bus 306 (Tourism Line 5)",
+      "time": "about 1–1.5 h",
+      "cost": "¥7–8, pay on the bus",
+      "note": "Plain public bus. Uniformed touts nearby steer people to private minibuses.",
+      "conf": "medium",
+      "src": [
+        "s_sino_tw_diy",
+        "s_cdisc_scams"
+      ],
+      "verify": "Exact departure point (East Square vs nearby terminal) and fare."
+    },
+    {
+      "id": "g_tw_ridehail",
+      "route": "City → Terracotta Army",
+      "mode": "Didi / taxi",
+      "time": "about 1 h",
+      "cost": "¥120–180 one way",
+      "note": "Navigate to the North Gate (北门).",
+      "conf": "medium",
+      "src": [
+        "s_sino_tw_diy",
+        "s_cdisc_tw_tix"
+      ]
+    },
+    {
+      "id": "g_huashan_hsr",
+      "route": "Xi'an North → Huashan North",
+      "mode": "High-speed train",
+      "time": "30–50 min",
+      "cost": "¥54–65",
+      "note": "Then taxi (~¥40) or free bus to the tourist center.",
+      "conf": "medium",
+      "src": [
+        "s_cft_huashan",
+        "s_sino_huashan"
+      ]
+    }
+  ],
+  "areas": [
+    {
+      "id": "a_bell",
+      "name": {
+        "en": "Inside the walls, near the Bell Tower",
+        "zh": "城墙内 · 钟楼附近"
+      },
+      "vibe": "Central and walkable: Muslim Quarter, City Wall and Bell/Drum Towers on foot; Metro Line 2.",
+      "good_for": [
+        "first_timer",
+        "food",
+        "night"
+      ],
+      "cons": "Busy and noisy in the evening.",
+      "conf": "low",
+      "src": [
+        "s_trip_gw"
+      ],
+      "verify": "Neighborhood advice is general knowledge; add a dedicated lodging source."
+    },
+    {
+      "id": "a_qujiang",
+      "name": {
+        "en": "Qujiang / Big Wild Goose Pagoda",
+        "zh": "曲江 · 大雁塔"
+      },
+      "vibe": "Newer district with the pagoda, Datang Everbright City night street and big hotels.",
+      "good_for": [
+        "night",
+        "photo",
+        "kids"
+      ],
+      "cons": "Farther from the old city and the Terracotta route.",
+      "conf": "low",
+      "src": [
+        "s_trip_gw"
+      ],
+      "verify": "Needs a lodging-specific source."
+    },
+    {
+      "id": "a_north",
+      "name": {
+        "en": "Near Xi'an North Station",
+        "zh": "北客站附近"
+      },
+      "vibe": "Only for very early trains (e.g. Huashan, onward HSR).",
+      "good_for": [
+        "active"
+      ],
+      "cons": "Far from everything else (about 12 km to the center).",
+      "conf": "low",
+      "src": [
+        "s_cft_north"
+      ]
+    }
+  ],
+  "sights": [
+    {
+      "id": "terracotta",
+      "name": {
+        "en": "Terracotta Army",
+        "zh": "秦始皇帝陵博物院（兵马俑）"
+      },
+      "kind": "site",
+      "area": "Lintong, about 40 km east",
+      "hook": "8,000 clay soldiers, every face different, guarding an emperor for 2,200 years.",
+      "hours": "Opens 08:30; last check 17:00 (16 Mar–15 Nov) / 16:30 (16 Nov–15 Mar)",
+      "ticket": {
+        "cny": 120,
+        "note": "Covers the pits and Lishan Garden (the mausoleum). Students ¥60. One OTA lists ~¥100 in low season."
+      },
+      "booking": {
+        "required": true,
+        "how": "Real-name online booking with passport: bmy.com.cn or the museum's official WeChat accounts.",
+        "ahead": "Book days ahead; holidays sell out first."
+      },
+      "hours_needed": [
+        3,
+        4
+      ],
+      "crowd": 5,
+      "effort": 2,
+      "best_time": "At opening, or mid-afternoon after tour groups leave.",
+      "getting_there": "Metro Line 9 + bus, bus 306 from Xi'an Railway Station, or Didi (¥120–180). Can combine with Huaqing Palace.",
+      "good_for": [
+        "history",
+        "first_timer",
+        "photo"
+      ],
+      "skip_if": [],
+      "pitfalls": [
+        "pf_tw_booking",
+        "pf_fake_tickets",
+        "pf_tw_touts",
+        "pf_golden_week"
+      ],
+      "conf": "high",
+      "src": [
+        "s_cdisc_tw_tix",
+        "s_cxt_tw_tix",
+        "s_ctd_tw",
+        "s_trip_tw"
+      ],
+      "verify": "Whether on-site same-day tickets still exist (sources disagree); low-season price."
+    },
+    {
+      "id": "shaanxi_museum",
+      "name": {
+        "en": "Shaanxi History Museum",
+        "zh": "陕西历史博物馆"
+      },
+      "kind": "museum",
+      "area": "South of the old city, near Big Wild Goose Pagoda",
+      "hook": "China's best Tang-dynasty treasures — gold, glazed horses, and real tomb murals.",
+      "hours": "Daytime; check official schedule",
+      "ticket": {
+        "cny": null,
+        "note": "Main exhibition free. Tang Murals hall separate, reported ¥270."
+      },
+      "booking": {
+        "required": true,
+        "how": "Real-name booking with passport via the official WeChat account; bring the same passport.",
+        "ahead": "Release schedule reported as 5 days ahead at 17:00 (other sources say 7 or 3 days); tickets go in minutes."
+      },
+      "hours_needed": [
+        2,
+        3
+      ],
+      "crowd": 5,
+      "effort": 1,
+      "good_for": [
+        "history"
+      ],
+      "skip_if": [],
+      "pitfalls": [
+        "pf_shm_booking"
+      ],
+      "conf": "medium",
+      "src": [
+        "s_cdisc_shm",
+        "s_tc_shm",
+        "s_vx_shm"
+      ],
+      "verify": "Release time, weekly closing day (not confirmed by sources), mural hall price."
+    },
+    {
+      "id": "city_wall",
+      "name": {
+        "en": "Xi'an City Wall",
+        "zh": "西安城墙"
+      },
+      "kind": "wall",
+      "area": "Around the old city; main entrance South Gate (永宁门)",
+      "hook": "The most complete ancient city wall in China — 14 km, and you can cycle the whole loop.",
+      "hours": "About 08:00–22:00 in summer; closes earlier in winter (18:00–20:00 reported)",
+      "ticket": {
+        "cny": 54,
+        "note": "Students ¥27; children under 1.2 m free."
+      },
+      "booking": {
+        "required": false
+      },
+      "hours_needed": [
+        1.5,
+        3
+      ],
+      "crowd": 3,
+      "effort": 3,
+      "best_time": "Late afternoon into sunset; lit up at night.",
+      "getting_there": "South Gate is a short walk/metro from the Bell Tower.",
+      "good_for": [
+        "active",
+        "photo",
+        "night",
+        "first_timer"
+      ],
+      "skip_if": [],
+      "pitfalls": [
+        "pf_bike_rules"
+      ],
+      "conf": "medium",
+      "src": [
+        "s_tcg_wall",
+        "s_cxt_wall",
+        "s_xct_wall"
+      ],
+      "verify": "Winter closing time; bike rental hours, deposit and age limits."
+    },
+    {
+      "id": "bell_drum",
+      "name": {
+        "en": "Bell & Drum Towers",
+        "zh": "钟鼓楼"
+      },
+      "kind": "site",
+      "area": "Center of the old city",
+      "hook": "The city's ancient alarm clock — bell at dawn, drums at dusk, and live drum shows.",
+      "hours": "Apr–10 Oct 08:30–21:30; 11 Oct–Mar 08:30–18:00",
+      "ticket": {
+        "cny": 50,
+        "note": "Combo for both towers; ¥30 each separately."
+      },
+      "booking": {
+        "required": false
+      },
+      "hours_needed": [
+        1,
+        1.5
+      ],
+      "crowd": 3,
+      "effort": 2,
+      "good_for": [
+        "history",
+        "photo",
+        "night",
+        "first_timer"
+      ],
+      "skip_if": [],
+      "pitfalls": [],
+      "conf": "medium",
+      "src": [
+        "s_cdisc_bell",
+        "s_cxt_bell"
+      ]
+    },
+    {
+      "id": "muslim_quarter",
+      "name": {
+        "en": "Muslim Quarter",
+        "zh": "回民街"
+      },
+      "kind": "street",
+      "area": "Behind the Drum Tower",
+      "hook": "Smoke, lamb skewers and hand-pulled noodles — Xi'an's food heart, all halal.",
+      "hours": "Lanes busy from late morning to late night",
+      "ticket": {
+        "cny": null
+      },
+      "booking": {
+        "required": false
+      },
+      "hours_needed": [
+        1.5,
+        3
+      ],
+      "crowd": 5,
+      "effort": 1,
+      "best_time": "Evening for atmosphere; side lanes for better food.",
+      "good_for": [
+        "food",
+        "night",
+        "halal",
+        "first_timer"
+      ],
+      "skip_if": [],
+      "pitfalls": [
+        "pf_beiyuanmen",
+        "pf_halal_outside"
+      ],
+      "conf": "high",
+      "src": [
+        "s_vx_halal",
+        "s_sino_food",
+        "s_cxt_halal"
+      ]
+    },
+    {
+      "id": "great_mosque",
+      "name": {
+        "en": "Great Mosque of Xi'an",
+        "zh": "化觉巷清真大寺"
+      },
+      "kind": "temple",
+      "area": "Inside the Muslim Quarter",
+      "hook": "A mosque that looks like a Chinese temple — courtyards, pavilions, no domes.",
+      "hours": "Daytime",
+      "ticket": {
+        "cny": 25,
+        "note": "¥25 Mar–Nov, ¥15 Dec–Feb; Muslims free."
+      },
+      "booking": {
+        "required": false
+      },
+      "hours_needed": [
+        0.5,
+        1
+      ],
+      "crowd": 2,
+      "effort": 1,
+      "good_for": [
+        "history",
+        "photo",
+        "crowd_averse"
+      ],
+      "skip_if": [],
+      "pitfalls": [],
+      "conf": "medium",
+      "src": [
+        "s_cdisc_mosque"
+      ],
+      "verify": "Opening hours and visitor dress rules."
+    },
+    {
+      "id": "big_goose",
+      "name": {
+        "en": "Big Wild Goose Pagoda",
+        "zh": "大雁塔 · 大慈恩寺"
+      },
+      "kind": "temple",
+      "area": "Qujiang",
+      "hook": "Built for the monk who walked to India and back — the real Journey to the West.",
+      "hours": "About 08:30–18:00 (tickets until 17:00)",
+      "ticket": {
+        "cny": 10,
+        "note": "Temple entry reported ¥10 (VisitXian) or ¥50 (other guides); climbing the pagoda +¥25–30, bought inside."
+      },
+      "booking": {
+        "required": true,
+        "how": "Real-name; WeChat mini program 大慈恩寺 or Xi'an tourism portal; passport at counters."
+      },
+      "hours_needed": [
+        1.5,
+        2
+      ],
+      "crowd": 4,
+      "effort": 2,
+      "best_time": "Late afternoon, then stay for the fountain and Datang Everbright City.",
+      "good_for": [
+        "history",
+        "photo"
+      ],
+      "skip_if": [],
+      "pitfalls": [
+        "pf_fountain"
+      ],
+      "conf": "medium",
+      "src": [
+        "s_vx_goose",
+        "s_wic_goose"
+      ],
+      "verify": "Temple ticket price (¥10 vs ¥50) and whether booking is mandatory."
+    },
+    {
+      "id": "datang_everbright",
+      "name": {
+        "en": "Datang Everbright City",
+        "zh": "大唐不夜城"
+      },
+      "kind": "night",
+      "area": "Qujiang, south of Big Wild Goose Pagoda",
+      "hook": "A neon Tang-dynasty street party — costumed performers, lanterns, and a lot of people.",
+      "hours": "Lights from about 19:00",
+      "ticket": {
+        "cny": null,
+        "note": "Free to walk."
+      },
+      "booking": {
+        "required": false
+      },
+      "hours_needed": [
+        1.5,
+        2.5
+      ],
+      "crowd": 5,
+      "effort": 2,
+      "good_for": [
+        "night",
+        "photo",
+        "shows",
+        "kids"
+      ],
+      "skip_if": [
+        "crowd_averse"
+      ],
+      "pitfalls": [
+        "pf_golden_week"
+      ],
+      "conf": "medium",
+      "src": [
+        "s_trip_dtbyc",
+        "s_wic_goose"
+      ]
+    },
+    {
+      "id": "everlasting_sorrow",
+      "name": {
+        "en": "Song of Everlasting Sorrow (Huaqing Palace)",
+        "zh": "长恨歌（华清宫）"
+      },
+      "kind": "show",
+      "area": "Huaqing Palace, Lintong — near the Terracotta Army",
+      "hook": "An emperor's love story staged on a real lake with a mountain as the backdrop.",
+      "hours": "Evening shows; several sessions a night in season",
+      "ticket": {
+        "cny": 199,
+        "note": "About ¥199–988 by seat zone."
+      },
+      "booking": {
+        "required": true,
+        "how": "Real-name, passport.",
+        "ahead": "Several days ahead in peak season."
+      },
+      "hours_needed": [
+        1.5,
+        2
+      ],
+      "crowd": 4,
+      "effort": 1,
+      "best_time": "Same day as the Terracotta Army.",
+      "good_for": [
+        "shows",
+        "night",
+        "seniors"
+      ],
+      "skip_if": [],
+      "pitfalls": [
+        "pf_show_season"
+      ],
+      "conf": "medium",
+      "src": [
+        "s_hq_tix",
+        "s_vx_show",
+        "s_tcg_show"
+      ],
+      "verify": "Session times (three different schedules reported) and the winter edition / December pause."
+    },
+    {
+      "id": "huashan",
+      "name": {
+        "en": "Mount Hua (day trip)",
+        "zh": "华山"
+      },
+      "kind": "daytrip",
+      "area": "About 120 km east; 30–50 min by high-speed train",
+      "hook": "Granite cliffs, stairs carved into rock, and the famous plank walk for the brave.",
+      "hours": "Full day",
+      "ticket": {
+        "cny": 160,
+        "note": "¥160 Mar–Nov, ¥100 Dec–Feb. Mandatory shuttle ~¥40 each way; West Peak cable car ¥140 one way, North Peak ¥80 one way; plank walk harness ~¥30. All-in about ¥450–530."
+      },
+      "booking": {
+        "required": false,
+        "how": "Book train early; cable car queues on holidays."
+      },
+      "hours_needed": [
+        8,
+        11
+      ],
+      "crowd": 4,
+      "effort": 5,
+      "best_time": "Apr–May or Sep–Oct; avoid Jul–Aug fog and holidays.",
+      "getting_there": "HSR Xi'an North → Huashan North, then taxi or free bus to the tourist center.",
+      "good_for": [
+        "nature",
+        "active",
+        "adventurous",
+        "photo"
+      ],
+      "skip_if": [
+        "mobility_low",
+        "heights_fear"
+      ],
+      "pitfalls": [
+        "pf_huashan_daytrip",
+        "pf_golden_week"
+      ],
+      "conf": "medium",
+      "src": [
+        "s_cft_huashan",
+        "s_sino_huashan",
+        "s_mcg_huashan"
+      ],
+      "verify": "Cable car prices (sources differ) and whether booking is required."
+    }
+  ],
+  "foods": [
+    {
+      "id": "f_paomo",
+      "name": {
+        "en": "Yangrou paomo (lamb soup with torn bread)",
+        "zh": "羊肉泡馍"
+      },
+      "what": "You tear flatbread into tiny pieces, they pour rich lamb broth over it.",
+      "price_cny": [
+        25,
+        40
+      ],
+      "spicy": 0,
+      "halal": true,
+      "veg": false,
+      "where": "Muslim Quarter side lanes; famous names ¥40–60",
+      "tip": "Tearing the bread small is part of the ritual — the smaller, the better it soaks.",
+      "conf": "medium",
+      "src": [
+        "s_sino_food",
+        "s_vx_halal"
+      ]
+    },
+    {
+      "id": "f_roujiamo",
+      "name": {
+        "en": "Roujiamo (Chinese 'burger')",
+        "zh": "肉夹馍"
+      },
+      "what": "Chopped braised meat in a crisp flatbread.",
+      "price_cny": [
+        8,
+        15
+      ],
+      "spicy": 0,
+      "halal": true,
+      "veg": false,
+      "where": "Everywhere; in the Muslim Quarter it's beef or lamb",
+      "tip": "Outside the Quarter it's often pork.",
+      "conf": "medium",
+      "src": [
+        "s_sino_food",
+        "s_vx_halal"
+      ]
+    },
+    {
+      "id": "f_biangbiang",
+      "name": {
+        "en": "Biangbiang noodles",
+        "zh": "biangbiang 面"
+      },
+      "what": "Belt-wide hand-pulled noodles with chili oil; the character has 58 strokes.",
+      "price_cny": [
+        12,
+        20
+      ],
+      "spicy": 2,
+      "halal": false,
+      "veg": true,
+      "where": "Noodle shops citywide",
+      "tip": "Ask for less chili (少辣) if needed; vegetarian versions exist but check the toppings.",
+      "conf": "medium",
+      "src": [
+        "s_sino_food"
+      ]
+    },
+    {
+      "id": "f_skewers",
+      "name": {
+        "en": "Lamb skewers",
+        "zh": "羊肉串"
+      },
+      "what": "Cumin-and-chili lamb grilled over charcoal; red-willow branch skewers are the Xi'an style.",
+      "price_cny": [
+        1,
+        15
+      ],
+      "spicy": 2,
+      "halal": true,
+      "veg": false,
+      "where": "Muslim Quarter",
+      "tip": "Prices swing from ¥1–3 at basic stalls to ¥10–20 on the main strip — check before ordering.",
+      "conf": "low",
+      "src": [
+        "s_sino_food",
+        "s_vx_halal"
+      ],
+      "verify": "Price range is inconsistent across sources."
+    },
+    {
+      "id": "f_liangpi",
+      "name": {
+        "en": "Liangpi (cold skin noodles)",
+        "zh": "凉皮"
+      },
+      "what": "Chewy cold noodles with vinegar, chili oil and cucumber.",
+      "price_cny": null,
+      "spicy": 2,
+      "halal": false,
+      "veg": true,
+      "where": "Snack shops citywide",
+      "conf": "low",
+      "src": [
+        "s_sino_food"
+      ],
+      "verify": "Add price and a source that covers it directly."
+    }
+  ],
+  "pitfalls": [
+    {
+      "id": "pf_tw_booking",
+      "title": "No Terracotta ticket",
+      "situation": "Turning up without a real-name booking.",
+      "consequence": "Turned away or stuck with touts; holidays sell out days ahead.",
+      "fix": "Book on bmy.com.cn / official WeChat with your passport as soon as plans are firm.",
+      "affects": [
+        "first_timer"
+      ],
+      "severity": 3,
+      "conf": "high",
+      "src": [
+        "s_cdisc_tw_tix",
+        "s_ctd_tw"
+      ]
+    },
+    {
+      "id": "pf_fake_tickets",
+      "title": "Fake ticket sites",
+      "situation": "Booking Terracotta tickets or tours via look-alike websites or social profiles.",
+      "consequence": "Paid, no ticket.",
+      "fix": "Only the official site/WeChat, or a known platform.",
+      "affects": [
+        "first_timer"
+      ],
+      "severity": 3,
+      "conf": "medium",
+      "src": [
+        "s_sino_tw_diy"
+      ]
+    },
+    {
+      "id": "pf_tw_touts",
+      "title": "The fake Terracotta bus",
+      "situation": "Uniformed touts at Xi'an Railway Station steer you to a private minibus.",
+      "consequence": "Pay many times the fare and get detoured to replica factories or a 'fake warriors' museum.",
+      "fix": "Metro Line 9 + bus, the plain public bus 306 (pay on board), or Didi.",
+      "affects": [
+        "first_timer",
+        "budget"
+      ],
+      "severity": 2,
+      "conf": "medium",
+      "src": [
+        "s_cdisc_scams",
+        "s_sino_tw_diy",
+        "s_wic_tw"
+      ]
+    },
+    {
+      "id": "pf_shm_booking",
+      "title": "Free museum, impossible ticket",
+      "situation": "Shaanxi History Museum is free but tickets are released on a schedule and go in minutes.",
+      "consequence": "Miss the best museum in the city.",
+      "fix": "Set an alarm for the release time on the official WeChat account, or go with a guide who books it.",
+      "affects": [
+        "history"
+      ],
+      "severity": 2,
+      "conf": "medium",
+      "src": [
+        "s_tc_shm",
+        "s_cdisc_shm"
+      ],
+      "verify": "Release time."
+    },
+    {
+      "id": "pf_north_station",
+      "title": "Xi'an North is far",
+      "situation": "Booking a hotel or a tight connection assuming the station is central.",
+      "consequence": "Lose 30–40 min each way; miss trains.",
+      "fix": "Metro Line 2 to the center (~27 min); stay near North only for early trains.",
+      "affects": [
+        "first_timer"
+      ],
+      "severity": 1,
+      "conf": "medium",
+      "src": [
+        "s_cft_north"
+      ]
+    },
+    {
+      "id": "pf_golden_week",
+      "title": "Golden Week crush",
+      "situation": "Visiting during National Day (1–7 Oct 2026) or other national holidays.",
+      "consequence": "Terracotta hits capacity first; Huashan cable car queues ~3 h; taxis unreliable.",
+      "fix": "Shift dates (late Sep or after 8 Oct), or book everything the day it opens and stay near the main sights.",
+      "affects": [
+        "crowd_averse",
+        "first_timer"
+      ],
+      "severity": 3,
+      "conf": "high",
+      "src": [
+        "s_cxt_oct",
+        "s_trip_gw",
+        "s_sino_huashan"
+      ]
+    },
+    {
+      "id": "pf_beiyuanmen",
+      "title": "Tourist prices on the main strip",
+      "situation": "Eating only on Beiyuanmen, the main Muslim Quarter street.",
+      "consequence": "Pay more for weaker food.",
+      "fix": "Walk one lane west to Xiyangshi (西羊市) and Dapiyuan (大皮院).",
+      "affects": [
+        "food",
+        "budget"
+      ],
+      "severity": 1,
+      "conf": "high",
+      "src": [
+        "s_vx_halal",
+        "s_sino_food"
+      ]
+    },
+    {
+      "id": "pf_halal_outside",
+      "title": "Halal outside the Quarter",
+      "situation": "Ordering roujiamo or Han dishes elsewhere in the city.",
+      "consequence": "Roujiamo is often pork; cooking wine is common and unmentioned.",
+      "fix": "Eat halal in the Muslim Quarter or at restaurants with 清真 signs.",
+      "affects": [
+        "halal"
+      ],
+      "severity": 2,
+      "conf": "medium",
+      "src": [
+        "s_vx_halal"
+      ]
+    },
+    {
+      "id": "pf_huashan_daytrip",
+      "title": "Mount Hua eats the whole day",
+      "situation": "Planning Huashan as a casual half-day.",
+      "consequence": "Miss the last train or turn back early; exhausting for weak knees; fog Jul–Aug hides the views.",
+      "fix": "Early HSR, West Peak cable car up and North Peak down (~¥450–530 all-in); skip the plank walk if heights scare you.",
+      "affects": [
+        "mobility_low",
+        "heights_fear",
+        "seniors",
+        "kids"
+      ],
+      "severity": 2,
+      "conf": "medium",
+      "src": [
+        "s_cft_huashan",
+        "s_sino_huashan"
+      ]
+    },
+    {
+      "id": "pf_huashan_hidden_costs",
+      "title": "Huashan's hidden costs",
+      "situation": "Budgeting only the ¥160 entry.",
+      "consequence": "Mandatory shuttle (~¥40 each way) and cable cars triple the cost.",
+      "fix": "Budget about ¥450–530 per person.",
+      "affects": [
+        "budget"
+      ],
+      "severity": 1,
+      "conf": "medium",
+      "src": [
+        "s_sino_huashan",
+        "s_cft_huashan"
+      ]
+    },
+    {
+      "id": "pf_bike_rules",
+      "title": "Wall bike rules",
+      "situation": "Planning to cycle the wall with kids or older parents, or arriving late.",
+      "consequence": "Rental may refuse riders over 65 / under 12 (reported); rental closes before the wall.",
+      "fix": "Walk a section, or rent a tandem; arrive before late afternoon.",
+      "affects": [
+        "kids",
+        "seniors"
+      ],
+      "severity": 1,
+      "conf": "low",
+      "src": [
+        "s_xct_wall",
+        "s_cxt_wall"
+      ],
+      "verify": "Age limits and rental hours."
+    },
+    {
+      "id": "pf_fountain",
+      "title": "No fountain show today",
+      "situation": "Planning the evening around the Big Wild Goose Pagoda fountain.",
+      "consequence": "Schedules vary; paused in winter and some Tuesday sessions.",
+      "fix": "Check the day's schedule; Datang Everbright City is next door either way.",
+      "affects": [
+        "night"
+      ],
+      "severity": 1,
+      "conf": "medium",
+      "src": [
+        "s_wic_goose",
+        "s_vx_goose",
+        "s_trip_dtbyc"
+      ]
+    },
+    {
+      "id": "pf_show_season",
+      "title": "Show not running",
+      "situation": "Counting on the Song of Everlasting Sorrow in winter.",
+      "consequence": "Seasonal schedule; a December pause was announced for 2026.",
+      "fix": "Check the official Huaqing Palace site for your date; book real-name tickets.",
+      "affects": [
+        "shows"
+      ],
+      "severity": 1,
+      "conf": "medium",
+      "src": [
+        "s_hq_tix",
+        "s_vx_show"
+      ]
+    },
+    {
+      "id": "pf_transit_area",
+      "title": "240-hour transit is Shaanxi-only (from XIY)",
+      "situation": "Entering at Xianyang Airport on visa-free transit and planning other provinces.",
+      "consequence": "Leaving the permitted area breaks the transit rules.",
+      "fix": "Check eligibility and the permitted area for your exact route before booking; onward ticket must go to a third country.",
+      "affects": [
+        "transit_visa"
+      ],
+      "severity": 3,
+      "conf": "medium",
+      "src": [
+        "s_ct_240",
+        "s_wh_240"
+      ],
+      "verify": "Official NIA rules for multi-province routes."
+    }
+  ],
+  "seasons": [
+    {
+      "months": "Apr–May",
+      "weather": "Mild and pleasant",
+      "crowds": "Busy, spikes around May Day",
+      "note": "Late April is a sweet spot.",
+      "conf": "medium",
+      "src": [
+        "s_trip_best"
+      ]
+    },
+    {
+      "months": "Jun–Aug",
+      "weather": "Hot",
+      "crowds": "School-holiday crowds",
+      "note": "Huashan often foggy Jul–Aug.",
+      "conf": "medium",
+      "src": [
+        "s_sino_huashan",
+        "s_trip_best"
+      ]
+    },
+    {
+      "months": "Sep–Oct",
+      "weather": "Best weather; October highs ~19–20°C, lows ~9–10°C",
+      "crowds": "Very busy 1–7 Oct; calmer late Sep and after 8 Oct",
+      "note": "Bring a jacket for mornings.",
+      "conf": "high",
+      "src": [
+        "s_cxt_oct",
+        "s_tcg_oct",
+        "s_trip_best"
+      ]
+    },
+    {
+      "months": "Nov–Mar",
+      "weather": "Cold and dry",
+      "crowds": "Quietest (except Spring Festival)",
+      "note": "Shorter hours; fountain and some shows paused.",
+      "conf": "medium",
+      "src": [
+        "s_wic_goose",
+        "s_tcg_wall",
+        "s_hq_tix"
+      ]
+    }
+  ],
+  "holidays": [
+    {
+      "id": "h_national_day",
+      "name": "National Day Golden Week",
+      "dates": "1–7 Oct 2026",
+      "effect": "Busiest week of the year in Xi'an; book everything early or shift dates.",
+      "conf": "high",
+      "src": [
+        "s_cxt_oct",
+        "s_trip_gw"
+      ]
+    },
+    {
+      "id": "h_may_day",
+      "name": "Labour Day holiday",
+      "dates": "around 1–5 May",
+      "effect": "Domestic travel peak; trains and sights crowded.",
+      "conf": "medium",
+      "src": [
+        "s_trip_gw"
+      ],
+      "verify": "Exact 2027 dates."
+    }
+  ],
+  "todo": [
+    "Beilin (Forest of Stone Steles) Museum, Shuyuanmen, Yongxingfang, Tang Paradise, Xi'an Museum / Small Wild Goose Pagoda",
+    "Hotel price ranges by area (needs a lodging source)",
+    "Daily budget tiers (budget / mid / comfort) from real itineraries",
+    "Local guides and drivers: day rates, languages — future partners for the local-expert hand-off",
+    "Accessibility: wheelchair / stroller access per sight",
+    "Verify every 'verify' note via official channels (official sites, WeChat accounts, 12306)"
+  ]
+}

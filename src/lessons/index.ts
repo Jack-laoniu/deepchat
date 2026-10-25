@@ -8,5 +8,8 @@ import pc from './pc.json';
 import sleep from './sleep.json';
 import travel from './travel.json';
 
-/** 示例关卡；首页只展示和界面同一种语言的 */
+/** 全部示例关卡（测试用） */
 export const SAMPLES: unknown[] = [car, sleep, farm, pc, travel, dogZh, beijing, pcEn, dog];
+
+/** 首页展示的示例：只放旅游类（按界面语言筛选） */
+export const SHOWCASE: unknown[] = [travel, beijing];
