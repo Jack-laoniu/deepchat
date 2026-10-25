@@ -60,7 +60,10 @@ export function GroupChat({ plan, turns, setTurns, join }: { plan: string; turns
   const latest = useRef({ turns, members });
   latest.current = { turns, members };
 
-  useEffect(() => end.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), [turns.length, busy]);
+  // 花括号不能省：有的浏览器 scrollIntoView 会返回 Promise，React 会把返回值当清理函数去调用（「x is not a function」）
+  useEffect(() => {
+    end.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [turns.length, busy]);
   useEffect(() => hush, []);
 
   const request = async (message: string, joined?: string) => {

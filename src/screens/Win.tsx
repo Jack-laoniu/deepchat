@@ -76,7 +76,9 @@ export function Win() {
   const saved = guessTotal - p.total;
 
   // 记住这一局：下次生成新关卡时，角色会记得用户的情况；和一起闯关的角色交情涨了
-  useEffect(() => remember(l, p), []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    remember(l, p);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [bonds] = useState(() => earnOnce(l, p, g.guest));
   const [join, setJoin] = useState<{ id: string; n: number } | undefined>();
   const askIn = (id: string) => setJoin((j) => ({ id, n: (j?.n ?? 0) + 1 }));

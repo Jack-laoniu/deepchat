@@ -23,7 +23,9 @@ import { forget, memories, memoryOn, memoryText, setMemoryOn, type QuestMemory }
 type GenState = { phase: 'idle' } | { phase: 'loading'; started: number } | { phase: 'error'; msg: string };
 
 export function Home() {
-  useEffect(() => playMusic('home'), []);
+  useEffect(() => {
+    playMusic('home');
+  }, []);
   const g = useGame();
   const lang = detectLang();
   const cfg = useCanGenerate();

@@ -32,7 +32,10 @@ export function FriendChat({ id, plan, onClose }: { id: string; plan?: string; o
   const end = useRef<HTMLDivElement>(null);
   const asked = useRef(false);
 
-  useEffect(() => end.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), [turns.length, busy]);
+  // 花括号不能省：有的浏览器 scrollIntoView 会返回 Promise，React 会把返回值当清理函数去调用（「x is not a function」）
+  useEffect(() => {
+    end.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [turns.length, busy]);
   useEffect(() => hush, []);
 
   const say = (s: string) => {
