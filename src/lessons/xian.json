@@ -26,6 +26,10 @@
     {
       "id": "xiaobei",
       "as": "Local guide"
+    },
+    {
+      "id": "mei",
+      "as": "Jay's sister"
     }
   ],
   "guess": {
@@ -91,14 +95,24 @@
           "mood": "happy"
         },
         {
+          "who": "ajie",
+          "say": "Twenty-seven minutes. One podcast and a half.",
+          "mood": "thinking"
+        },
+        {
           "who": "xiaofang",
           "say": "In 629 a monk left this city with a travel pass. You get one too.",
           "mood": "smug"
         },
         {
-          "who": "xiaofang",
-          "say": "Every good day earns a stamp. Fill it, and your plan is ready.",
+          "who": "ajie",
+          "say": "Does it get me into airport lounges?",
           "mood": "happy"
+        },
+        {
+          "who": "xiaofang",
+          "say": "It gets you stamps. Stamps are earned. Like respect. Or dumplings.",
+          "mood": "smug"
         },
         {
           "id": "why",
@@ -329,6 +343,132 @@
               ]
             }
           ]
+        },
+        {
+          "id": "stay",
+          "who": "xiaofang",
+          "q": "Where do you want to sleep?",
+          "options": [
+            {
+              "id": "st_wall",
+              "emoji": "🏯",
+              "label": "Inside the old wall",
+              "fact": "Wants to stay inside the city wall near the Bell Tower — walkable to the Muslim Quarter and the wall; lively and noisy at night",
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "Walking distance to dumplings. Sold."
+                }
+              ]
+            },
+            {
+              "id": "st_qujiang",
+              "emoji": "🌃",
+              "label": "Near the big pagoda",
+              "fact": "Wants to stay in Qujiang near Big Wild Goose Pagoda — newer area, night street nearby, farther from the old city",
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "Fancy. You'll walk out into neon every night.",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "st_cheap",
+              "emoji": "💸",
+              "label": "Wherever's cheapest",
+              "fact": "Hotel price matters most",
+              "set": [
+                "budget"
+              ],
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "A bed is a bed. Unless it's a bench."
+                }
+              ]
+            },
+            {
+              "id": "st_quiet",
+              "emoji": "🤫",
+              "label": "Somewhere quiet",
+              "fact": "Wants a quiet hotel; light sleeper",
+              "set": [
+                "crowd_averse"
+              ],
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "Then not above a skewer stall. Noted.",
+                  "mood": "thinking"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "special",
+          "who": "xiaofang",
+          "q": "Anything else we should know?",
+          "free": {
+            "placeholder": "e.g. it's our anniversary",
+            "chips": [
+              "It's a birthday trip",
+              "First time in China",
+              "I'm a light sleeper"
+            ],
+            "fact": "Other things to know, in their words: {v}",
+            "match": [
+              {
+                "words": [
+                  "anniversary",
+                  "birthday",
+                  "honeymoon",
+                  "proposal",
+                  "engaged"
+                ],
+                "set": [
+                  "special"
+                ],
+                "fact": "Celebrating a special occasion",
+                "reply": [
+                  {
+                    "who": "xiaofang",
+                    "say": "A celebration! I'm already planning the surprise.",
+                    "mood": "happy"
+                  }
+                ]
+              },
+              {
+                "words": [
+                  "light sleeper",
+                  "quiet",
+                  "noise"
+                ],
+                "set": [
+                  "crowd_averse"
+                ],
+                "fact": "Light sleeper; wants quiet"
+              }
+            ],
+            "reply": [
+              {
+                "who": "xiaofang",
+                "say": "Noted in ink. Well, in pixels."
+              }
+            ]
+          }
+        },
+        {
+          "who": "ajie",
+          "say": "Last question: is there Wi-Fi on the Silk Road?",
+          "mood": "thinking"
+        },
+        {
+          "who": "xiaofang",
+          "say": "There was. It was called shouting.",
+          "mood": "smug"
         }
       ]
     },
@@ -430,6 +570,16 @@
         },
         {
           "who": "daliu",
+          "say": "Also a hat. The hat says OFFICIAL. In English!",
+          "mood": "smug"
+        },
+        {
+          "who": "ajie",
+          "say": "International AND official. We're in good hands.",
+          "mood": "happy"
+        },
+        {
+          "who": "daliu",
           "say": "Small stop at a jade factory. Also official. Very educational.",
           "mood": "smug"
         },
@@ -442,6 +592,21 @@
           "who": "wang",
           "say": "This one goes to a jade shop. The soldiers are 40 km the other way.",
           "mood": "smug"
+        },
+        {
+          "who": "daliu",
+          "say": "…The jade is also very old. Some of it is from this morning.",
+          "mood": "worried"
+        },
+        {
+          "who": "wang",
+          "say": "My first time, I took that bus. Came home with three jade turtles.",
+          "mood": "smug"
+        },
+        {
+          "who": "wang",
+          "say": "Zero soldiers.",
+          "mood": "sad"
         },
         {
           "id": "how",
@@ -537,9 +702,34 @@
           ]
         },
         {
+          "who": "ajie",
+          "say": "I've named the jade dragon 'Lesson'.",
+          "mood": "sad",
+          "if": {
+            "any": [
+              "trap"
+            ]
+          }
+        },
+        {
+          "who": "xiaofang",
+          "say": "No stamp yet. Stamps are earned. Lesson can confirm.",
+          "mood": "smug",
+          "if": {
+            "any": [
+              "trap"
+            ]
+          }
+        },
+        {
           "who": "xiaofang",
           "say": "You spotted the fake bus. First stamp: 🔍 Sharp Eyes.",
-          "mood": "happy"
+          "mood": "happy",
+          "if": {
+            "none": [
+              "trap"
+            ]
+          }
         }
       ]
     },
@@ -623,9 +813,34 @@
           "mood": "happy"
         },
         {
+          "who": "ajie",
+          "say": "And that one is me after coffee. Same guy, more hope.",
+          "mood": "happy"
+        },
+        {
           "who": "xiaofang",
           "say": "2,200 years on guard duty. Respect the commute.",
           "mood": "smug"
+        },
+        {
+          "who": "ajie",
+          "say": "Do they get weekends?",
+          "mood": "thinking"
+        },
+        {
+          "who": "xiaofang",
+          "say": "No. That's why they all look so serious.",
+          "mood": "smug"
+        },
+        {
+          "who": "ajie",
+          "say": "Lesson the jade dragon feels very small right now.",
+          "mood": "sad",
+          "if": {
+            "any": [
+              "trap"
+            ]
+          }
         },
         {
           "id": "depth",
@@ -679,6 +894,11 @@
         },
         {
           "who": "xiaofang",
+          "say": "Don't skip the museum hall: two bronze chariots, half life-size.",
+          "mood": "happy"
+        },
+        {
+          "who": "xiaofang",
           "say": "Inside it's 3–4 hours on your feet. We'll plan a rest after.",
           "if": {
             "any": [
@@ -719,6 +939,11 @@
               "who": "ajie",
               "say": "Twenty for one skewer? Is the lamb also official?",
               "mood": "worried"
+            },
+            {
+              "who": "daliu",
+              "say": "Very official. It has a lanyard.",
+              "mood": "smug"
             },
             {
               "id": "skewer",
@@ -769,6 +994,10 @@
               "who": "wang",
               "say": "One lane west: Xiyangshi. Half the price, twice the taste.",
               "mood": "smug"
+            },
+            {
+              "who": "wang",
+              "say": "Main street is for photos. Side lanes are for eating. Since '98."
             },
             {
               "id": "diet",
@@ -833,6 +1062,45 @@
                   ]
                 }
               ]
+            },
+            {
+              "id": "heat",
+              "who": "wang",
+              "q": "How brave is your stomach?",
+              "options": [
+                {
+                  "id": "he_brave",
+                  "emoji": "🔥",
+                  "label": "Cumin, chili, fire!",
+                  "fact": "Adventurous eater; loves cumin and chili",
+                  "set": [
+                    "adventurous"
+                  ],
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "Red-willow skewers, then. Don't wear white.",
+                      "mood": "smug"
+                    }
+                  ]
+                },
+                {
+                  "id": "he_gentle",
+                  "emoji": "🍲",
+                  "label": "Gentle, please",
+                  "fact": "Prefers mild food",
+                  "set": [
+                    "spicy_averse"
+                  ],
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "Paomo. It's a hug in a bowl.",
+                      "mood": "happy"
+                    }
+                  ]
+                }
+              ]
             }
           ],
           "gift": {
@@ -867,6 +1135,36 @@
               "who": "ayi",
               "say": "Smaller. Smaller! Pea-sized. Like a monk with patience.",
               "mood": "angry",
+              "if": {
+                "none": [
+                  "veg"
+                ]
+              }
+            },
+            {
+              "who": "ajie",
+              "say": "I'm on piece four hundred.",
+              "mood": "sad",
+              "if": {
+                "none": [
+                  "veg"
+                ]
+              }
+            },
+            {
+              "who": "ayi",
+              "say": "Good. Six hundred to go.",
+              "mood": "smug",
+              "if": {
+                "none": [
+                  "veg"
+                ]
+              }
+            },
+            {
+              "who": "ayi",
+              "say": "Small pieces soak the soup. Big pieces stay bread. Science.",
+              "mood": "thinking",
               "if": {
                 "none": [
                   "veg"
@@ -926,6 +1224,61 @@
               "who": "ajie",
               "say": "Best thing I've eaten this year. Don't tell my mother.",
               "mood": "happy"
+            }
+          ]
+        },
+        {
+          "id": "mosque",
+          "emoji": "🕌",
+          "label": "Mosque",
+          "who": "xiaobei",
+          "x": 26,
+          "y": 70,
+          "prop": "building",
+          "beats": [
+            {
+              "who": "xiaobei",
+              "say": "Behind all this noise: the Great Mosque. Built like a Chinese temple.",
+              "mood": "thinking"
+            },
+            {
+              "who": "xiaobei",
+              "say": "Quiet courtyards, ten minutes away. Statistically… very quiet."
+            },
+            {
+              "id": "quiet",
+              "who": "xiaobei",
+              "q": "Need quiet breaks in your day?",
+              "options": [
+                {
+                  "id": "qu_yes",
+                  "emoji": "🍵",
+                  "label": "Yes, recharge time",
+                  "fact": "Wants quiet breaks between busy sights",
+                  "set": [
+                    "crowd_averse"
+                  ],
+                  "reply": [
+                    {
+                      "who": "xiaobei",
+                      "say": "Same. I'll mark the quiet spots.",
+                      "mood": "happy"
+                    }
+                  ]
+                },
+                {
+                  "id": "qu_no",
+                  "emoji": "🎉",
+                  "label": "Noise is fuel",
+                  "fact": "Fine with busy, noisy places all day",
+                  "reply": [
+                    {
+                      "who": "xiaobei",
+                      "say": "Brave. I'll be over there. Quietly."
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -1173,6 +1526,15 @@
           "mood": "smug"
         },
         {
+          "who": "ajie",
+          "say": "Can we appeal?",
+          "mood": "sad"
+        },
+        {
+          "who": "wang",
+          "say": "The knees don't take appeals."
+        },
+        {
           "who": "xiaofang",
           "say": "Skipped for you — I'll note why. We'll add a slow morning instead.",
           "mood": "happy"
@@ -1341,6 +1703,136 @@
       ]
     },
     {
+      "type": "talk",
+      "id": "money",
+      "style": "story",
+      "title": "Mei's spreadsheet",
+      "emoji": "🧮",
+      "beats": [
+        {
+          "who": "narrator",
+          "say": "Video call. Jay's sister Mei. She has a spreadsheet open."
+        },
+        {
+          "who": "mei",
+          "say": "I've seen your plan. Let's talk money.",
+          "mood": "smug"
+        },
+        {
+          "who": "mei",
+          "say": "Terracotta: ¥120. That's one hotpot."
+        },
+        {
+          "who": "mei",
+          "say": "Mount Hua with cable cars and trains: about ¥500. Four hotpots."
+        },
+        {
+          "who": "ajie",
+          "say": "Why is everything measured in hotpot?",
+          "mood": "sad"
+        },
+        {
+          "who": "mei",
+          "say": "Because hotpot is the only currency that never lies.",
+          "mood": "smug"
+        },
+        {
+          "id": "splurge",
+          "who": "mei",
+          "q": "Where would you rather splurge?",
+          "options": [
+            {
+              "id": "sp_hotel",
+              "emoji": "🛏️",
+              "label": "A great hotel",
+              "fact": "Happy to spend more on the hotel",
+              "reply": [
+                {
+                  "who": "mei",
+                  "say": "A good bed: three hotpots well spent.",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "sp_food",
+              "emoji": "🥢",
+              "label": "Food, all of it",
+              "fact": "Happy to spend most on food",
+              "set": [
+                "foodie"
+              ],
+              "reply": [
+                {
+                  "who": "mei",
+                  "say": "Finally. Someone who understands the currency.",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "sp_exp",
+              "emoji": "🎭",
+              "label": "Guides & shows",
+              "fact": "Happy to pay for guides, shows and experiences",
+              "set": [
+                "guide"
+              ],
+              "reply": [
+                {
+                  "who": "mei",
+                  "say": "Stories last longer than hotpot. Barely.",
+                  "mood": "thinking"
+                }
+              ]
+            },
+            {
+              "id": "sp_none",
+              "emoji": "🎒",
+              "label": "Nowhere. Backpacker.",
+              "fact": "Keeps every cost low",
+              "set": [
+                "budget"
+              ],
+              "reply": [
+                {
+                  "who": "mei",
+                  "say": "Respect. I'll stop converting.",
+                  "mood": "smug"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "never",
+          "who": "mei",
+          "q": "Anything you refuse to pay for?",
+          "free": {
+            "placeholder": "e.g. tourist-trap shops",
+            "chips": [
+              "Shopping stops",
+              "Fancy hotels",
+              "Taxis"
+            ],
+            "fact": "Refuses to pay for: {v}",
+            "reply": [
+              {
+                "who": "mei",
+                "say": "Noted. I'll guard your wallet.",
+                "mood": "smug"
+              }
+            ]
+          }
+        },
+        {
+          "who": "mei",
+          "say": "Book the Terracotta early. Missing it costs zero hotpots and a day.",
+          "mood": "thinking"
+        }
+      ]
+    },
+    {
       "type": "slider",
       "id": "budget",
       "q": "Budget in Xi'an?",
@@ -1409,6 +1901,11 @@
           "who": "xiaobei",
           "say": "Fifteen years guiding here. A few questions, then your pass is full.",
           "mood": "happy"
+        },
+        {
+          "who": "xiaobei",
+          "say": "Statistically… no statistic. But people always forget the museum.",
+          "mood": "thinking"
         },
         {
           "id": "p_walk",

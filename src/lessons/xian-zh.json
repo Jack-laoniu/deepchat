@@ -26,6 +26,10 @@
     {
       "id": "xiaobei",
       "as": "本地导游"
+    },
+    {
+      "id": "mei",
+      "as": "阿杰的姐姐"
     }
   ],
   "guess": {
@@ -91,14 +95,24 @@
           "mood": "happy"
         },
         {
+          "who": "ajie",
+          "say": "27 分钟，够我听一集半播客。",
+          "mood": "thinking"
+        },
+        {
           "who": "xiaofang",
           "say": "当年唐僧就是拿着通关文牒从这儿出发的。你也领一本。",
           "mood": "smug"
         },
         {
-          "who": "xiaofang",
-          "say": "玩得好就盖一个章，盖满了，你的方案就成了。",
+          "who": "ajie",
+          "say": "这文牒能进机场贵宾室吗？",
           "mood": "happy"
+        },
+        {
+          "who": "xiaofang",
+          "say": "不能。能盖章。章得靠本事挣，跟压岁钱一个道理。",
+          "mood": "smug"
         },
         {
           "id": "why",
@@ -328,6 +342,132 @@
               ]
             }
           ]
+        },
+        {
+          "id": "stay",
+          "who": "xiaofang",
+          "q": "想住哪一片？",
+          "options": [
+            {
+              "id": "st_wall",
+              "emoji": "🏯",
+              "label": "城墙里，钟楼附近",
+              "fact": "想住城墙内钟楼附近：走路就到回民街和城墙，晚上热闹也吵",
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "出门就是吃的，成交。"
+                }
+              ]
+            },
+            {
+              "id": "st_qujiang",
+              "emoji": "🌃",
+              "label": "大雁塔那边",
+              "fact": "想住曲江大雁塔附近：新城区，挨着大唐不夜城，离老城远一点",
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "洋气。每晚一出门就是霓虹灯。",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "st_cheap",
+              "emoji": "💸",
+              "label": "哪儿便宜住哪儿",
+              "fact": "住宿最看重价格",
+              "set": [
+                "budget"
+              ],
+              "reply": [
+                {
+                  "who": "ajie",
+                  "say": "床就是床，只要不是长椅。"
+                }
+              ]
+            },
+            {
+              "id": "st_quiet",
+              "emoji": "🤫",
+              "label": "要安静",
+              "fact": "想住安静的酒店，睡眠浅",
+              "set": [
+                "crowd_averse"
+              ],
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "那就别住烤串摊楼上，记下了。",
+                  "mood": "thinking"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "special",
+          "who": "xiaofang",
+          "q": "还有啥要我们知道的？",
+          "free": {
+            "placeholder": "比如：这趟是结婚纪念日",
+            "chips": [
+              "过生日",
+              "蜜月",
+              "第一次出远门"
+            ],
+            "fact": "其他情况（原话）：{v}",
+            "match": [
+              {
+                "words": [
+                  "纪念日",
+                  "生日",
+                  "蜜月",
+                  "求婚",
+                  "周年"
+                ],
+                "set": [
+                  "special"
+                ],
+                "fact": "这趟有特别的纪念意义",
+                "reply": [
+                  {
+                    "who": "xiaofang",
+                    "say": "要庆祝！惊喜我已经开始想了。",
+                    "mood": "happy"
+                  }
+                ]
+              },
+              {
+                "words": [
+                  "睡眠浅",
+                  "怕吵",
+                  "安静"
+                ],
+                "set": [
+                  "crowd_averse"
+                ],
+                "fact": "睡眠浅，怕吵"
+              }
+            ],
+            "reply": [
+              {
+                "who": "xiaofang",
+                "say": "记下了，用小本本记的。"
+              }
+            ]
+          }
+        },
+        {
+          "who": "ajie",
+          "say": "最后一个问题：丝绸之路上有 Wi-Fi 吗？",
+          "mood": "thinking"
+        },
+        {
+          "who": "xiaofang",
+          "say": "有。那时候叫「喊」。",
+          "mood": "smug"
         }
       ]
     },
@@ -429,6 +569,16 @@
         },
         {
           "who": "daliu",
+          "say": "还有帽子！帽子上写着「官方」！",
+          "mood": "smug"
+        },
+        {
+          "who": "ajie",
+          "say": "连帽子都是官方的，稳了。",
+          "mood": "happy"
+        },
+        {
+          "who": "daliu",
           "say": "中途停一下玉器厂，也是官方的，很有教育意义。",
           "mood": "smug"
         },
@@ -441,6 +591,21 @@
           "who": "wang",
           "say": "他这车去玉器店。兵马俑在反方向，四十公里。",
           "mood": "smug"
+        },
+        {
+          "who": "daliu",
+          "say": "……玉也很老的，有的是今天早上的。",
+          "mood": "worried"
+        },
+        {
+          "who": "wang",
+          "say": "我第一次来也上过这种车，抱回来三只玉乌龟。",
+          "mood": "smug"
+        },
+        {
+          "who": "wang",
+          "say": "兵马俑，一个没见着。",
+          "mood": "sad"
         },
         {
           "id": "how",
@@ -536,9 +701,34 @@
           ]
         },
         {
+          "who": "ajie",
+          "say": "我给这条玉龙取名叫「教训」。",
+          "mood": "sad",
+          "if": {
+            "any": [
+              "trap"
+            ]
+          }
+        },
+        {
+          "who": "xiaofang",
+          "say": "章先不盖。章是挣来的，「教训」可以作证。",
+          "mood": "smug",
+          "if": {
+            "any": [
+              "trap"
+            ]
+          }
+        },
+        {
           "who": "xiaofang",
           "say": "识破了！第一个章：🔍 火眼金睛。",
-          "mood": "happy"
+          "mood": "happy",
+          "if": {
+            "none": [
+              "trap"
+            ]
+          }
         }
       ]
     },
@@ -622,9 +812,34 @@
           "mood": "happy"
         },
         {
+          "who": "ajie",
+          "say": "那个是我喝完咖啡的样子。同一个人，多了点希望。",
+          "mood": "happy"
+        },
+        {
           "who": "xiaofang",
           "say": "站了两千两百年的岗，这通勤你服不服。",
           "mood": "smug"
+        },
+        {
+          "who": "ajie",
+          "say": "他们周末休息吗？",
+          "mood": "thinking"
+        },
+        {
+          "who": "xiaofang",
+          "say": "不休。所以一个个表情都这么严肃。",
+          "mood": "smug"
+        },
+        {
+          "who": "ajie",
+          "say": "「教训」在这儿显得好小。",
+          "mood": "sad",
+          "if": {
+            "any": [
+              "trap"
+            ]
+          }
         },
         {
           "id": "depth",
@@ -678,6 +893,11 @@
         },
         {
           "who": "xiaofang",
+          "say": "博物馆里的铜车马别错过，半人大小，精细得吓人。",
+          "mood": "happy"
+        },
+        {
+          "who": "xiaofang",
           "say": "里面一走就是三四个小时，出来咱们安排歇脚。",
           "if": {
             "any": [
@@ -718,6 +938,11 @@
               "who": "ajie",
               "say": "二十一串？这羊也有工作证吗？",
               "mood": "worried"
+            },
+            {
+              "who": "daliu",
+              "say": "有，挂着呢。",
+              "mood": "smug"
             },
             {
               "id": "skewer",
@@ -768,6 +993,10 @@
               "who": "wang",
               "say": "往西拐一条巷子，西羊市。一半的价钱，两倍的香。",
               "mood": "smug"
+            },
+            {
+              "who": "wang",
+              "say": "主街是拍照的，小巷是吃饭的。我 98 年就明白了。"
             },
             {
               "id": "diet",
@@ -832,6 +1061,45 @@
                   ]
                 }
               ]
+            },
+            {
+              "id": "heat",
+              "who": "wang",
+              "q": "你的胃有多勇？",
+              "options": [
+                {
+                  "id": "he_brave",
+                  "emoji": "🔥",
+                  "label": "孜然辣椒都来！",
+                  "fact": "敢吃，喜欢孜然和辣",
+                  "set": [
+                    "adventurous"
+                  ],
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "那吃红柳枝烤肉。别穿白衣服。",
+                      "mood": "smug"
+                    }
+                  ]
+                },
+                {
+                  "id": "he_gentle",
+                  "emoji": "🍲",
+                  "label": "温柔一点",
+                  "fact": "口味清淡",
+                  "set": [
+                    "spicy_averse"
+                  ],
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "那就泡馍。一碗汤，像个拥抱。",
+                      "mood": "happy"
+                    }
+                  ]
+                }
+              ]
             }
           ],
           "gift": {
@@ -866,6 +1134,36 @@
               "who": "ayi",
               "say": "小点！再小点！黄豆那么大！掰馍要有唐僧的耐心。",
               "mood": "angry",
+              "if": {
+                "none": [
+                  "veg"
+                ]
+              }
+            },
+            {
+              "who": "ajie",
+              "say": "我掰到第四百块了。",
+              "mood": "sad",
+              "if": {
+                "none": [
+                  "veg"
+                ]
+              }
+            },
+            {
+              "who": "ayi",
+              "say": "好，还有六百块。",
+              "mood": "smug",
+              "if": {
+                "none": [
+                  "veg"
+                ]
+              }
+            },
+            {
+              "who": "ayi",
+              "say": "掰小了才吸汤，掰大了就是馍。这是科学。",
+              "mood": "thinking",
               "if": {
                 "none": [
                   "veg"
@@ -925,6 +1223,61 @@
               "who": "ajie",
               "say": "今年吃过最好吃的东西。别告诉我妈。",
               "mood": "happy"
+            }
+          ]
+        },
+        {
+          "id": "mosque",
+          "emoji": "🕌",
+          "label": "清真寺",
+          "who": "xiaobei",
+          "x": 26,
+          "y": 70,
+          "prop": "building",
+          "beats": [
+            {
+              "who": "xiaobei",
+              "say": "这热闹后面就是化觉巷清真大寺，长得像座中式寺庙。",
+              "mood": "thinking"
+            },
+            {
+              "who": "xiaobei",
+              "say": "院子特别安静，离烤串十分钟。据统计……很安静。"
+            },
+            {
+              "id": "quiet",
+              "who": "xiaobei",
+              "q": "每天需要找个安静地方歇会儿吗？",
+              "options": [
+                {
+                  "id": "qu_yes",
+                  "emoji": "🍵",
+                  "label": "要，充充电",
+                  "fact": "景点之间需要安静歇脚",
+                  "set": [
+                    "crowd_averse"
+                  ],
+                  "reply": [
+                    {
+                      "who": "xiaobei",
+                      "say": "我也是。安静的地方我给你标出来。",
+                      "mood": "happy"
+                    }
+                  ]
+                },
+                {
+                  "id": "qu_no",
+                  "emoji": "🎉",
+                  "label": "越热闹越好",
+                  "fact": "一整天热闹也没问题",
+                  "reply": [
+                    {
+                      "who": "xiaobei",
+                      "say": "勇。那我在那边……安静地待着。"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -1172,6 +1525,15 @@
           "mood": "smug"
         },
         {
+          "who": "ajie",
+          "say": "能上诉吗？",
+          "mood": "sad"
+        },
+        {
+          "who": "wang",
+          "say": "膝盖不接受上诉。"
+        },
+        {
           "who": "xiaofang",
           "say": "这次先不排，原因我记在方案里。换一个睡到自然醒的上午。",
           "mood": "happy"
@@ -1340,6 +1702,136 @@
       ]
     },
     {
+      "type": "talk",
+      "id": "money",
+      "style": "story",
+      "title": "美姐的表格",
+      "emoji": "🧮",
+      "beats": [
+        {
+          "who": "narrator",
+          "say": "视频电话。阿杰的姐姐美姐，开着一张表格。"
+        },
+        {
+          "who": "mei",
+          "say": "你们的计划我看了，聊聊钱。",
+          "mood": "smug"
+        },
+        {
+          "who": "mei",
+          "say": "兵马俑 120，一顿火锅。"
+        },
+        {
+          "who": "mei",
+          "say": "华山坐索道，算上高铁五百左右，四顿火锅。"
+        },
+        {
+          "who": "ajie",
+          "say": "为什么什么都用火锅算？",
+          "mood": "sad"
+        },
+        {
+          "who": "mei",
+          "say": "因为火锅是唯一不会骗人的货币。",
+          "mood": "smug"
+        },
+        {
+          "id": "splurge",
+          "who": "mei",
+          "q": "钱愿意花在哪儿？",
+          "options": [
+            {
+              "id": "sp_hotel",
+              "emoji": "🛏️",
+              "label": "住好一点",
+              "fact": "住宿上愿意多花",
+              "reply": [
+                {
+                  "who": "mei",
+                  "say": "睡个好觉，三顿火锅，花得值。",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "sp_food",
+              "emoji": "🥢",
+              "label": "吃，全部吃掉",
+              "fact": "钱主要花在吃上",
+              "set": [
+                "foodie"
+              ],
+              "reply": [
+                {
+                  "who": "mei",
+                  "say": "终于有人懂这个货币了。",
+                  "mood": "happy"
+                }
+              ]
+            },
+            {
+              "id": "sp_exp",
+              "emoji": "🎭",
+              "label": "导游和演出",
+              "fact": "愿意为导游、演出和体验付钱",
+              "set": [
+                "guide"
+              ],
+              "reply": [
+                {
+                  "who": "mei",
+                  "say": "故事比火锅留得久。就久一点点。",
+                  "mood": "thinking"
+                }
+              ]
+            },
+            {
+              "id": "sp_none",
+              "emoji": "🎒",
+              "label": "哪都不花，穷游",
+              "fact": "各项都尽量省",
+              "set": [
+                "budget"
+              ],
+              "reply": [
+                {
+                  "who": "mei",
+                  "say": "佩服。我不换算了。",
+                  "mood": "smug"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "never",
+          "who": "mei",
+          "q": "有啥是坚决不花钱的？",
+          "free": {
+            "placeholder": "比如：购物点",
+            "chips": [
+              "购物点",
+              "贵酒店",
+              "打车"
+            ],
+            "fact": "坚决不花钱的：{v}",
+            "reply": [
+              {
+                "who": "mei",
+                "say": "记下了，我帮你看好钱包。",
+                "mood": "smug"
+              }
+            ]
+          }
+        },
+        {
+          "who": "mei",
+          "say": "兵马俑早点约。没约上不花一顿火锅，但白搭一整天。",
+          "mood": "thinking"
+        }
+      ]
+    },
+    {
       "type": "slider",
       "id": "budget",
       "q": "在西安的预算？",
@@ -1408,6 +1900,11 @@
           "who": "xiaobei",
           "say": "我在西安带团十五年。再问几句，你的文牒就盖满了。",
           "mood": "happy"
+        },
+        {
+          "who": "xiaobei",
+          "say": "据统计……其实我没有统计。但大家总忘了约陕历博。",
+          "mood": "thinking"
         },
         {
           "id": "p_walk",
