@@ -65,6 +65,36 @@ export class AppGuard extends Component<{ children: ReactNode }, { error: Error 
   }
 }
 
+/**
+ * 弹层 / 面板的保护（聊天、讨论）：出错不白屏，显示错误和「关闭」，同时报给服务器。
+ * 有 onClose 时铺满屏幕（弹层），否则在原地显示一张小卡片。
+ */
+export class PanelGuard extends Component<{ name: string; onClose?: () => void; children: ReactNode }, { error: Error | null }> {
+  state = { error: null as Error | null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error) {
+    report(error, `panel:${this.props.name}`, null);
+  }
+
+  render() {
+    const { error } = this.state;
+    if (!error) return this.props.children;
+    const { onClose } = this.props;
+    return (
+      <div className={onClose ? 'fixed inset-0 z-50 mx-auto flex max-w-md flex-col items-center justify-center gap-3 bg-white px-6 text-center' : 'mt-4 flex flex-col items-center gap-2 rounded-3xl bg-slate-50 p-4 text-center'}>
+        <Emoji e="🧩" size={onClose ? 72 : 40} />
+        <div className="text-lg font-black text-slate-700">{t('roundBroken')}</div>
+        <div className="max-w-full break-all rounded-xl bg-slate-100 px-3 py-1.5 font-mono text-[11px] text-slate-400">{error.message.slice(0, 160)}</div>
+        {onClose && <Btn onClick={onClose}>{t('friendClose')}</Btn>}
+      </div>
+    );
+  }
+}
+
 /** 报给服务器（网页版才有；嵌在 ChatGPT / Claude 里没有服务器就算了） */
 function report(error: Error, title: string, round: Round | null) {
   try {

@@ -129,3 +129,18 @@ export function saveChat(id: string, turns: ChatTurn[], story?: string) {
     stories: story ? [...b.stories, story].slice(-8) : b.stories,
   }));
 }
+
+/** 熟人在多人讨论里帮了忙：交情 +1（和单独聊天共用每天的上限，不存聊天记录） */
+export function touchBond(id: string) {
+  const today = new Date().toISOString().slice(0, 10);
+  const dayKey = `need-quest-bond-day-${id}`;
+  let n = 0;
+  try {
+    const v = JSON.parse(localStorage.getItem(dayKey) ?? 'null') as { d: string; n: number } | null;
+    n = v?.d === today ? v.n : 0;
+    localStorage.setItem(dayKey, JSON.stringify({ d: today, n: n + 1 }));
+  } catch {
+    /* ignore */
+  }
+  if (n < 3) update(id, (b) => ({ ...b, xp: b.xp + 1 }));
+}

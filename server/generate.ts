@@ -2,7 +2,8 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { Config } from './config';
 import { dropNulls, lessonJsonSchema } from './jsonSchema';
 import { keep } from './store';
-import { charById, MOODS } from '../src/chars/library';
+import { charById, GUIDE, MOODS } from '../src/chars/library';
+import { CAMEOS, cameoById } from '../src/chars/cameos';
 import { FINALE_RULES, GENERATOR_RULES, memoryBlock, todayLine } from '../src/lesson/prompt';
 import { dedupeLesson, salvage, explainIssues, type Salvaged } from '../src/lesson/salvage';
 import { bossOf, roundLabel, withBoss } from '../src/lesson/journey';
@@ -508,6 +509,84 @@ export async function friendChat(startChat: StartChat, i: FriendInput): Promise<
   const m = text.match(/^\s*\[story:\s*([^\]]{1,200})\]\s*/i);
   const canTell = i.stories.length < storiesAllowed(i.hearts);
   return m ? { reply: text.slice(m[0].length).trim(), story: canTell ? m[1].trim() : undefined } : { reply: text.replace(/^\s*\[story[^\]]*\]\s*/i, '') };
+}
+
+// ---------------- 多人讨论（结算后）：小芳 + 熟人 + 客串的古典人物 ----------------
+
+export type Member = { id: string; hearts?: number; quests?: string[] };
+export type GroupLine = { who: string; say: string };
+
+function memberLine(m: Member, lang: 'zh' | 'en'): string {
+  const cameo = cameoById(m.id);
+  if (cameo)
+    return `- ${m.id}: ${cameo.name[lang]} from ${cameo.from[lang]} — a famous classic character making a CAMEO. ${cameo.persona} ` +
+      'Speak in their iconic voice and compare the user\'s concrete need to their own legend for a funny contrast (e.g. Sun Wukong on car safety: 「这车比俺老孙的金刚不坏之身还结实？先让俺拿金箍棒敲两下！」), then still say ONE genuinely useful point.';
+  const c = charById(m.id);
+  if (!c) return '';
+  const name = c.name[lang];
+  return m.id === GUIDE
+    ? `- ${m.id}: ${name}, the cheerful host. ${c.persona} Keeps the talk on the user's real need and asks the follow-up questions.`
+    : `- ${m.id}: ${name}, the user's friend (closeness ${m.hearts ?? 0}/5${m.quests?.length ? `, helped with: ${m.quests.join('; ')}` : ''}). ${c.persona} Looks at it from the user's side, from their own life experience.`;
+}
+
+export function groupRules(input: { plan: string; members: Member[]; lang: 'zh' | 'en'; memory?: string; joined?: string }): string {
+  return [
+    'This is a lively group chat inside "Need Quest" about the user\'s need. The game only collects needs; the group helps the user see what they really want and what they may have missed — it does not write the final plan.',
+    `Members (use these ids in "who"):\n${input.members.map((m) => memberLine(m, input.lang)).filter(Boolean).join('\n')}`,
+    'Each turn, 1–3 members reply — the most relevant first; they can react to each other (agree, tease, push back). Each reply is short and spoken: under 60 Chinese characters or 35 English words, no markdown. ' +
+      'Stay concrete about THIS user\'s situation (their numbers, words, choices). At most one question to the user per turn, usually from the host or a friend.',
+    input.joined ? `${input.joined} has JUST joined the chat: they speak first with a short in-character entrance tied to this need, then others may react.` : '',
+    `The user's need list so far:\n${input.plan}`,
+    input.memory ? memoryBlock(input.memory) : '',
+    `Write in ${input.lang === 'en' ? 'English' : 'Simplified Chinese'}. Output JSON only: {"replies":[{"who":"<member id>","say":"..."}]}`,
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+}
+
+export async function groupChat(
+  startChat: StartChat,
+  input: { plan: string; members: Member[]; history: Turn[]; message: string; lang: 'zh' | 'en'; memory?: string; joined?: string },
+): Promise<GroupLine[] | null> {
+  const chat = startChat(groupRules(input), input.history, { json: true });
+  const msg = input.message || (input.joined ? `(${input.joined} joins the chat)` : '');
+  const r = await chat.send(msg);
+  if ('refused' in r) return null;
+  let data: unknown;
+  try {
+    data = JSON.parse(fixInnerQuotes(extractJson(r.text)).text);
+  } catch {
+    return null;
+  }
+  const ids = new Set(input.members.map((m) => m.id));
+  const replies = ((data as { replies?: unknown })?.replies ?? []) as { who?: unknown; say?: unknown }[];
+  const out = replies
+    .filter((x): x is GroupLine => typeof x?.who === 'string' && ids.has(x.who) && typeof x?.say === 'string' && !!x.say.trim())
+    .slice(0, 4)
+    .map((x) => ({ who: x.who, say: x.say.trim().slice(0, 300) }));
+  return out.length ? out : null;
+}
+
+/** 这个需求请哪几位古典人物来客串最有梗：返回 3 个 id 和一句看点 */
+export async function suggestCameos(startChat: StartChat, need: string, lang: 'zh' | 'en'): Promise<{ id: string; hook: string }[]> {
+  const chat = startChat(
+    'Pick the 3 classic characters whose legend makes the funniest yet fitting contrast with the user\'s need (e.g. a car\'s safety → Sun Wukong\'s indestructible body; a budget → Wang Xifeng\'s abacus). ' +
+      `For each, a hook under 16 Chinese characters (or 10 English words) saying what they will bring, in ${lang === 'en' ? 'English' : 'Simplified Chinese'}. ` +
+      `Characters:\n${CAMEOS.map((c) => `- ${c.id}: ${c.name.zh} / ${c.name.en} (${c.from.en}) — ${c.persona}`).join('\n')}\n\nOutput JSON only: {"picks":[{"id":"...","hook":"..."}]}`,
+    [],
+    { json: true, effort: 'low' },
+  );
+  const r = await chat.send(`The need: ${need}`);
+  if ('refused' in r) return [];
+  try {
+    const d = JSON.parse(extractJson(r.text)) as { picks?: { id?: unknown; hook?: unknown }[] };
+    return (d.picks ?? [])
+      .filter((x): x is { id: string; hook: string } => typeof x?.id === 'string' && !!cameoById(x.id) && typeof x?.hook === 'string')
+      .slice(0, 3)
+      .map((x) => ({ id: x.id, hook: x.hook.slice(0, 40) }));
+  } catch {
+    return [];
+  }
 }
 
 /**

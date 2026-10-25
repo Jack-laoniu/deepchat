@@ -18,7 +18,8 @@ import { memoryText } from '../memory';
  * - 都不行：复制「方案 + 问题」，粘贴给任意 AI
  */
 
-export type Turn = { role: 'user' | 'assistant'; content: string };
+/** who：多人讨论里是谁说的（'join' = 有人加入的提示，不算对话内容） */
+export type Turn = { role: 'user' | 'assistant'; content: string; who?: string };
 
 const ERR: Record<string, MsgKey> = { code: 'genCode', rate_ip: 'genRate', rate_day: 'genRate', busy: 'genBusy' };
 

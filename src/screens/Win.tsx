@@ -8,11 +8,11 @@ import { superPrompt, yuan } from '../lesson/output';
 import { remember } from '../memory';
 import { CHAT_AT, earn, friends } from '../bond';
 import { Character } from '../chars/Character';
-import { charById } from '../chars/library';
+import { charById, GUIDE } from '../chars/library';
 import type { Played } from '../lesson/engine';
 import type { Lesson } from '../lesson/schema';
 import { Hearts } from '../ui/Hearts';
-import { FriendChat } from './FriendChat';
+import { JOIN, nameOf } from './GroupChat';
 import { filledOf, puzzleOf } from '../lesson/puzzle';
 import { PuzzleBoard } from '../ui/Puzzle';
 import { Emoji } from '../ui/Emoji';
@@ -66,7 +66,10 @@ export function Win() {
   const plan = useMemo(() => superPrompt(l, p, g.crashes), [l, p, g.crashes]);
   // 交给 AI 的方案里带上结算后聊出来的补充信息
   const text = useMemo(
-    () => (turns.length ? `${plan}\n\n## ${t('discussLog')}\n${turns.map((m) => `${m.role === 'user' ? (getLang() === 'zh' ? '我：' : 'Me: ') : 'AI: '}${m.content}`).join('\n')}` : plan),
+    () => {
+      const said = turns.filter((m) => m.who !== JOIN);
+      return said.length ? `${plan}\n\n## ${t('discussLog')}\n${said.map((m) => `${m.role === 'user' ? (getLang() === 'zh' ? '我：' : 'Me: ') : `${m.who ? nameOf(m.who) : 'AI'}: `}${m.content}`).join('\n')}` : plan;
+    },
     [plan, turns],
   );
   const guessTotal = l.guess.items.reduce((s, i) => s + i.price, 0);
@@ -75,7 +78,8 @@ export function Win() {
   // 记住这一局：下次生成新关卡时，角色会记得用户的情况；和一起闯关的角色交情涨了
   useEffect(() => remember(l, p), []); // eslint-disable-line react-hooks/exhaustive-deps
   const [bonds] = useState(() => earnOnce(l, p, g.guest));
-  const [chatWith, setChatWith] = useState<string | null>(null);
+  const [join, setJoin] = useState<{ id: string; n: number } | undefined>();
+  const askIn = (id: string) => setJoin((j) => ({ id, n: (j?.n ?? 0) + 1 }));
 
   useEffect(() => {
     celebrate();
@@ -139,7 +143,7 @@ export function Win() {
                 initial={{ y: 16, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.4 + i * 0.1 }}
-                onClick={() => b.after >= CHAT_AT && setChatWith(b.id)}
+                onClick={() => b.after >= CHAT_AT && askIn(b.id)}
                 className="flex w-[72px] flex-col items-center rounded-2xl bg-white pb-1 shadow-sm"
               >
                 <Character id={b.id} size={52} bust mood={b.after > b.before ? 'happy' : 'neutral'} />
@@ -148,14 +152,14 @@ export function Win() {
               </motion.button>
             ))}
           </div>
-          {/* 交情够了的熟人（不管这一关有没有出场）：请他从自己的角度看看这个需求 */}
+          {/* 交情够了的熟人（不管这一关有没有出场）：请进下面的讨论，从自己的角度看看这个需求 */}
           <div className="mt-2 flex flex-wrap justify-center gap-1.5">
             {friends()
-              .filter((f) => f.hearts >= CHAT_AT)
+              .filter((f) => f.hearts >= CHAT_AT && f.id !== GUIDE)
               .slice(0, 3)
               .map((f) => (
-                <button key={f.id} onClick={() => setChatWith(f.id)} className="rounded-full border-2 border-b-4 border-rose-200 bg-white px-3 py-1 text-xs font-black text-rose-600">
-                  💬 {t('bondAsk', { name: charById(f.id)!.name[getLang()] })}
+                <button key={f.id} onClick={() => askIn(f.id)} className="rounded-full border-2 border-b-4 border-rose-200 bg-white px-3 py-1 text-xs font-black text-rose-600">
+                  💬 {t('groupAsk', { name: charById(f.id)!.name[getLang()] })}
                 </button>
               ))}
           </div>
@@ -200,7 +204,7 @@ export function Win() {
         </div>
       )}
 
-      <NextStep plan={plan} text={text} turns={turns} setTurns={setTurns} />
+      <NextStep plan={plan} text={text} turns={turns} setTurns={setTurns} join={join} />
 
       <div className="mt-auto space-y-3 pt-5">
         {/* 定位：我们只把需求问清楚，方案交给用户自己常用的 AI */}
@@ -264,7 +268,6 @@ export function Win() {
         )}
       </AnimatePresence>
       <AnimatePresence>{sharing && <ShareSheet onClose={() => setSharing(false)} />}</AnimatePresence>
-      <AnimatePresence>{chatWith && <FriendChat id={chatWith} plan={plan} onClose={() => setChatWith(null)} />}</AnimatePresence>
     </div>
   );
 }

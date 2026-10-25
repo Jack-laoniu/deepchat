@@ -324,7 +324,7 @@ function Bubble({ who, text, mine, ask, current, chat }: { who: Who; text: strin
   );
 }
 
-/** 回答面板：点一个现成回答，或用自己的话（打字 / 语音） */
+/** 回答面板：点一个现成回答，或用自己的话（打字 / 语音）——每个问题都可以自己说 */
 function AnswerPanel({ ask, onAnswer }: { ask: AskBeat; onAnswer: (r: { option: string } | { text: string }) => void }) {
   const [writing, setWriting] = useState(ask.options.length === 0);
   const [text, setText] = useState('');
@@ -344,7 +344,8 @@ function AnswerPanel({ ask, onAnswer }: { ask: AskBeat; onAnswer: (r: { option: 
             <span className="text-[17px] font-extrabold text-slate-700">{o.label}</span>
           </motion.button>
         ))}
-        {ask.free && (
+        {/* 现成的回答都不对时，总能用自己的话说（没有预设关键词规则也行） */}
+        {(
           <button
             onClick={() => {
               sfx.tap();
@@ -359,7 +360,7 @@ function AnswerPanel({ ask, onAnswer }: { ask: AskBeat; onAnswer: (r: { option: 
     );
   }
 
-  const free = ask.free!;
+  const free = ask.free ?? { chips: [], placeholder: '' };
   const send = () => text.trim() && onAnswer({ text: text.trim() });
   return (
     <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="space-y-2">

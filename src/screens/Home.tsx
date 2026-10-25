@@ -16,6 +16,7 @@ import { charById } from '../chars/library';
 import { sfx } from '../fx/fx';
 import { Hearts } from '../ui/Hearts';
 import { FriendChat } from './FriendChat';
+import { PanelGuard } from '../ui/RoundGuard';
 import { loadCode, requestLesson, saveCode, useCanGenerate } from '../api';
 import { forget, memories, memoryOn, memoryText, setMemoryOn, type QuestMemory } from '../memory';
 
@@ -162,7 +163,13 @@ function FriendsRow() {
         })}
       </div>
       {hint && <div className="mt-1 text-center text-xs font-black text-rose-400">{hint}</div>}
-      <AnimatePresence>{open && <FriendChat id={open} onClose={() => setOpen(null)} />}</AnimatePresence>
+      <AnimatePresence>
+        {open && (
+          <PanelGuard name="friend" onClose={() => setOpen(null)}>
+            <FriendChat id={open} onClose={() => setOpen(null)} />
+          </PanelGuard>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -38,6 +38,8 @@ export function Finale({ round }: { round: BossRound }) {
   const [sent, setSent] = useState(false);
   const [read, setRead] = useState<Record<string, ReadAnswer>>({});
   const [clash, setClash] = useState<Record<string, 'a' | 'b'>>({});
+  /** 几条路都不合适：自己说 */
+  const [own, setOwn] = useState<string | null>(null);
   const option = round.options.find((o) => o.id === picked);
   // 最适合他的那条排在最前面
   const options = [...round.options].sort((a, b) => Number(!!b.best) - Number(!!a.best));
@@ -50,7 +52,7 @@ export function Finale({ round }: { round: BossRound }) {
   const recap = [...played.quotes.map((q) => `「${q.text}」`), ...played.decisions.map((d) => `${d.thing} → ${d.choice}`)].slice(0, 4);
   const filled = new Set<Piece>(before);
   if (step === 'done') piecesOfFinale(round).forEach((p) => filled.add(p));
-  else if (picked && step !== 'pick') filled.add('direction');
+  else if ((picked || own?.trim()) && step !== 'pick') filled.add('direction');
   const missing = pieces.filter((p) => !filled.has(p));
 
   const afterRecap = () => (round.read.length ? go('read') : afterRead());
@@ -66,7 +68,7 @@ export function Finale({ round }: { round: BossRound }) {
     setSent(true);
     setStep('done');
     playMusic('home');
-    setTimeout(() => g.finale(round, { option: picked!, replies, bring, read, clash }), 1900);
+    setTimeout(() => g.finale(round, { option: own !== null ? '' : picked!, own: own ?? undefined, replies, bring, read, clash }), 1900);
   };
 
   return (
@@ -236,6 +238,7 @@ export function Finale({ round }: { round: BossRound }) {
                       onClick={() => {
                         sfx.tap();
                         setPicked(o.id);
+                        setOwn(null);
                       }}
                       className={`relative flex w-full items-start gap-3 rounded-3xl border-2 border-b-[5px] p-3 text-left ${on ? 'border-violet-500 bg-violet-50' : 'border-slate-200 bg-white'}`}
                     >
@@ -258,13 +261,34 @@ export function Finale({ round }: { round: BossRound }) {
                     </motion.button>
                   );
                 })}
+                {own === null ? (
+                  <button
+                    onClick={() => {
+                      sfx.tap();
+                      setPicked(null);
+                      setOwn('');
+                    }}
+                    className="w-full rounded-2xl border-2 border-dashed border-sky-300 py-2.5 text-[16px] font-extrabold text-sky-600"
+                  >
+                    {t('sayOwn')}
+                  </button>
+                ) : (
+                  <input
+                    autoFocus
+                    value={own}
+                    maxLength={120}
+                    onChange={(e) => setOwn(e.target.value)}
+                    placeholder={t('ownPh')}
+                    className="w-full rounded-2xl border-2 border-sky-300 bg-white px-4 py-3 text-[17px] font-bold text-slate-700 outline-none focus:border-sky-500"
+                  />
+                )}
                 {round.gamble && (
                   <button onClick={() => g.gamble(round)} className="w-full rounded-2xl border-2 border-dashed border-slate-300 py-2 text-sm font-black text-slate-400">
                     {round.gamble.emoji} {round.gamble.label || t('finaleGamble')}
                   </button>
                 )}
               </div>
-              <Btn disabled={!picked} onClick={afterPick}>
+              <Btn disabled={!picked && !own?.trim()} onClick={afterPick}>
                 {t('finaleGo')}
               </Btn>
             </motion.div>

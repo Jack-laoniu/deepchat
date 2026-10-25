@@ -7,7 +7,8 @@ import { genericLesson } from '../src/lesson/generic';
 import { dropDecided } from '../src/lesson/salvage';
 import { parseLesson } from '../src/lesson/schema';
 import { charById } from '../src/chars/library';
-import { chatFromConfig, discussNeed, finaleFor, friendChat, generateLesson, reactLine, UpstreamError, type GenerateResult, type ModelChoice, type StartChat, type Turn } from './generate';
+import { cameoById } from '../src/chars/cameos';
+import { chatFromConfig, discussNeed, finaleFor, friendChat, groupChat, suggestCameos, type Member, generateLesson, reactLine, UpstreamError, type GenerateResult, type ModelChoice, type StartChat, type Turn } from './generate';
 
 /**
  * 网页版的生成接口：
@@ -136,6 +137,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   if (path === '/api/clientlog') return clientLog(req, res);
   if (path === '/api/finale') return finale(req, res, cfg);
   if (path === '/api/friend') return friend(req, res, cfg);
+  if (path === '/api/cameos') return cameos(req, res, cfg);
   if (path !== '/api/generate') return false;
   if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
   if (!client) return void json(res, 503, { error: 'disabled' }), true;
@@ -319,6 +321,41 @@ async function friend(req: IncomingMessage, res: ServerResponse, cfg: ReturnType
   return true;
 }
 
+/** 按需求挑最有梗的三位古典人物来客串（同一个需求只问一次模型） */
+const cameoCache = new Map<string, { id: string; hook: string }[]>();
+async function cameos(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<typeof settings>): Promise<boolean> {
+  if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
+  if (!cfg.client) return void json(res, 503, { error: 'disabled' }), true;
+  let body: { need?: unknown; lang?: unknown; code?: unknown };
+  try {
+    body = (await readBody(req, 4096)) as typeof body;
+  } catch {
+    return void json(res, 400, { error: 'bad_request' }), true;
+  }
+  if (cfg.accessCode && body?.code !== cfg.accessCode) return void json(res, 403, { error: 'code' }), true;
+  const need = typeof body?.need === 'string' ? body.need.trim().slice(0, MAX_NEED_CHARS) : '';
+  if (!need) return void json(res, 400, { error: 'need' }), true;
+  const lang = body?.lang === 'en' ? 'en' : 'zh';
+  const key = `${lang}:${need}`;
+  if (cameoCache.has(key)) return void json(res, 200, { picks: cameoCache.get(key) }), true;
+  const verdict = allow(clientIp(req), cfg.discussPerIpPerHour, cfg.perDay, talkHits);
+  if (verdict !== 'ok') return void json(res, 429, { error: verdict === 'ip' ? 'rate_ip' : 'rate_day' }), true;
+  running++;
+  try {
+    const picks = await suggestCameos(cfg.client, need, lang);
+    if (picks.length) {
+      cameoCache.set(key, picks);
+      if (cameoCache.size > 300) cameoCache.delete(cameoCache.keys().next().value!);
+    }
+    json(res, 200, { picks });
+  } catch (e) {
+    upstreamFailed(res, 'cameos', e);
+  } finally {
+    running--;
+  }
+  return true;
+}
+
 const MAX_PLAN_CHARS = 8000;
 const MAX_TURNS = 16;
 const MAX_MESSAGE_CHARS = 400;
@@ -327,9 +364,9 @@ async function discuss(req: IncomingMessage, res: ServerResponse, cfg: ReturnTyp
   if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
   if (!cfg.client) return void json(res, 503, { error: 'disabled' }), true;
 
-  let body: { plan?: unknown; history?: unknown; message?: unknown; lang?: unknown; code?: unknown; memory?: unknown };
+  let body: { plan?: unknown; history?: unknown; message?: unknown; lang?: unknown; code?: unknown; memory?: unknown; members?: unknown; joined?: unknown };
   try {
-    body = (await readBody(req, 32_000)) as typeof body;
+    body = (await readBody(req, 40_000)) as typeof body;
   } catch {
     return void json(res, 400, { error: 'bad_request' }), true;
   }
@@ -342,7 +379,13 @@ async function discuss(req: IncomingMessage, res: ServerResponse, cfg: ReturnTyp
     .map((t) => ({ role: t.role, content: t.content.slice(0, 1200) }));
   // 历史必须从用户开始、一问一答交替，否则模型接口会拒绝
   while (history[0]?.role === 'assistant') history.shift();
-  if (!plan || !message || [...message].length > MAX_MESSAGE_CHARS) return void json(res, 400, { error: 'need' }), true;
+  // 多人讨论：members = 在场的人（小芳、熟人、客串）；joined = 刚被请进来的那位（这时可以没有消息）
+  const members: Member[] = (Array.isArray(body?.members) ? body.members : [])
+    .filter((m): m is Member => typeof m?.id === 'string' && (!!cameoById(m.id) || (!!charById(m.id) && m.id !== 'me')))
+    .slice(0, 8)
+    .map((m) => ({ id: m.id, hearts: Math.max(0, Math.min(5, Number(m.hearts) || 0)), quests: Array.isArray(m.quests) ? m.quests.filter((q): q is string => typeof q === 'string').slice(0, 5).map((q) => q.slice(0, 40)) : [] }));
+  const joined = typeof body?.joined === 'string' && members.some((m) => m.id === body.joined) ? body.joined : undefined;
+  if (!plan || (!message && !joined) || [...message].length > MAX_MESSAGE_CHARS) return void json(res, 400, { error: 'need' }), true;
   const lang = body?.lang === 'en' ? 'en' : 'zh';
 
   const verdict = allow(clientIp(req), cfg.discussPerIpPerHour, cfg.perDay, talkHits);
@@ -352,6 +395,11 @@ async function discuss(req: IncomingMessage, res: ServerResponse, cfg: ReturnTyp
   running++;
   try {
     const memory = typeof body?.memory === 'string' ? body.memory.slice(0, 4000) : '';
+    if (members.length) {
+      const replies = await groupChat(cfg.client, { plan, members, history, message, lang, memory, joined });
+      if (!replies) return void json(res, 422, { error: 'refused' }), true;
+      return void json(res, 200, { replies }), true;
+    }
     const reply = await discussNeed(cfg.client, { plan, history, message, lang, memory });
     if (!reply) return void json(res, 422, { error: 'refused' }), true;
     json(res, 200, { reply });

@@ -114,3 +114,35 @@ describe('friend chat', async () => {
     expect(await friendChat(c2, { ...base, hearts: 1 })).toEqual({ reply: '哈哈下次再说', story: undefined });
   });
 });
+
+describe('group chat', async () => {
+  const { groupChat, groupRules } = await import('./generate');
+  const members = [{ id: 'xiaofang' }, { id: 'wang', hearts: 3, quests: ['第一辆车'] }, { id: 'c_wukong' }];
+
+  it('describes friends and cameos, and lets a newcomer speak first', () => {
+    const rules = groupRules({ plan: '# 第一辆车', members, lang: 'zh', joined: 'c_wukong' });
+    expect(rules).toContain('孙悟空');
+    expect(rules).toContain('closeness 3/5');
+    expect(rules).toContain('c_wukong has JUST joined');
+  });
+
+  it('keeps only replies from people who are in the chat', async () => {
+    const { client } = fakeClient([JSON.stringify({ replies: [{ who: 'c_wukong', say: '这车比俺老孙的金刚不坏之身还结实？' }, { who: 'ghost', say: 'x' }, { who: 'xiaofang', say: '哈哈，那你最在意哪种安全？' }] })]);
+    const r = await groupChat(client, { plan: '# 第一辆车', members, history: [], message: '', lang: 'zh', joined: 'c_wukong' });
+    expect(r?.map((x) => x.who)).toEqual(['c_wukong', 'xiaofang']);
+  });
+});
+
+describe('own words', () => {
+  it('a typed answer to a question without keyword rules, and an own finale direction, both reach the hand-off', async () => {
+    const { play } = await import('../src/lesson/engine');
+    const l = { ...lesson, rounds: [{ ...bossOf(lesson)!, read: [], clash: [] }] };
+    const boss = l.rounds[0];
+    const ask = boss.probe.find((b: any) => b.type === 'ask' && !b.if && !b.free) as any;
+    const replies = ask ? { [ask.id]: { text: '我用 Rust 和 Go' } } : {};
+    const p = play(l as Lesson, [{ round: boss.id, finale: { option: '', own: '先租一年试试', replies, bring: {} } }]);
+    expect(p.decisions.at(-1)).toEqual({ thing: boss.q, choice: '先租一年试试' });
+    expect(p.quotes.some((q) => q.text === '先租一年试试')).toBe(true);
+    if (ask) expect(p.quotes.some((q) => q.text === '我用 Rust 和 Go')).toBe(true);
+  });
+});

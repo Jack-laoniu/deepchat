@@ -35,6 +35,8 @@ export type Answer =
         read?: Record<string, ReadAnswer>;
         /** 矛盾二选一 */
         clash?: Record<string, 'a' | 'b'>;
+        /** 几条路都不合适，用户自己说的方向（这时 option 为空） */
+        own?: string;
       };
     };
 
@@ -210,6 +212,11 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
           m.set.forEach((f) => flags.add(f));
           if (m.fact) facts.push(m.fact);
         }
+      } else {
+        // 选项里没有合适的，用户自己说了：原话就是事实
+        const text = r.text.trim();
+        facts.push(`${b.q} → ${text}`);
+        quotes.push({ q: b.q, text });
       }
     }
   };
@@ -256,6 +263,12 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
       if (o) {
         applyOption(o);
         decisions.push({ thing: r.q, choice: o.label });
+      }
+      const own = a.finale.own?.trim();
+      if (!o && own) {
+        facts.push(`${r.q} → ${own}`);
+        quotes.push({ q: r.q, text: own });
+        decisions.push({ thing: r.q, choice: own });
       }
       applyBeats(r.probe, a.finale.replies);
       for (const b of r.bring) {
