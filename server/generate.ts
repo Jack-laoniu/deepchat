@@ -511,6 +511,69 @@ export async function friendChat(startChat: StartChat, i: FriendInput): Promise<
   return m ? { reply: text.slice(m[0].length).trim(), story: canTell ? m[1].trim() : undefined } : { reply: text.replace(/^\s*\[story[^\]]*\]\s*/i, '') };
 }
 
+// ---------------- 客人插话：关卡里正在进行的对话，用户请来的熟人 / 名著人物加进来 ----------------
+
+export type ChimeInput = {
+  need: string;
+  lang: 'zh' | 'en';
+  /** 插话的客人 */
+  who: string;
+  hearts?: number;
+  /** 刚被请进来（先打招呼） */
+  joined: boolean;
+  /** 最近几句台词，「名字(id): 内容」 */
+  recent: string[];
+  /** 正在问用户的问题（客人可以评论，但不能替用户回答） */
+  pending?: string;
+  /** 场上其他人（id: 名字） */
+  others: { id: string; name: string }[];
+};
+
+export function chimeRules(i: ChimeInput): string {
+  const cameo = cameoById(i.who);
+  const c = charById(i.who);
+  const me = cameo
+    ? `${cameo.name[i.lang]} from ${cameo.from[i.lang]}, a famous classic character making a CAMEO. ${cameo.persona} Compare what is being discussed to your own legend for a funny contrast (e.g. Sun Wukong on car safety: 「这车比俺老孙的金刚不坏之身还结实？先让俺拿金箍棒敲两下！」), then still make ONE genuinely useful point.`
+    : `${c?.name[i.lang] ?? i.who}, the user's friend (closeness ${i.hearts ?? 0}/5). ${c?.persona ?? ''} You are on the user's side and speak from your own life experience.`;
+  return [
+    `A scene in "Need Quest" (a game that helps the user figure out what they really need) is going on. The need: ${i.need}`,
+    `The user invited a guest into the scene. You write the guest's lines. The guest (id "${i.who}"): ${me}`,
+    i.others.length ? `Others in the scene (ids you may use for ONE short reaction line): ${i.others.map((o) => `${o.id} (${o.name})`).join(', ')}` : '',
+    i.joined
+      ? 'The guest has JUST walked in: a short in-character entrance tied to what is being discussed, then their angle on it.'
+      : 'The guest has been here a while: they chime in on what is being discussed right now.',
+    i.pending ? `Someone just asked the user: 「${i.pending}」. The guest may react to the question or give the user a hint, but must NOT answer for the user.` : '',
+    'Write 1–2 lines from the guest, optionally followed by ONE short reaction from someone else in the scene. Each line under 40 Chinese characters or 25 English words, spoken, no markdown. Stay concrete about what was just said.',
+    `Write in ${i.lang === 'en' ? 'English' : 'Simplified Chinese'}. Output JSON only: {"lines":[{"who":"<id>","say":"...","mood":"${MOODS.join('|')}"}]}`,
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+}
+
+export async function chimeIn(startChat: StartChat, i: ChimeInput): Promise<{ who: string; say: string; mood?: string }[] | null> {
+  const chat = startChat(chimeRules(i), [], { json: true, effort: 'low' });
+  const r = await chat.send(`Recent lines:\n${i.recent.join('\n') || '(the scene just started)'}`);
+  if ('refused' in r) return null;
+  try {
+    const d = JSON.parse(fixInnerQuotes(extractJson(r.text)).text) as { lines?: { who?: unknown; say?: unknown; mood?: unknown }[] };
+    const ok = new Set([i.who, ...i.others.map((o) => o.id)]);
+    const lines = (d.lines ?? [])
+      .filter((x) => typeof x?.say === 'string' && x.say.trim())
+      .map((x) => ({
+        who: typeof x.who === 'string' && ok.has(x.who) ? x.who : i.who,
+        say: String(x.say).trim().slice(0, 200),
+        ...(typeof x.mood === 'string' && (MOODS as readonly string[]).includes(x.mood) ? { mood: x.mood } : {}),
+      }))
+      .slice(0, 3);
+    if (!lines.length) return null;
+    // 第一句一定是客人说的：把客人的话挪到最前面；客人一句都没说，就不插了（不替别人改口）
+    const first = lines.findIndex((l) => l.who === i.who);
+    return first < 0 ? null : [lines[first], ...lines.filter((_, j) => j !== first)];
+  } catch {
+    return null;
+  }
+}
+
 // ---------------- 多人讨论（结算后）：小芳 + 熟人 + 客串的古典人物 ----------------
 
 export type Member = { id: string; hearts?: number; quests?: string[] };

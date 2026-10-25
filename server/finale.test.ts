@@ -146,3 +146,22 @@ describe('own words', () => {
     if (ask) expect(p.quotes.some((q) => q.text === '我用 Rust 和 Go')).toBe(true);
   });
 });
+
+describe('guest chiming into a scene', async () => {
+  const { chimeIn, chimeRules } = await import('./generate');
+  const base = { need: '买第一辆车', lang: 'zh' as const, recent: ['老王 (wang): 纯电车冬天续航会掉三成'], others: [{ id: 'wang', name: '老王' }] };
+
+  it('a cameo who just walked in makes an entrance and never answers for the user', () => {
+    const r = chimeRules({ ...base, who: 'c_wukong', joined: true, pending: '你每天开多远？' });
+    expect(r).toContain('孙悟空');
+    expect(r).toContain('JUST walked in');
+    expect(r).toContain('must NOT answer for the user');
+  });
+
+  it('the first line is always the guest, others may react', async () => {
+    const { client } = fakeClient([JSON.stringify({ lines: [{ who: 'wang', say: '大圣你也来了？' }, { who: 'c_wukong', say: '俺老孙来验车！' }] })]);
+    const r = await chimeIn(client, { ...base, who: 'c_wukong', joined: true });
+    expect(r?.map((l) => l.who)).toEqual(['c_wukong', 'wang']);
+    expect(r?.[0].say).toBe('俺老孙来验车！');
+  });
+});

@@ -48,7 +48,7 @@ export function GroupChat({ plan, turns, setTurns, join }: { plan: string; turns
   const cfg = useCanGenerate();
   const g = useGame();
   const live = !inHost() && !!cfg?.generate;
-  const [members, setMembers] = useState<string[]>(() => [GUIDE, ...(g.guest ? [g.guest] : [])]);
+  const [members, setMembers] = useState<string[]>(() => [GUIDE, ...g.guests]);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState('');
@@ -233,8 +233,23 @@ function toHistory(turns: Turn[]): Turn[] {
   return out.slice(-16);
 }
 
-function InviteSheet({ present, need, onPick, onClose }: { present: string[]; need: string; onPick: (id: string) => void; onClose: () => void }) {
-  const close = friends().filter((f) => f.hearts >= CHAT_AT && !present.includes(f.id));
+/** 请人进来：交情够的熟人 + 按需求推荐的名著人物（讨论区和关卡里共用） */
+export function InviteSheet({
+  present,
+  need,
+  minHearts = CHAT_AT,
+  title,
+  onPick,
+  onClose,
+}: {
+  present: string[];
+  need: string;
+  minHearts?: number;
+  title?: string;
+  onPick: (id: string) => void;
+  onClose: () => void;
+}) {
+  const close = friends().filter((f) => f.hearts >= minHearts && !present.includes(f.id));
   const [picks, setPicks] = useState<{ id: string; hook: string }[] | null>(null);
   useEffect(() => {
     let alive = true;
@@ -260,6 +275,7 @@ function InviteSheet({ present, need, onPick, onClose }: { present: string[]; ne
         onClick={(e) => e.stopPropagation()}
         className="max-h-[80%] w-full max-w-md overflow-y-auto rounded-t-3xl bg-white p-5"
       >
+        {title && <div className="mb-3 text-lg font-black text-slate-700">{title}</div>}
         {close.length > 0 && (
           <>
             <div className="text-base font-black text-rose-500">{t('groupFriends')}</div>

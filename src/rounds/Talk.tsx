@@ -7,7 +7,10 @@ import { canListen, hush, isSpeaking, listen, prefetchSpeech, speak, speakNow } 
 import { useGame } from '../game';
 import { getLang, t } from '../i18n';
 import { matchFree, walkBeats, type Replies } from '../lesson/engine';
-import { requestReact, useCanGenerate } from '../api';
+import { requestChime, requestReact, useCanGenerate } from '../api';
+import { bondOf, heartsOf } from '../bond';
+import { cameoById } from '../chars/cameos';
+import { Face } from '../chars/Face';
 import { inHost } from '../host';
 import type { AskBeat, Beat, Line, TalkRound } from '../lesson/schema';
 import { Emoji } from '../ui/Emoji';
@@ -34,6 +37,9 @@ export function useCast() {
   return useMemo(() => {
     const lang = getLang();
     return (id: string): Who => {
+      // 请来客串的名著人物：不在角色库里，名字和声音从客串表里取
+      const cameo = cameoById(id);
+      if (cameo) return { id, name: cameo.name[lang === 'en' ? 'en' : 'zh'], color: 'text-amber-600', pitch: cameo.voice.pitch, rate: cameo.voice.rate, gender: cameo.voice.gender };
       const def = charById(id);
       const i = cast.findIndex((c) => c.id === id);
       const as = cast[i]?.as;
@@ -55,6 +61,19 @@ const label = (w: Who) => (w.as ? `${w.as} · ${w.name}` : w.name);
 // ---------------- 对话脚本 → 逐条显示的时间线 ----------------
 
 type Item = { key: string; kind: 'line'; who: string; say: string; mood?: Mood } | { key: string; kind: 'ask'; beat: AskBeat };
+type Extra = { anchor: string; before: boolean; lines: Item[] };
+
+/** 把客人插的话挂到对应那句的前面 / 后面 */
+function withExtras(items: Item[], extras: Extra[]): Item[] {
+  if (!extras.length) return items;
+  const out: Item[] = [];
+  for (const it of items) {
+    for (const e of extras) if (e.before && e.anchor === it.key) out.push(...e.lines);
+    out.push(it);
+    for (const e of extras) if (!e.before && e.anchor === it.key) out.push(...e.lines);
+  }
+  return out;
+}
 
 function transcript(beats: Beat[], replies: Replies, baseFlags: Set<string>): Item[] {
   const out: Item[] = [];
@@ -110,7 +129,7 @@ function Stage({ ids, speaker, mood, talking }: { ids: string[]; speaker: string
               animate={{ scale: active ? 1.08 : 0.94, y: active ? -2 : 0, opacity: speaker && !active ? 0.85 : 1 }}
               transition={{ type: 'spring', stiffness: 260, damping: 18 }}
             >
-              <Character
+              <Face
                 id={id}
                 size={ids.length > 3 ? 62 : 76}
                 mood={active ? mood : 'neutral'}
@@ -143,11 +162,16 @@ export function Dialogue({
   onDone: (r: Replies) => void;
 }) {
   const who = useCast();
+  const g = useGame();
+  const cfg = useCanGenerate();
+  const live = !!cfg?.generate && !inHost();
   const [replies, setReplies] = useState<Replies>({});
   const [shown, setShown] = useState(1);
   const [typing, setTyping] = useState(false);
   const [talking, setTalking] = useState(false);
-  const items = useMemo(() => transcript(beats, replies, baseFlags), [beats, replies, baseFlags]);
+  // 请来的客人插进来的台词（挂在某一句的前面或后面）
+  const [extras, setExtras] = useState<Extra[]>([]);
+  const items = useMemo(() => withExtras(transcript(beats, replies, baseFlags), extras), [beats, replies, baseFlags, extras]);
   const speakers = useMemo(() => speakersOf(beats), [beats]);
   const scroller = useRef<HTMLDivElement>(null);
   const last = items[Math.min(shown, items.length) - 1];
@@ -205,10 +229,56 @@ export function Dialogue({
     return () => clearTimeout(timer);
   }, [style, shown, items, waitingAsk, talking]);
 
+  // 客人插话：刚请进来的客人马上加入眼前的对话；之前就请来的，在每段对话开头几句之后插一次话
+  const present = useRef(new Set(g.guests));
+  const chimed = useRef(new Set<string>());
+  const chiming = useRef(false);
+  const now = useRef({ items, shown, waitingAsk });
+  now.current = { items, shown, waitingAsk };
+  useEffect(() => {
+    if (!live || chiming.current) return;
+    const guest = g.guests.find((id) => !chimed.current.has(id));
+    if (!guest) return;
+    const fresh = !present.current.has(guest);
+    if (!fresh && shown < Math.min(3, items.length)) return;
+    chimed.current.add(guest);
+    chiming.current = true;
+    let alive = true;
+    const recent = items
+      .slice(Math.max(0, shown - 8), shown)
+      .map((it) => (it.kind === 'ask' ? `${who(it.beat.who).name} (${it.beat.who}): ${it.beat.q}` : `${it.who === 'me' ? 'User' : who(it.who).name || 'Narrator'} (${it.who}): ${it.say}`));
+    void requestChime({
+      need: g.lesson?.need ?? '',
+      who: guest,
+      hearts: cameoById(guest) ? undefined : heartsOf(bondOf(guest).xp),
+      joined: fresh,
+      recent,
+      pending: waitingAsk?.q,
+      others: speakers.map((id) => ({ id, name: who(id).name })),
+    }).then((lines) => {
+      chiming.current = false;
+      if (!alive || !lines) return;
+      const { items: list, shown: n, waitingAsk: asking } = now.current;
+      const anchor = list[Math.min(n, list.length) - 1];
+      if (!anchor) return;
+      const added: Item[] = lines.map((l, j) => ({ key: `x${guest}${j}`, kind: 'line', who: l.who, say: l.say, mood: l.mood as Mood | undefined }));
+      if (asking && anchor.kind === 'ask') {
+        // 正在等用户回答：插在问题前面、马上显示，问题仍留在最下面；台词直接念
+        setExtras((x) => [...x, { anchor: anchor.key, before: true, lines: added }]);
+        setShown((s) => s + added.length);
+        for (const l of added) if (l.kind === 'line') void speak(l.say, { pitch: who(l.who).pitch, rate: who(l.who).rate, gender: who(l.who).gender });
+      } else {
+        // 插在眼前这句后面，先冒出第一句（由上面的朗读效果念），后面的跟着往下走
+        setExtras((x) => [...x, { anchor: anchor.key, before: false, lines: added }]);
+        setShown((s) => s + 1);
+      }
+    });
+    return () => {
+      alive = false;
+    };
+  }, [g.guests, shown, live]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // 网页版服务器有 key 时，用户自己打的字由提问的角色现场回应；否则用关卡里预设的台词
-  const g = useGame();
-  const cfg = useCanGenerate();
-  const live = !!cfg?.generate && !inHost();
   const [pending, setPending] = useState<string | null>(null);
 
   const answer = async (beat: AskBeat, r: Replies[string]) => {
@@ -239,7 +309,7 @@ export function Dialogue({
 
   return (
     <div className="flex h-full flex-col">
-      {style === 'story' && speakers.length > 0 && <Stage ids={speakers} speaker={npcSpeaker} mood={mood} talking={talking} />}
+      {style === 'story' && speakers.length > 0 && <Stage ids={[...speakers, ...g.guests.filter((id) => !speakers.includes(id))].slice(0, 6)} speaker={npcSpeaker} mood={mood} talking={talking} />}
       {style === 'chat' && p && (
         <div className="relative mb-2 flex h-[132px] shrink-0 items-end gap-3 overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-100 via-sky-50 to-emerald-50 px-3">
           <Character id={p.id} size={96} bust mood={typing ? 'thinking' : npcSpeaker === p.id ? mood : 'neutral'} talking={npcSpeaker === p.id && talking} />
@@ -306,7 +376,7 @@ function Bubble({ who, text, mine, ask, current, chat }: { who: Who; text: strin
     >
       {!chat && (
         <button onClick={() => !mine && speakNow(text, { pitch: who.pitch, rate: who.rate, gender: who.gender })} className="shrink-0 overflow-hidden rounded-full bg-slate-100">
-          <Character id={who.id} size={40} bust />
+          <Face id={who.id} size={40} bust />
         </button>
       )}
       <div className={`max-w-[78%] ${mine ? 'text-right' : ''}`}>

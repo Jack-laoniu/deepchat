@@ -155,3 +155,26 @@ export async function requestFriend(input: {
     return { error: 'fail' };
   }
 }
+
+/** 客人插话：失败返回 null（就不插了） */
+export async function requestChime(input: {
+  need: string;
+  who: string;
+  hearts?: number;
+  joined: boolean;
+  recent: string[];
+  pending?: string;
+  others: { id: string; name: string }[];
+}): Promise<{ who: string; say: string; mood?: string }[] | null> {
+  try {
+    const res = await fetch('/api/chime', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ...input, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode() }),
+    });
+    const d = (await res.json().catch(() => ({}))) as { lines?: { who: string; say: string; mood?: string }[] };
+    return res.ok && d.lines?.length ? d.lines : null;
+  } catch {
+    return null;
+  }
+}

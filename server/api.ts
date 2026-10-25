@@ -8,7 +8,7 @@ import { dropDecided } from '../src/lesson/salvage';
 import { parseLesson } from '../src/lesson/schema';
 import { charById } from '../src/chars/library';
 import { cameoById } from '../src/chars/cameos';
-import { chatFromConfig, discussNeed, finaleFor, friendChat, groupChat, suggestCameos, type Member, generateLesson, reactLine, UpstreamError, type GenerateResult, type ModelChoice, type StartChat, type Turn } from './generate';
+import { chatFromConfig, chimeIn, discussNeed, finaleFor, friendChat, groupChat, suggestCameos, type Member, generateLesson, reactLine, UpstreamError, type GenerateResult, type ModelChoice, type StartChat, type Turn } from './generate';
 
 /**
  * 网页版的生成接口：
@@ -138,6 +138,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   if (path === '/api/finale') return finale(req, res, cfg);
   if (path === '/api/friend') return friend(req, res, cfg);
   if (path === '/api/cameos') return cameos(req, res, cfg);
+  if (path === '/api/chime') return chime(req, res, cfg);
   if (path !== '/api/generate') return false;
   if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
   if (!client) return void json(res, 503, { error: 'disabled' }), true;
@@ -350,6 +351,51 @@ async function cameos(req: IncomingMessage, res: ServerResponse, cfg: ReturnType
     json(res, 200, { picks });
   } catch (e) {
     upstreamFailed(res, 'cameos', e);
+  } finally {
+    running--;
+  }
+  return true;
+}
+
+/** 客人插话（关卡里的对话） */
+async function chime(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<typeof settings>): Promise<boolean> {
+  if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
+  if (!cfg.client) return void json(res, 503, { error: 'disabled' }), true;
+  let body: Record<string, unknown>;
+  try {
+    body = (await readBody(req, 16_000)) as Record<string, unknown>;
+  } catch {
+    return void json(res, 400, { error: 'bad_request' }), true;
+  }
+  if (cfg.accessCode && body?.code !== cfg.accessCode) return void json(res, 403, { error: 'code' }), true;
+  const who = typeof body?.who === 'string' && (cameoById(body.who) || (charById(body.who) && body.who !== 'me')) ? body.who : '';
+  const need = typeof body?.need === 'string' ? body.need.slice(0, MAX_NEED_CHARS) : '';
+  if (!who || !need) return void json(res, 400, { error: 'need' }), true;
+  const recent = (Array.isArray(body.recent) ? body.recent : []).filter((x): x is string => typeof x === 'string').slice(-10).map((x) => x.slice(0, 200));
+  const others = (Array.isArray(body.others) ? body.others : [])
+    .filter((o): o is { id: string; name: string } => typeof o?.id === 'string' && typeof o?.name === 'string' && !!charById(o.id) && o.id !== who)
+    .slice(0, 6)
+    .map((o) => ({ id: o.id, name: o.name.slice(0, 20) }));
+
+  const verdict = allow(clientIp(req), cfg.discussPerIpPerHour, cfg.perDay, talkHits);
+  if (verdict !== 'ok') return void json(res, 429, { error: verdict === 'ip' ? 'rate_ip' : 'rate_day' }), true;
+  if (running >= cfg.concurrency) return void json(res, 429, { error: 'busy' }), true;
+  running++;
+  try {
+    const lines = await chimeIn(cfg.client, {
+      need,
+      lang: body.lang === 'en' ? 'en' : 'zh',
+      who,
+      hearts: Math.max(0, Math.min(5, Number(body.hearts) || 0)),
+      joined: body.joined === true,
+      recent,
+      pending: typeof body.pending === 'string' ? body.pending.slice(0, 120) : undefined,
+      others,
+    });
+    if (!lines) return void json(res, 422, { error: 'refused' }), true;
+    json(res, 200, { lines });
+  } catch (e) {
+    upstreamFailed(res, 'chime', e);
   } finally {
     running--;
   }
