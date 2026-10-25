@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { loadConfig, type Config } from './config';
 import { keep } from './store';
+import { partnerLinks, saveLead } from './partners';
 import { ttsFromConfig, type Tts } from './tts';
 import { genericLesson } from '../src/lesson/generic';
 import { dropDecided } from '../src/lesson/salvage';
@@ -16,12 +17,33 @@ import { chatFromConfig, chimeIn, discussNeed, finaleFor, friendChat, groupChat,
  *   POST /api/generate  { need, lang, context?, memory? } → { lesson } | { error }（context：再玩一轮时带上上一关的结果；memory：用户以前闯过的需求）
  *   POST /api/react     { need, who, as, q, options, text, recent, lang } → { say, mood }（角色回应用户自己打的字）
  *   POST /api/discuss   { plan, history, message, lang } → { reply } | { error }（结算后继续聊需求）
+ *   GET  /api/partners?city=&lang= → { links }（结算页的预订入口）
+ *   POST /api/lead      { city, lang, name, contact, note, plan, consent } → 204（用户同意后，把需求单交给本地导游）
  *   POST /api/clientlog { message, stack, title, round } → 204（某一回合在浏览器里渲染出错，记进日志）
  *
  * 公开网站 + 按量计费，所以有几道保护：按 IP 限频、每日总量上限、并发上限、相同需求缓存。
  */
 
 const MAX_NEED_CHARS = 200;
+
+/** 联系本地导游：必须勾了同意；每个 IP 每小时最多 5 条 */
+const leadHits = new Map<string, number[]>();
+async function lead(req: IncomingMessage, res: ServerResponse) {
+  if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
+  let body: Record<string, unknown> | null = null;
+  try {
+    body = (await readBody(req, 24_000)) as Record<string, unknown> | null;
+  } catch {
+    return void json(res, 400, { error: 'bad' }), true;
+  }
+  const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+  const contact = str(body?.contact, 120);
+  if (body?.consent !== true || !contact) return void json(res, 400, { error: 'consent' }), true;
+  if (allow(clientIp(req), 5, Infinity, leadHits, false) !== 'ok') return void json(res, 429, { error: 'rate_ip' }), true;
+  const file = saveLead({ city: str(body.city, 20), lang: str(body.lang, 5), name: str(body.name, 60), contact, note: str(body.note, 500), plan: str(body.plan, 20_000) });
+  console.error(file ? `lead saved (${str(body.city, 20)})` : 'lead: could not save');
+  return void (file ? res.writeHead(204).end() : json(res, 500, { error: 'save' })), true;
+}
 
 /** 前端某一回合渲染出错：打进日志（每个 IP 每小时最多 20 条，防刷） */
 const clientLogs = new Map<string, { n: number; at: number }>();
@@ -72,7 +94,7 @@ function settings() {
     perIpPerHour: l.perIpPerHour || 5,
     perDay: l.perDay || 200,
     concurrency: l.concurrency || 3,
-    discussPerIpPerHour: l.discussPerIpPerHour || 30,
+    discussPerIpPerHour: l.discussPerIpPerHour || 60,
     error,
   };
 }
@@ -135,6 +157,12 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   if (path === '/api/react') return react(req, res, cfg);
   if (path === '/api/tts') return speech(req, res, cfg);
   if (path === '/api/clientlog') return clientLog(req, res);
+  if (path === '/api/partners' && req.method === 'GET') {
+    const q = new URL(req.url ?? '/', 'http://x').searchParams;
+    json(res, 200, { links: partnerLinks(loadConfig().config, q.get('city') ?? '', q.get('lang') === 'zh' ? 'zh' : 'en') });
+    return true;
+  }
+  if (path === '/api/lead') return lead(req, res);
   if (path === '/api/finale') return finale(req, res, cfg);
   if (path === '/api/friend') return friend(req, res, cfg);
   if (path === '/api/cameos') return cameos(req, res, cfg);

@@ -43,7 +43,7 @@
     "perIpPerHour": 5,
     "perDay": 200,
     "concurrency": 3,
-    "discussPerIpPerHour": 30
+    "discussPerIpPerHour": 60
   },
 
   "legal": {
@@ -53,5 +53,12 @@
     "effectiveDate": "",
     "jurisdiction": "",
     "providers": ""
+  },
+
+  "partners": {
+    "_说明": "结算页「让它成真」的预订入口。填你在联盟平台拿到的推广链接，{city} 会换成城市英文名（如 Xi'an）。不填时英文用户看到普通搜索链接（不计佣），中文用户不显示。用户提交的「联系本地导游」需求单存在服务器 /var/lib/need-quest/leads.jsonl",
+    "hotels": "",
+    "tours": "",
+    "esim": ""
   }
 }

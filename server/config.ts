@@ -22,6 +22,8 @@ export interface Config {
   /** 测试访问码：填了以后网页上要输入它才能生成 */
   accessCode?: string;
   limits?: { perIpPerHour?: number; perDay?: number; concurrency?: number; discussPerIpPerHour?: number };
+  /** 结算页的预订入口：联盟链接模板，{city} 会换成城市英文名；不填用默认的普通搜索链接（只给英文用户） */
+  partners?: { hotels?: string; tours?: string; esim?: string };
   /** 隐私政策 /privacy、用户协议 /terms 里要填的运营者信息；providers 不填则按上面配的接口自动写 */
   legal?: { operator?: string; contact?: string; effectiveDate?: string; jurisdiction?: string; providers?: string };
 }

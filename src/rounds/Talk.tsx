@@ -7,8 +7,8 @@ import { canListen, hush, isSpeaking, listen, prefetchSpeech, speak, speakNow } 
 import { useGame } from '../game';
 import { getLang, t } from '../i18n';
 import { matchFree, walkBeats, type Replies } from '../lesson/engine';
-import { requestChime, requestReact, useCanGenerate } from '../api';
-import { bondOf, heartsOf } from '../bond';
+import { cameoPicks, prefetchChime, requestChime, requestReact, setScene, takeChime, useCanGenerate } from '../api';
+import { bondOf, friends, heartsOf, INVITE_AT } from '../bond';
 import { cameoById } from '../chars/cameos';
 import { Face } from '../chars/Face';
 import { inHost } from '../host';
@@ -229,6 +229,34 @@ export function Dialogue({
     return () => clearTimeout(timer);
   }, [style, shown, items, waitingAsk, talking]);
 
+  // 这段对话的标识和上下文（插话、影子后台都用）
+  const sceneKey = `${g.played?.current?.id ?? ''}:${items[0]?.key ?? ''}`;
+  const sceneInput = () => ({
+    need: g.lesson?.need ?? '',
+    recent: items
+      .slice(Math.max(0, shown - 8), shown)
+      .map((it) => (it.kind === 'ask' ? `${who(it.beat.who).name} (${it.beat.who}): ${it.beat.q}` : `${it.who === 'me' ? 'User' : who(it.who).name || 'Narrator'} (${it.who}): ${it.say}`)),
+    pending: waitingAsk?.q,
+    others: speakers.map((id) => ({ id, name: who(id).name })),
+  });
+
+  // 熟人的影子后台：对话进行到第 3 句时，替最可能被请来的两位（交情最深的熟人、最对这个需求的名著人物）先把进场的话准备好
+  const prepared = useRef('');
+  useEffect(() => {
+    if (!live) return;
+    setScene({ key: sceneKey, shown, input: sceneInput() });
+    if (shown < Math.min(3, items.length) || prepared.current === sceneKey) return;
+    prepared.current = sceneKey;
+    const here = new Set([...speakers, ...g.guests]);
+    const friend = friends().find((f) => f.hearts >= INVITE_AT && !here.has(f.id));
+    if (friend) prefetchChime(sceneKey, shown, { ...sceneInput(), who: friend.id, hearts: friend.hearts, joined: true });
+    void cameoPicks(g.lesson?.need ?? '').then((p) => {
+      const c = p.find((x) => !here.has(x.id));
+      if (c) prefetchChime(sceneKey, shown, { ...sceneInput(), who: c.id, joined: true });
+    });
+  }, [shown, live, sceneKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => setScene(null), []);
+
   // 客人插话：刚请进来的客人马上加入眼前的对话；之前就请来的，在每段对话开头几句之后插一次话
   const present = useRef(new Set(g.guests));
   const chimed = useRef(new Set<string>());
@@ -244,18 +272,9 @@ export function Dialogue({
     chimed.current.add(guest);
     chiming.current = true;
     let alive = true;
-    const recent = items
-      .slice(Math.max(0, shown - 8), shown)
-      .map((it) => (it.kind === 'ask' ? `${who(it.beat.who).name} (${it.beat.who}): ${it.beat.q}` : `${it.who === 'me' ? 'User' : who(it.who).name || 'Narrator'} (${it.who}): ${it.say}`));
-    void requestChime({
-      need: g.lesson?.need ?? '',
-      who: guest,
-      hearts: cameoById(guest) ? undefined : heartsOf(bondOf(guest).xp),
-      joined: fresh,
-      recent,
-      pending: waitingAsk?.q,
-      others: speakers.map((id) => ({ id, name: who(id).name })),
-    }).then((lines) => {
+    // 影子后台提前准备好了就直接用，不用再等
+    const lines = (fresh && takeChime(sceneKey, guest, shown)) || requestChime({ ...sceneInput(), who: guest, hearts: cameoById(guest) ? undefined : heartsOf(bondOf(guest).xp), joined: fresh });
+    void lines.then((lines) => {
       chiming.current = false;
       if (!alive || !lines) return;
       const { items: list, shown: n, waitingAsk: asking } = now.current;

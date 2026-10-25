@@ -93,6 +93,8 @@ NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
 PrivateTmp=true
+# 「联系本地导游」的需求单存在 /var/lib/need-quest（服务里叫 STATE_DIRECTORY）
+StateDirectory=need-quest
 
 [Install]
 WantedBy=multi-user.target

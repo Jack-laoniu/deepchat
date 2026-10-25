@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
-import { loadCode, useCanGenerate } from '../api';
+import { cameoPicks, loadCode, prefetchChime, scene, useCanGenerate } from '../api';
 import { bondOf, CHAT_AT, friends, heartsOf, touchBond } from '../bond';
 import { CAMEOS, cameoById, isCameo } from '../chars/cameos';
 import { Character } from '../chars/Character';
@@ -253,14 +253,19 @@ export function InviteSheet({
   const [picks, setPicks] = useState<{ id: string; hook: string }[] | null>(null);
   useEffect(() => {
     let alive = true;
-    void fetch('/api/cameos', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ need, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode() }) })
-      .then((r) => r.json())
-      .then((d: { picks?: { id: string; hook: string }[] }) => alive && setPicks(d.picks ?? []))
-      .catch(() => alive && setPicks([]));
+    void cameoPicks(need).then((p) => {
+      if (!alive) return;
+      setPicks(p);
+      // 关卡里正在对话：给面板最上面的几位提前准备进场的话，点了就能马上说
+      const sc = scene;
+      if (!sc) return;
+      const top = [...close.slice(0, 2).map((f) => ({ id: f.id, hearts: f.hearts })), ...p.slice(0, 2).map((c) => ({ id: c.id, hearts: undefined }))];
+      for (const c of top) prefetchChime(sc.key, sc.shown, { ...sc.input, who: c.id, hearts: c.hearts, joined: true });
+    });
     return () => {
       alive = false;
     };
-  }, [need]);
+  }, [need]); // eslint-disable-line react-hooks/exhaustive-deps
   const hooks = new Map((picks ?? []).map((p) => [p.id, p.hook]));
   // 推荐的排在前面
   const cameos = [...CAMEOS].filter((c) => !present.includes(c.id)).sort((a, b) => Number(hooks.has(b.id)) - Number(hooks.has(a.id)));

@@ -38,6 +38,12 @@ if ! grep -q "EnvironmentFile=" /etc/systemd/system/need-quest.service; then
   systemctl daemon-reload
 fi
 
+# 新版本要一个能写的数据目录（存「联系本地导游」的需求单）：/var/lib/need-quest
+if ! grep -q "StateDirectory=" /etc/systemd/system/need-quest.service; then
+  sed -i "s#^PrivateTmp=true#PrivateTmp=true\nStateDirectory=need-quest#" /etc/systemd/system/need-quest.service
+  systemctl daemon-reload
+fi
+
 systemctl restart need-quest
 for _ in $(seq 1 20); do
   curl -fsS http://127.0.0.1:8787/health >/dev/null 2>&1 && break

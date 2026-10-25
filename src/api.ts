@@ -157,7 +157,7 @@ export async function requestFriend(input: {
 }
 
 /** 客人插话：失败返回 null（就不插了） */
-export async function requestChime(input: {
+type ChimeInput = {
   need: string;
   who: string;
   hearts?: number;
@@ -165,7 +165,49 @@ export async function requestChime(input: {
   recent: string[];
   pending?: string;
   others: { id: string; name: string }[];
-}): Promise<{ who: string; say: string; mood?: string }[] | null> {
+};
+type ChimeLines = { who: string; say: string; mood?: string }[] | null;
+
+/**
+ * 熟人的「影子后台」：对话进行时，提前替最可能被请来的客人把进场的话准备好；
+ * 用户真把他请进来时直接用，不用再等模型。准备好的话只在同一段对话、往后不超过 6 句内有效。
+ */
+const ready = new Map<string, { shown: number; at: number; lines: Promise<ChimeLines> }>();
+/** 眼前这段对话的快照：邀请面板打开时，用它给面板上的人提前准备 */
+export let scene: { key: string; shown: number; input: Omit<ChimeInput, 'who' | 'hearts' | 'joined'> } | null = null;
+export const setScene = (s: typeof scene) => void (scene = s);
+
+export function prefetchChime(key: string, shown: number, input: ChimeInput) {
+  const k = `${key}|${input.who}`;
+  const old = ready.get(k);
+  if (old && shown - old.shown <= 3) return;
+  ready.set(k, { shown, at: Date.now(), lines: requestChime(input) });
+}
+
+/** 拿准备好的话（拿了就删）；没有或过期了返回 null */
+export function takeChime(key: string, who: string, shown: number): Promise<ChimeLines> | null {
+  const k = `${key}|${who}`;
+  const r = ready.get(k);
+  ready.delete(k);
+  return r && shown - r.shown <= 6 && Date.now() - r.at < 180_000 ? r.lines : null;
+}
+
+/** 按需求推荐的名著人物（邀请面板和影子后台共用，同一个需求只问一次） */
+const picksOf = new Map<string, Promise<{ id: string; hook: string }[]>>();
+export function cameoPicks(need: string): Promise<{ id: string; hook: string }[]> {
+  const k = `${getLang()}|${need}`;
+  if (!picksOf.has(k))
+    picksOf.set(
+      k,
+      fetch('/api/cameos', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ need, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode() }) })
+        .then((r) => r.json())
+        .then((d: { picks?: { id: string; hook: string }[] }) => d.picks ?? [])
+        .catch(() => []),
+    );
+  return picksOf.get(k)!;
+}
+
+export async function requestChime(input: ChimeInput): Promise<ChimeLines> {
   try {
     const res = await fetch('/api/chime', {
       method: 'POST',

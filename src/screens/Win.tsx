@@ -21,6 +21,8 @@ import { copyText } from '../ui/copy';
 import { getLang, t } from '../i18n';
 import { type Turn } from './Discuss';
 import { NextStep } from './NextStep';
+import { MakeItHappen } from './MakeItHappen';
+import { FriendChat } from './FriendChat';
 import { ShareSheet } from './ShareSheet';
 
 /** 每一局只记一次交情（开发模式下 effect / 初始化会跑两次） */
@@ -82,6 +84,8 @@ export function Win() {
   const [bonds] = useState(() => earnOnce(l, p, g.guest));
   const [join, setJoin] = useState<{ id: string; n: number } | undefined>();
   const askIn = (id: string) => setJoin((j) => ({ id, n: (j?.n ?? 0) + 1 }));
+  // 点头像：和这位熟人单独聊（带上这一关的需求单，让他从自己的角度看）
+  const [chatWith, setChatWith] = useState<string | null>(null);
 
   useEffect(() => {
     celebrate();
@@ -145,7 +149,7 @@ export function Win() {
                 initial={{ y: 16, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.4 + i * 0.1 }}
-                onClick={() => b.after >= CHAT_AT && askIn(b.id)}
+                onClick={() => b.after >= CHAT_AT && setChatWith(b.id)}
                 className="flex w-[72px] flex-col items-center rounded-2xl bg-white pb-1 shadow-sm"
               >
                 <Character id={b.id} size={52} bust mood={b.after > b.before ? 'happy' : 'neutral'} />
@@ -154,6 +158,7 @@ export function Win() {
               </motion.button>
             ))}
           </div>
+          {bonds.some((b) => b.after >= CHAT_AT) && <div className="mt-1 text-center text-[11px] font-bold text-rose-400">{t('bondChatHint')}</div>}
           {/* 交情够了的熟人（不管这一关有没有出场）：请进下面的讨论，从自己的角度看看这个需求 */}
           <div className="mt-2 flex flex-wrap justify-center gap-1.5">
             {friends()
@@ -205,6 +210,8 @@ export function Win() {
           <span className="text-sm font-extrabold text-sky-700">{l.secret}</span>
         </div>
       )}
+
+      {l.city && !inHost() && <MakeItHappen city={l.city} plan={text} />}
 
       <NextStep plan={plan} text={text} turns={turns} setTurns={setTurns} join={join} />
 
@@ -270,6 +277,7 @@ export function Win() {
         )}
       </AnimatePresence>
       <AnimatePresence>{sharing && <ShareSheet onClose={() => setSharing(false)} />}</AnimatePresence>
+      <AnimatePresence>{chatWith && <FriendChat id={chatWith} plan={text} onClose={() => setChatWith(null)} />}</AnimatePresence>
     </div>
   );
 }
