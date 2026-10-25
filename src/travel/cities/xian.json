@@ -235,6 +235,11 @@
       "title": "Trip.com: Best time to visit Xi'an",
       "url": "https://sg.trip.com/guide/info/best-time-to-visit-xi-an.html",
       "kind": "ota"
+    },
+    {
+      "id": "s_team_1025",
+      "title": "Team check via official WeChat accounts / sites, 2026-10-25",
+      "kind": "team"
     }
   ],
   "entry": [
@@ -283,13 +288,14 @@
       "mode": "Visa",
       "time": "up to 240 h (10 days)",
       "cost": "free",
-      "note": "XIY is an eligible port; the permitted area is Shaanxi Province. Requires an onward ticket to a THIRD country/region; clock starts 00:00 the day after entry; eligible nationalities list changes.",
-      "conf": "medium",
+      "note": "XIY is an eligible port. Cross-province travel is allowed within the permitted areas of the 24 eligible provinces; Shaanxi's area is the whole province. Needs an onward ticket to a THIRD country/region; clock starts 00:00 the day after entry; the nationality list changes.",
+      "conf": "high",
       "src": [
+        "s_team_1025",
         "s_ct_240",
         "s_wh_240"
       ],
-      "verify": "Nationality list and whether travel beyond Shaanxi is allowed on the traveler's route — National Immigration Administration."
+      "verify": "Nationality list for the traveler's passport."
     }
   ],
   "get_around": [
@@ -309,17 +315,15 @@
     },
     {
       "id": "g_tw_bus306",
-      "route": "Xi'an Railway Station → Terracotta Army",
-      "mode": "Public bus 306 (Tourism Line 5)",
-      "time": "about 1–1.5 h",
-      "cost": "¥7–8, pay on the bus",
-      "note": "Plain public bus. Uniformed touts nearby steer people to private minibuses.",
-      "conf": "medium",
+      "route": "Xi'an East Station → Terracotta Army",
+      "mode": "Bus 306 (Tourism Line 5)",
+      "time": "First/last bus 07:00–19:00",
+      "cost": "Paid to the conductor on board; no transit cards",
+      "note": "Since 29 Aug 2026 it starts at Xi'an East Station (西安东站), via Fangzhicheng hub (纺织城枢纽) and Huaqingchi. From elsewhere, take the metro to Fangzhicheng and change. It no longer leaves from the old railway station's East Square.",
+      "conf": "high",
       "src": [
-        "s_sino_tw_diy",
-        "s_cdisc_scams"
-      ],
-      "verify": "Exact departure point (East Square vs nearby terminal) and fare."
+        "s_team_1025"
+      ]
     },
     {
       "id": "g_tw_ridehail",
@@ -417,12 +421,12 @@
       "hours": "Opens 08:30; last check 17:00 (16 Mar–15 Nov) / 16:30 (16 Nov–15 Mar)",
       "ticket": {
         "cny": 120,
-        "note": "Covers the pits and Lishan Garden (the mausoleum). Students ¥60. One OTA lists ~¥100 in low season."
+        "note": "¥120 peak (Mar–Nov), ¥100 low season. Covers the pits and Lishan Garden."
       },
       "booking": {
         "required": true,
-        "how": "Real-name online booking with passport: bmy.com.cn or the museum's official WeChat accounts.",
-        "ahead": "Book days ahead; holidays sell out first."
+        "how": "No ticket windows on site. Everyone (free-ticket groups too) books real-name in the official WeChat account 秦始皇帝陵博物院.",
+        "ahead": "3–7 days ahead in peak season, up to 10 days for holidays; timed slots, released daily until full."
       },
       "hours_needed": [
         3,
@@ -446,12 +450,12 @@
       ],
       "conf": "high",
       "src": [
+        "s_team_1025",
         "s_cdisc_tw_tix",
         "s_cxt_tw_tix",
         "s_ctd_tw",
         "s_trip_tw"
-      ],
-      "verify": "Whether on-site same-day tickets still exist (sources disagree); low-season price."
+      ]
     },
     {
       "id": "shaanxi_museum",
@@ -462,15 +466,15 @@
       "kind": "museum",
       "area": "South of the old city, near Big Wild Goose Pagoda",
       "hook": "China's best Tang-dynasty treasures — gold, glazed horses, and real tomb murals.",
-      "hours": "Daytime; check official schedule",
+      "hours": "Normally closed Mondays (except public holidays). 15 Mar–14 Nov 2026: no closing day (main hall open Mondays, Qin-Han gallery open Tuesdays) and open until 19:00; Monday closure returns after 14 Nov.",
       "ticket": {
         "cny": null,
         "note": "Main exhibition free. Tang Murals hall separate, reported ¥270."
       },
       "booking": {
         "required": true,
-        "how": "Real-name booking with passport via the official WeChat account; bring the same passport.",
-        "ahead": "Release schedule reported as 5 days ahead at 17:00 (other sources say 7 or 3 days); tickets go in minutes."
+        "how": "Free, real-name booking with passport via the official WeChat account.",
+        "ahead": "5 days ahead, released daily at 17:00 (Qin-Han gallery 17:30); very competitive."
       },
       "hours_needed": [
         2,
@@ -485,13 +489,15 @@
       "pitfalls": [
         "pf_shm_booking"
       ],
-      "conf": "medium",
+      "conf": "high",
       "src": [
+        "s_team_1025",
         "s_cdisc_shm",
         "s_tc_shm",
         "s_vx_shm"
       ],
-      "verify": "Release time, weekly closing day (not confirmed by sources), mural hall price."
+      "verify": "Tang Murals hall price (reported ¥270).",
+      "closed": "Mondays outside 15 Mar–14 Nov 2026 (except public holidays)"
     },
     {
       "id": "city_wall",
@@ -501,11 +507,11 @@
       },
       "kind": "wall",
       "area": "Around the old city; main entrance South Gate (永宁门)",
-      "hook": "The most complete ancient city wall in China — 14 km, and you can cycle the whole loop.",
+      "hook": "The most complete ancient city wall in China — 13.74 km, and you can cycle the whole loop.",
       "hours": "About 08:00–22:00 in summer; closes earlier in winter (18:00–20:00 reported)",
       "ticket": {
         "cny": 54,
-        "note": "Students ¥27; children under 1.2 m free."
+        "note": "Students ¥27; children under 1.2 m free. Bike ¥45 for 3 hours (single)."
       },
       "booking": {
         "required": false
@@ -516,7 +522,7 @@
       ],
       "crowd": 3,
       "effort": 3,
-      "best_time": "Late afternoon into sunset; lit up at night.",
+      "best_time": "Late afternoon into sunset. A full loop by bike is 1.5–2 h, 2–3 h at a sightseeing pace.",
       "getting_there": "South Gate is a short walk/metro from the Bell Tower.",
       "good_for": [
         "active",
@@ -528,13 +534,14 @@
       "pitfalls": [
         "pf_bike_rules"
       ],
-      "conf": "medium",
+      "conf": "high",
       "src": [
+        "s_team_1025",
         "s_tcg_wall",
         "s_cxt_wall",
         "s_xct_wall"
       ],
-      "verify": "Winter closing time; bike rental hours, deposit and age limits."
+      "verify": "Winter closing time."
     },
     {
       "id": "bell_drum",
@@ -661,8 +668,8 @@
       "hook": "Built for the monk who walked to India and back — the real Journey to the West.",
       "hours": "About 08:30–18:00 (tickets until 17:00)",
       "ticket": {
-        "cny": 10,
-        "note": "Temple entry reported ¥10 (VisitXian) or ¥50 (other guides); climbing the pagoda +¥25–30, bought inside."
+        "cny": 40,
+        "note": "Da Ci'en Temple ¥40 peak / ¥30 low (students half). Climbing the pagoda is a separate ticket, about ¥25, bought inside. The north and south squares and the fountain are free."
       },
       "booking": {
         "required": true,
@@ -683,12 +690,13 @@
       "pitfalls": [
         "pf_fountain"
       ],
-      "conf": "medium",
+      "conf": "high",
       "src": [
+        "s_team_1025",
         "s_vx_goose",
         "s_wic_goose"
       ],
-      "verify": "Temple ticket price (¥10 vs ¥50) and whether booking is mandatory."
+      "verify": "Whether temple entry needs advance booking."
     },
     {
       "id": "datang_everbright",
@@ -740,7 +748,7 @@
       "kind": "show",
       "area": "Huaqing Palace, Lintong — near the Terracotta Army",
       "hook": "An emperor's love story staged on a real lake with a mountain as the backdrop.",
-      "hours": "Evening shows; several sessions a night in season",
+      "hours": "Times change with the season. From 14 Sep (autumn): 19:10, 20:35, 22:00, 23:25; after 19 Oct may start earlier (e.g. 18:30). Trust the times shown when booking.",
       "ticket": {
         "cny": 199,
         "note": "About ¥199–988 by seat zone."
@@ -766,13 +774,14 @@
       "pitfalls": [
         "pf_show_season"
       ],
-      "conf": "medium",
+      "conf": "high",
       "src": [
+        "s_team_1025",
         "s_hq_tix",
         "s_vx_show",
         "s_tcg_show"
       ],
-      "verify": "Session times (three different schedules reported) and the winter edition / December pause."
+      "verify": "Winter edition / December pause."
     },
     {
       "id": "huashan",
@@ -786,7 +795,7 @@
       "hours": "Full day",
       "ticket": {
         "cny": 160,
-        "note": "¥160 Mar–Nov, ¥100 Dec–Feb. Mandatory shuttle ~¥40 each way; West Peak cable car ¥140 one way, North Peak ¥80 one way; plank walk harness ~¥30. All-in about ¥450–530."
+        "note": "Entry ¥160 Mar–Nov, ¥100 Dec–Feb. West Peak cable car ¥140 one way + its shuttle ¥40; North Peak cable car ¥80 one way + its shuttle ¥20 (peak prices). Cable car and shuttle tickets are bought separately; private cars can't drive up. Plank walk harness ~¥30."
       },
       "booking": {
         "required": false,
@@ -814,13 +823,13 @@
         "pf_huashan_daytrip",
         "pf_golden_week"
       ],
-      "conf": "medium",
+      "conf": "high",
       "src": [
+        "s_team_1025",
         "s_cft_huashan",
         "s_sino_huashan",
         "s_mcg_huashan"
-      ],
-      "verify": "Cable car prices (sources differ) and whether booking is required."
+      ]
     }
   ],
   "foods": [
@@ -935,15 +944,16 @@
     {
       "id": "pf_tw_booking",
       "title": "No Terracotta ticket",
-      "situation": "Turning up without a real-name booking.",
-      "consequence": "Turned away or stuck with touts; holidays sell out days ahead.",
-      "fix": "Book on bmy.com.cn / official WeChat with your passport as soon as plans are firm.",
+      "situation": "Turning up without a booking — there are no ticket windows on site.",
+      "consequence": "Turned away; peak days sell out 3–7 days ahead, holidays up to 10.",
+      "fix": "Book in the official WeChat account 秦始皇帝陵博物院 with your passport as soon as dates are firm.",
       "affects": [
         "first_timer"
       ],
       "severity": 3,
       "conf": "high",
       "src": [
+        "s_team_1025",
         "s_cdisc_tw_tix",
         "s_ctd_tw"
       ]
@@ -968,7 +978,7 @@
       "title": "The fake Terracotta bus",
       "situation": "Uniformed touts at Xi'an Railway Station steer you to a private minibus.",
       "consequence": "Pay many times the fare and get detoured to replica factories or a 'fake warriors' museum.",
-      "fix": "Metro Line 9 + bus, the plain public bus 306 (pay on board), or Didi.",
+      "fix": "Metro to Fangzhicheng then bus 306 (Tourism Line 5) from the hub, or start at Xi'an East Station; or Didi. The real bus is a public bus with a conductor.",
       "affects": [
         "first_timer",
         "budget"
@@ -976,6 +986,7 @@
       "severity": 2,
       "conf": "medium",
       "src": [
+        "s_team_1025",
         "s_cdisc_scams",
         "s_sino_tw_diy",
         "s_wic_tw"
@@ -984,19 +995,19 @@
     {
       "id": "pf_shm_booking",
       "title": "Free museum, impossible ticket",
-      "situation": "Shaanxi History Museum is free but tickets are released on a schedule and go in minutes.",
+      "situation": "The museum is free, but tickets drop 5 days ahead at 17:00 and go in minutes; outside 15 Mar–14 Nov it is closed on Mondays.",
       "consequence": "Miss the best museum in the city.",
       "fix": "Set an alarm for the release time on the official WeChat account, or go with a guide who books it.",
       "affects": [
         "history"
       ],
       "severity": 2,
-      "conf": "medium",
+      "conf": "high",
       "src": [
+        "s_team_1025",
         "s_tc_shm",
         "s_cdisc_shm"
-      ],
-      "verify": "Release time."
+      ]
     },
     {
       "id": "pf_north_station",
@@ -1086,7 +1097,7 @@
       "id": "pf_huashan_hidden_costs",
       "title": "Huashan's hidden costs",
       "situation": "Budgeting only the ¥160 entry.",
-      "consequence": "Mandatory shuttle (~¥40 each way) and cable cars triple the cost.",
+      "consequence": "Cable car and shuttle are sold separately (West Peak ¥140 + ¥40, North Peak ¥80 + ¥20, one way); the day costs ~3× the entry.",
       "fix": "Budget about ¥450–530 per person.",
       "affects": [
         "budget"
@@ -1094,6 +1105,7 @@
       "severity": 1,
       "conf": "medium",
       "src": [
+        "s_team_1025",
         "s_sino_huashan",
         "s_cft_huashan"
       ]
@@ -1101,20 +1113,20 @@
     {
       "id": "pf_bike_rules",
       "title": "Wall bike rules",
-      "situation": "Planning to cycle the wall with kids or older parents, or arriving late.",
-      "consequence": "Rental may refuse riders over 65 / under 12 (reported); rental closes before the wall.",
-      "fix": "Walk a section, or rent a tandem; arrive before late afternoon.",
+      "situation": "Planning to cycle the wall with children under 12 or adults over 65.",
+      "consequence": "Bike rental refuses riders under 12 and over 65; 12–18 need a guardian.",
+      "fix": "Walk a section instead, or let the riders go while others stroll.",
       "affects": [
         "kids",
         "seniors"
       ],
       "severity": 1,
-      "conf": "low",
+      "conf": "high",
       "src": [
+        "s_team_1025",
         "s_xct_wall",
         "s_cxt_wall"
-      ],
-      "verify": "Age limits and rental hours."
+      ]
     },
     {
       "id": "pf_fountain",
@@ -1136,7 +1148,7 @@
     {
       "id": "pf_show_season",
       "title": "Show not running",
-      "situation": "Counting on the Song of Everlasting Sorrow in winter.",
+      "situation": "Assuming fixed show times — they change with the season.",
       "consequence": "Seasonal schedule; a December pause was announced for 2026.",
       "fix": "Check the official Huaqing Palace site for your date; book real-name tickets.",
       "affects": [
@@ -1145,26 +1157,27 @@
       "severity": 1,
       "conf": "medium",
       "src": [
+        "s_team_1025",
         "s_hq_tix",
         "s_vx_show"
       ]
     },
     {
       "id": "pf_transit_area",
-      "title": "240-hour transit is Shaanxi-only (from XIY)",
-      "situation": "Entering at Xianyang Airport on visa-free transit and planning other provinces.",
-      "consequence": "Leaving the permitted area breaks the transit rules.",
-      "fix": "Check eligibility and the permitted area for your exact route before booking; onward ticket must go to a third country.",
+      "title": "240-hour transit: stay inside the permitted areas",
+      "situation": "Visa-free transit travelers planning a multi-city route.",
+      "consequence": "Going outside the permitted areas breaks the transit rules.",
+      "fix": "Cross-province travel is allowed within the permitted areas of the 24 eligible provinces (Shaanxi: the whole province). Keep the onward ticket to a third country.",
       "affects": [
         "transit_visa"
       ],
       "severity": 3,
-      "conf": "medium",
+      "conf": "high",
       "src": [
+        "s_team_1025",
         "s_ct_240",
         "s_wh_240"
-      ],
-      "verify": "Official NIA rules for multi-province routes."
+      ]
     }
   ],
   "seasons": [

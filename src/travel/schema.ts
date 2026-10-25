@@ -25,9 +25,10 @@ const Checked = { conf: Conf, src: z.array(id).min(1), verify: z.string().option
 export const Source = z.object({
   id,
   title: z.string(),
-  url: z.string().url(),
-  /** official 官方；ota 携程/Trip.com 等平台；guide 旅行社/攻略站；blog 个人或小站 */
-  kind: z.enum(['official', 'ota', 'guide', 'blog']),
+  /** team 核实的可以没有网址（写明查的是哪个官方公众号 / 网站） */
+  url: z.string().url().optional(),
+  /** official 官方；ota 携程/Trip.com 等平台；guide 旅行社/攻略站；blog 个人或小站；team 我们自己到官方渠道核实 */
+  kind: z.enum(['official', 'ota', 'guide', 'blog', 'team']),
 });
 
 export const Sight = z.object({
