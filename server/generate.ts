@@ -560,10 +560,13 @@ export async function groupChat(
   }
   const ids = new Set(input.members.map((m) => m.id));
   const replies = ((data as { replies?: unknown })?.replies ?? []) as { who?: unknown; say?: unknown }[];
+  // 模型偶尔让不在场的人说话：这句话交给主持人，不要因此整轮失败
+  const host = ids.has(GUIDE) ? GUIDE : input.members[0]?.id;
   const out = replies
-    .filter((x): x is GroupLine => typeof x?.who === 'string' && ids.has(x.who) && typeof x?.say === 'string' && !!x.say.trim())
-    .slice(0, 4)
-    .map((x) => ({ who: x.who, say: x.say.trim().slice(0, 300) }));
+    .filter((x): x is GroupLine => typeof x?.say === 'string' && !!x.say.trim())
+    .map((x) => ({ who: typeof x.who === 'string' && ids.has(x.who) ? x.who : host, say: x.say.trim().slice(0, 300) }))
+    .filter((x) => !!x.who)
+    .slice(0, 4);
   return out.length ? out : null;
 }
 

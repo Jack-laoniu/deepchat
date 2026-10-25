@@ -126,10 +126,10 @@ describe('group chat', async () => {
     expect(rules).toContain('c_wukong has JUST joined');
   });
 
-  it('keeps only replies from people who are in the chat', async () => {
+  it('gives lines from people who are not in the chat to the host', async () => {
     const { client } = fakeClient([JSON.stringify({ replies: [{ who: 'c_wukong', say: '这车比俺老孙的金刚不坏之身还结实？' }, { who: 'ghost', say: 'x' }, { who: 'xiaofang', say: '哈哈，那你最在意哪种安全？' }] })]);
     const r = await groupChat(client, { plan: '# 第一辆车', members, history: [], message: '', lang: 'zh', joined: 'c_wukong' });
-    expect(r?.map((x) => x.who)).toEqual(['c_wukong', 'xiaofang']);
+    expect(r?.map((x) => x.who)).toEqual(['c_wukong', 'xiaofang', 'xiaofang']);
   });
 });
 

@@ -39769,7 +39769,8 @@ async function groupChat(startChat, input) {
   }
   const ids = new Set(input.members.map((m) => m.id));
   const replies = data?.replies ?? [];
-  const out = replies.filter((x) => typeof x?.who === "string" && ids.has(x.who) && typeof x?.say === "string" && !!x.say.trim()).slice(0, 4).map((x) => ({ who: x.who, say: x.say.trim().slice(0, 300) }));
+  const host = ids.has(GUIDE) ? GUIDE : input.members[0]?.id;
+  const out = replies.filter((x) => typeof x?.say === "string" && !!x.say.trim()).map((x) => ({ who: typeof x.who === "string" && ids.has(x.who) ? x.who : host, say: x.say.trim().slice(0, 300) })).filter((x) => !!x.who).slice(0, 4);
   return out.length ? out : null;
 }
 async function suggestCameos(startChat, need2, lang2) {
