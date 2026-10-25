@@ -118,9 +118,12 @@ export function speak(text: string, opts: Opts = {}): Promise<void> {
   });
 }
 
-/** 用户点头像重听：清掉排队的，马上念这一句 */
+/** 有没有正在念或排着队的台词 */
+export const isSpeaking = () => current !== null || queue.length > 0;
+
+/** 马上念这一句：正在念的停掉、排队的清掉（没在念就不去打断，iPhone 上「取消后立刻念」偶尔会念两遍） */
 export function speakNow(text: string, opts: Opts = {}): Promise<void> {
-  hush();
+  if (isSpeaking()) hush();
   return speak(text, opts);
 }
 
@@ -273,12 +276,18 @@ function utter(job: Job, withVoice: boolean) {
     synth.cancel();
     if (current === job) utter(job, !!v && mute.size < 6); // 换下一个嗓音；试了好几个都哑就交给系统默认
   };
-  // 1.5 秒还没开口：有指定嗓音就换一个；连系统默认都不出声，说明这个浏览器念不了，改用服务器朗读
+  // 2.5 秒还没开口：有指定嗓音就换一个；连系统默认都不出声，说明这个浏览器念不了，改用服务器朗读
+  // 注意：手机上第一句（语音引擎刚冷启动）常常已经出声了 onstart 却来得很晚；
+  // 只看 onstart 会误判成「哑」而换嗓音重念，用户就听到两遍。所以引擎说它正在念，就当已经开口
   const watchdog = setTimeout(() => {
     if (started || finished || !unlocked || startEvents === false) return;
+    if (synth.speaking && !synth.pending) {
+      started = true;
+      return;
+    }
     if (v) return retry();
     toServer();
-  }, 1500);
+  }, 2500);
   // 某些环境不触发 onend，兜底
   const fallback = setTimeout(finish, 1500 + job.text.length * (getLang() === 'zh' || getLang() === 'ja' ? 300 : 120));
   try {
@@ -300,7 +309,8 @@ export function hush() {
   }
   playing = null;
   try {
-    window.speechSynthesis?.cancel();
+    const synth = window.speechSynthesis;
+    if (synth && (synth.speaking || synth.pending)) synth.cancel();
   } catch {
     /* ignore */
   }

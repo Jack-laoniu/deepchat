@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Character, type Mood } from '../chars/Character';
 import { charById, GUIDE } from '../chars/library';
 import { sfx } from '../fx/fx';
-import { canListen, hush, listen, prefetchSpeech, speak, speakNow } from '../fx/voice';
+import { canListen, hush, isSpeaking, listen, prefetchSpeech, speak, speakNow } from '../fx/voice';
 import { useGame } from '../game';
 import { getLang, t } from '../i18n';
 import { matchFree, walkBeats, type Replies } from '../lesson/engine';
@@ -165,7 +165,7 @@ export function Dialogue({
     if (last && spoken.current === last.key) return;
     spoken.current = last?.key ?? null;
     // 往下走了（点「继续」/答题）：上一句没念完也不念了，不排队，直接念眼前这句
-    hush();
+    if (isSpeaking()) hush();
     if (!last || !npcSpeaker) {
       setTalking(false); // 轮到「我」或旁白：上一句的嘴型别卡住（聊天模式要等它结束才出下一句）
       return;

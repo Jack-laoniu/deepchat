@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Character } from '../chars/Character';
 import { sfx } from '../fx/fx';
 import { jingle } from '../fx/music';
-import { speak } from '../fx/voice';
+import { hush, speakNow } from '../fx/voice';
 import { useGame } from '../game';
 import { getGoal, t, type MsgKey } from '../i18n';
 import { chainMeters, matches, METERS, optionDelta, type Meter } from '../lesson/engine';
@@ -68,8 +68,10 @@ export function Chain({ round }: { round: ChainRound }) {
   useEffect(() => {
     if (!card) return;
     const c = who(card.who);
-    void speak(card.say, { pitch: c.pitch, rate: c.rate, gender: c.gender });
+    // 换了一张卡：上一张没念完也不念了，直接念这张
+    void speakNow(card.say, { pitch: c.pitch, rate: c.rate, gender: c.gender });
   }, [card?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => hush, []);
 
   useEffect(() => {
     if (broke) sfx.crash();
