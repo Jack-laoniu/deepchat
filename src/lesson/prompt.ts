@@ -1,5 +1,6 @@
 import { characterCatalog, GUIDE, LANGS, MOODS } from '../chars/library';
 import dog from '../lessons/dog.json';
+import { HUMOR_BRIEF } from './humor';
 
 /** 终章的写法：整关生成时用，玩到快结尾按用户的回答重写终章时也用 */
 const BOSS_RULE = `"who" = the most knowledgeable character, "q" = the decision to make (≤ 14). "options" = 2–4 approaches people in this field actually use (e.g. for gout: 急性期先止痛就医 / 长期降尿酸药 / 只靠饮食运动), each with "pros" and "cons" (≤ 16 each), a full "fact", and set a flag. "probe" = 3–6 beats of follow-up chat that dig deeper into the chosen approach (questions with "if" on that flag, with "free" for the user's own words) — ask what an expert would need to know next (numbers, history, constraints, what they already tried). "bring" = 2–5 materials the downstream AI will need before giving a concrete plan (e.g. 最近一次尿酸化验单, 正在吃的药, 车位产权证明), each {id, emoji, label ≤ 10, fact}. No "gamble" in the finale.`;
@@ -43,6 +44,7 @@ DIALOGUE
 - "free" lets the user answer in their own words (typing or voice). "{v}" in fact is their words; "match" sets flags by keywords and reacts; "chips" are quick phrases. Use free at least twice: once for the motivation (why), once for the biggest worry or wish.
 - Besides pitfalls, characters also share what WORKS: the common or best-practice approaches in this field and who they suit ("most people in your case start with…", "the clinic usually…"). Let the user react to them; this is how they discover what they really want.
 - Dialogue is where the user feels cared for and hears REAL experience. Make each talk / map spot feel like a real person talking: 6–12 lines, characters share a concrete personal story with specific numbers and details ("my first winter, range dropped from 500 to 300 km", "I tried waking at 6 for a week and crashed by Thursday"), disagree with each other, then ask. Every talk round asks at least 2 questions; react to answers with "reply".
+${HUMOR_BRIEF}
 - any line or question can have "if" to appear depending on earlier answers (e.g. the user said they're rarely home but picked manual control → a character calls it out).
 
 RULES

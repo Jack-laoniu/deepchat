@@ -5,6 +5,7 @@ import { keep } from './store';
 import { charById, GUIDE, MOODS } from '../src/chars/library';
 import { CAMEOS, cameoById } from '../src/chars/cameos';
 import { FINALE_RULES, GENERATOR_RULES, memoryBlock, todayLine } from '../src/lesson/prompt';
+import { HUMOR_BRIEF, HUMOR_RULES } from '../src/lesson/humor';
 import { dedupeLesson, salvage, explainIssues, type Salvaged } from '../src/lesson/salvage';
 import { bossOf, roundLabel, withBoss } from '../src/lesson/journey';
 import { fixInnerQuotes, parseLesson, type BossRound, type Lesson } from '../src/lesson/schema';
@@ -420,7 +421,9 @@ The player's need: ${input.need}
 Recent dialogue:\n${input.recent.join('\n')}
 ${name} just asked: "${input.q}"${input.options.length ? `\nThe preset answers were: ${input.options.join(' / ')}` : ''}
 The player answered in their own words instead. React IN CHARACTER to exactly what they said: acknowledge the specific detail,
-and if it reveals a constraint, risk or cost, say so briefly. One short spoken line only: at most 40 Chinese characters or 18 English words.
+and if it reveals a constraint, risk or cost, say so briefly. A light, in-character touch of humor is welcome when it fits (never at the player's expense):
+${HUMOR_BRIEF}
+One short spoken line only: at most 40 Chinese characters or 18 English words.
 Language: ${input.lang === 'zh' ? 'Simplified Chinese' : 'English'}.
 Output JSON only: {"say": "...", "mood": one of ${MOODS.join('|')}}`;
   const reply = await startChat(system, [], { json: true }).send(input.text);
@@ -484,6 +487,7 @@ export function friendRules(i: FriendInput): string {
     i.quests.length ? `Needs you worked on together: ${i.quests.join('; ')}.` : '',
     'How you talk: you genuinely care about THEM. Look at things from their side — their situation, worries, money, family, energy — not from a seller\'s side. Ask how they are and how things turned out, remember what they told you, and notice what they do not say. ' +
       'Speak like a real person on the phone: first person, plain, warm, in character. Keep each reply short (under 80 words, or under 120 Chinese characters). No markdown, no lists, no headings. Usually end with one caring question.',
+    `Humor, the friend-on-the-phone kind (warmth first; skip it when they are worried or upset):\n${HUMOR_BRIEF}`,
     'You collect needs, you do not sell solutions: help them see what they really want; for a concrete plan, suggest they start a new quest in the game or take the need list to their AI.',
     `YOUR OWN STORY: you have a life of your own (invent it to fit your personality, with concrete details, places, numbers, people). ` +
       (i.stories.length ? `Stories you already told this friend (stay consistent with them, never contradict): ${i.stories.map((s) => `「${s}」`).join(' ')}. ` : '') +
@@ -533,7 +537,7 @@ export function chimeRules(i: ChimeInput): string {
   const cameo = cameoById(i.who);
   const c = charById(i.who);
   const me = cameo
-    ? `${cameo.name[i.lang]} from ${cameo.from[i.lang]}, a famous classic character making a CAMEO. ${cameo.persona} Compare what is being discussed to your own legend for a funny contrast (e.g. Sun Wukong on car safety: 「这车比俺老孙的金刚不坏之身还结实？先让俺拿金箍棒敲两下！」), then still make ONE genuinely useful point.`
+    ? `${cameo.name[i.lang]} from ${cameo.from[i.lang]}, a famous classic character making a CAMEO. ${cameo.persona} React to what was just said through your flaw, and slip ONE genuinely useful point into it. Your legend can come up, but not in every line.`
     : `${c?.name[i.lang] ?? i.who}, the user's friend (closeness ${i.hearts ?? 0}/5). ${c?.persona ?? ''} You are on the user's side and speak from your own life experience.`;
   return [
     `A scene in "Need Quest" (a game that helps the user figure out what they really need) is going on. The need: ${i.need}`,
@@ -543,7 +547,8 @@ export function chimeRules(i: ChimeInput): string {
       ? 'The guest has JUST walked in: a short in-character entrance tied to what is being discussed, then their angle on it.'
       : 'The guest has been here a while: they chime in on what is being discussed right now.',
     i.pending ? `Someone just asked the user: 「${i.pending}」. The guest may react to the question or give the user a hint, but must NOT answer for the user.` : '',
-    'Write 1–2 lines from the guest, optionally followed by ONE short reaction from someone else in the scene. Each line under 40 Chinese characters or 25 English words, spoken, no markdown. Stay concrete about what was just said.',
+    'Write 1–2 lines from the guest, then usually ONE short deadpan reaction from someone else in the scene (the straight man). Each line under 40 Chinese characters or 25 English words, spoken, no markdown. Stay concrete about what was just said.',
+    HUMOR_RULES,
     `Write in ${i.lang === 'en' ? 'English' : 'Simplified Chinese'}. Output JSON only: {"lines":[{"who":"<id>","say":"...","mood":"${MOODS.join('|')}"}]}`,
   ]
     .filter(Boolean)
@@ -583,7 +588,7 @@ function memberLine(m: Member, lang: 'zh' | 'en'): string {
   const cameo = cameoById(m.id);
   if (cameo)
     return `- ${m.id}: ${cameo.name[lang]} from ${cameo.from[lang]} — a famous classic character making a CAMEO. ${cameo.persona} ` +
-      'Speak in their iconic voice and compare the user\'s concrete need to their own legend for a funny contrast (e.g. Sun Wukong on car safety: 「这车比俺老孙的金刚不坏之身还结实？先让俺拿金箍棒敲两下！」), then still say ONE genuinely useful point.';
+      'Speak in their own voice; react to the user\'s concrete need through their flaw and slip in ONE genuinely useful point. Their legend can come up, but not in every reply.';
   const c = charById(m.id);
   if (!c) return '';
   const name = c.name[lang];
@@ -598,6 +603,7 @@ export function groupRules(input: { plan: string; members: Member[]; lang: 'zh' 
     `Members (use these ids in "who"):\n${input.members.map((m) => memberLine(m, input.lang)).filter(Boolean).join('\n')}`,
     'Each turn, 1–3 members reply — the most relevant first; they can react to each other (agree, tease, push back). Each reply is short and spoken: under 60 Chinese characters or 35 English words, no markdown. ' +
       'Stay concrete about THIS user\'s situation (their numbers, words, choices). At most one question to the user per turn, usually from the host or a friend.',
+    HUMOR_RULES,
     input.joined ? `${input.joined} has JUST joined the chat: they speak first with a short in-character entrance tied to this need, then others may react.` : '',
     `The user's need list so far:\n${input.plan}`,
     input.memory ? memoryBlock(input.memory) : '',
