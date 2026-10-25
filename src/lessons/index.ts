@@ -1,3 +1,4 @@
+import beijing from './beijing.json';
 import car from './car.json';
 import dogZh from './dog-zh.json';
 import dog from './dog.json';
@@ -8,4 +9,4 @@ import sleep from './sleep.json';
 import travel from './travel.json';
 
 /** 示例关卡；首页只展示和界面同一种语言的 */
-export const SAMPLES: unknown[] = [car, sleep, farm, pc, travel, dogZh, pcEn, dog];
+export const SAMPLES: unknown[] = [car, sleep, farm, pc, travel, dogZh, beijing, pcEn, dog];
