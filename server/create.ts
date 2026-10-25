@@ -21,9 +21,9 @@ const DOMAINS = ['https://fonts.gstatic.com', 'https://fonts.googleapis.com'];
 
 const TOOL_DESCRIPTION = `Start an interactive "Need Quest" game that helps the user figure out what they actually need.
 
-Call this whenever the user wants to get something done (buy, build, plan, set up, organize, choose…) but the details are vague. Instead of asking a list of questions, write a level as described below and pass it as "lesson". The user plays it (stories, chats with characters, a walkable map, quick choices, a finale) and the game sends back a structured summary of their real situation, own words, budget and accepted risks — use that to give the detailed plan.
+Use this when the user asks for help deciding or planning something (buy, build, plan, set up, organize, choose…) and the key details — situation, budget, constraints, preferences — are still unclear, or when they ask to play Need Quest. Do not use it for factual questions, quick tasks, or when the user has already given enough detail to answer directly. Instead of asking a list of questions, write a level as described below and pass it as "lesson". The user plays it (stories, chats with characters, a walkable map, quick choices, a finale) and the game sends back a structured summary of their real situation, own words, budget and accepted risks — use that to give the detailed plan.
 
-If you already know relevant things about this user — from your memory of them or earlier in this conversation (for example an earlier Need Quest summary: they chose a plug-in hybrid, have no fixed parking spot) — build them into the level: characters remember and mention them naturally (「你上回说想买插混，后来买了吗？」), do not re-ask what is known, and only confirm what may have changed. Use only what is relevant to this need.
+If the user already said relevant things earlier in this conversation (for example an earlier Need Quest summary: they chose a plug-in hybrid, have no fixed parking spot), build them into the level: characters mention them naturally (「你刚才说想买插混？」), do not re-ask what is known, and only confirm what may have changed. Include only what is needed for this need; never include sensitive personal data (ID numbers, health, finances beyond a budget range, passwords) or unrelated conversation content.
 
 The game finds out what the user NEEDS; it does not deliver the solution. After it returns the summary, you give the detailed plan.
 
@@ -31,7 +31,8 @@ If the tool returns validation errors, fix exactly those fields and call it agai
 
 ${GENERATOR_RULES}`;
 
-export function createNeedQuestServer(widgetHtml: string): McpServer {
+/** origin：对外的网址（如 https://quest.example.com），上架 ChatGPT 时作为组件的专属域名 */
+export function createNeedQuestServer(widgetHtml: string, origin?: string): McpServer {
   const server = new McpServer({ name: 'need-quest', version: VERSION });
 
   server.registerResource(
@@ -48,6 +49,7 @@ export function createNeedQuestServer(widgetHtml: string): McpServer {
             'openai/widgetDescription': 'An interactive mini game that turns a vague need into a clear, structured need.',
             'openai/widgetPrefersBorder': true,
             'openai/widgetCSP': { connect_domains: DOMAINS, resource_domains: DOMAINS },
+            ...(origin ? { 'openai/widgetDomain': origin } : {}),
           },
         },
       ],
@@ -76,7 +78,7 @@ export function createNeedQuestServer(widgetHtml: string): McpServer {
       title: 'Start Need Quest',
       description: TOOL_DESCRIPTION,
       inputSchema: { lesson: LessonShape },
-      annotations: { readOnlyHint: true, openWorldHint: false },
+      annotations: { title: 'Start Need Quest', readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
       _meta: {
         'openai/outputTemplate': WIDGET_OPENAI,
         'openai/toolInvocation/invoking': 'Building your quest…',
