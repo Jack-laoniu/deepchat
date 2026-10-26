@@ -41,6 +41,8 @@
 - **预订入口**：通关后可能显示酒店、门票、流量卡等合作平台的链接。点开就离开了我们的网站，之后由那个平台按它自己的隐私政策处理你的信息。部分链接是推广链接，你在那里下单我们可能获得佣金，不影响你的价格；我们不会因此收到你的个人信息。
 - **找本地导游**：只有你自己填写并勾选同意后，我们才会保存你填的称呼、联系方式、补充说明，以及这一局生成的需求单（行程偏好、预算、你的原话等），用来转给我们合作的本地导游，由导游联系你。这些信息存在我们的服务器上，保存 12 个月，或在你要求时提前删除（联系 {{CONTACT}}）。我们只把它转给为你匹配的导游，不出售，也不用于其他用途。
 
+- **分享给朋友**：你点「邀请同行的人」或「请朋友帮我参谋」时，我们会把这一关的内容、你做过的选择和你填的名字存到服务器上，生成一个链接。**拿到链接的人都能看到这些内容**，请只发给你想让他看到的人。朋友玩完点「发给你」时，他的选择、填的名字和需求单也存进同一份分享里，只有拿着这个链接的人能看到。分享内容保存 60 天后自动删除，你也可以联系我们提前删除。
+
 ## 四、第三方资源
 
 页面会从 Google Fonts（fonts.googleapis.com、fonts.gstatic.com）加载字体和表情图片，Google 会因此获得你的 IP 地址和浏览器信息。
@@ -80,6 +82,8 @@ Need Quest is a small game that turns a vague need into a clear plan through sto
 **On our website ({{SITE}}).** To generate levels, our server sends your need, your in-game answers and the on-device "character memory" to the model provider(s) we use ({{PROVIDERS}}), and, if server speech is on, dialogue text to a text-to-speech service. Identical needs are cached in memory until restart; the latest 30 generated levels (including the need text) are kept on the server for quality debugging and older ones are deleted automatically. IP addresses are held in memory for about an hour for rate limiting. Client error reports and the first 40 characters of each need go into server logs, which rotate. Character memory (up to 8 entries), closeness with characters and the access code stay in your browser's local storage; you can view, delete or turn off memory on the home page. Voice input uses your browser's speech recognition, which some browsers process on the vendor's servers. Invite links contain your need text. Fonts and emoji images load from Google Fonts.
 
 **Booking links and local guides (our website only).** After a quest we may show links to partner sites (hotels, tours, eSIMs). Some are affiliate links: we may earn a commission at no cost to you, and the partner's own privacy policy applies once you leave our site. If — and only if — you fill in the "ask a local guide" form and tick the consent box, we store your name, contact details, note and the trip brief from your quest, and pass them only to the local guide matched to you. We keep them for 12 months or until you ask us to delete them ({{CONTACT}}). We never sell them.
+
+**Sharing with friends.** When you invite a travel companion or ask a friend for advice, we store the level, the choices you made and the name you entered, and create a link. Anyone with the link can see them, so only send it to people you want to see it. When your friend sends their answers back, their choices, name and need list are stored in the same share. Shares are deleted automatically after 60 days, or earlier on request.
 
 **Children.** Not directed at children under 14 (under 13 where that is the applicable age).
 

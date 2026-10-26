@@ -1324,28 +1324,34 @@
       ],
       "bring": [
         {
-          "id": "b_passport",
-          "emoji": "🛂",
-          "label": "Passport country",
-          "fact": "Passport nationality, to check visa-free or 240-hour transit eligibility"
+          "id": "b_transport",
+          "emoji": "✈️",
+          "label": "Flights",
+          "fact": "Flights to and from Beijing"
         },
         {
-          "id": "b_dates",
-          "emoji": "📅",
-          "label": "Travel dates",
-          "fact": "Arrival and departure dates; check they avoid Mondays for the Forbidden City"
+          "id": "b_hotel",
+          "emoji": "🏨",
+          "label": "Hotel",
+          "fact": "Hotel in Beijing"
+        },
+        {
+          "id": "b_palace",
+          "emoji": "🏯",
+          "label": "Palace tickets",
+          "fact": "Forbidden City tickets (real-name, about a week ahead)"
+        },
+        {
+          "id": "b_visa",
+          "emoji": "🛂",
+          "label": "Visa / transit",
+          "fact": "Visa or visa-free / 240-hour transit eligibility checked"
         },
         {
           "id": "b_pay",
           "emoji": "💳",
-          "label": "Card for Alipay",
-          "fact": "A Visa/Mastercard to link to Alipay and WeChat Pay"
-        },
-        {
-          "id": "b_next",
-          "emoji": "🚄",
-          "label": "Next city?",
-          "fact": "Whether Beijing is the whole trip or one stop (Xi'an, Shanghai…)"
+          "label": "Alipay set up",
+          "fact": "Foreign card linked to Alipay / WeChat Pay"
         }
       ]
     }

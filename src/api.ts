@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { getLang, t, type MsgKey } from './i18n';
 import { parseLesson, type BossRound, type Lesson } from './lesson/schema';
 import { memoryText } from './memory';
+import type { Pick } from './lesson/picks';
 
 export type ServerConfig = { generate: boolean; needCode: boolean; tts: boolean };
 
@@ -184,6 +185,28 @@ export function prefetchChime(key: string, shown: number, input: ChimeInput) {
   ready.set(k, { shown, at: Date.now(), lines: requestChime(input) });
 }
 
+/** 看一眼准备好了没有（不拿走）：用来决定要不要「敲门」 */
+export const peekChime = (key: string, who: string): Promise<ChimeLines> | null => ready.get(`${key}|${who}`)?.lines ?? null;
+
+/** 敲门的规则：第一次通关后告诉用户；之后交情够的熟人和对得上需求的名著人物会主动敲门。每关每人最多敲一次 */
+const RULE = 'need-quest-knock-rule';
+export const knockRuleSeen = () => {
+  try {
+    return localStorage.getItem(RULE) === '1';
+  } catch {
+    return false;
+  }
+};
+export const markKnockRule = () => {
+  try {
+    localStorage.setItem(RULE, '1');
+  } catch {
+    /* 存不了就下次再说 */
+  }
+};
+const knocked = new Map<string, Set<string>>();
+export const knockedIn = (lesson: string) => knocked.get(lesson) ?? knocked.set(lesson, new Set()).get(lesson)!;
+
 /** 拿准备好的话（拿了就删）；没有或过期了返回 null */
 export function takeChime(key: string, who: string, shown: number): Promise<ChimeLines> | null {
   const k = `${key}|${who}`;
@@ -218,5 +241,61 @@ export async function requestChime(input: ChimeInput): Promise<ChimeLines> {
     return res.ok && d.lines?.length ? d.lines : null;
   } catch {
     return null;
+  }
+}
+
+// ---------------- 分享给真实的朋友 ----------------
+
+export type ShareReply = { at: string; role: 'companion' | 'advisor'; name: string; picks: Pick[]; plan: string };
+export type ShareData = { at: string; role: 'companion' | 'advisor'; from: string; lesson: Lesson; picks: Pick[]; replies: ShareReply[] };
+
+/** 我分享出去的行程（这台设备上记着，首页用来看朋友有没有回复） */
+const MINE = 'need-quest-shares';
+export type MyShare = { id: string; title: string; role: 'companion' | 'advisor'; at: number; seen: number };
+export const myShares = (): MyShare[] => {
+  try {
+    return JSON.parse(localStorage.getItem(MINE) ?? '[]') as MyShare[];
+  } catch {
+    return [];
+  }
+};
+export const saveMyShares = (list: MyShare[]) => {
+  try {
+    localStorage.setItem(MINE, JSON.stringify(list.slice(0, 10)));
+  } catch {
+    /* 存不了就算了 */
+  }
+};
+
+export async function createShare(role: 'companion' | 'advisor', from: string, lesson: Lesson, picks: Pick[]): Promise<string | null> {
+  try {
+    const res = await fetch('/api/share', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ role, from, lesson, picks }) });
+    const d = (await res.json().catch(() => ({}))) as { id?: string };
+    if (!res.ok || !d.id) return null;
+    saveMyShares([{ id: d.id, title: lesson.title, role, at: Date.now(), seen: 0 }, ...myShares()]);
+    return d.id;
+  } catch {
+    return null;
+  }
+}
+
+export async function getShare(id: string): Promise<ShareData | null> {
+  try {
+    const res = await fetch(`/api/share?id=${encodeURIComponent(id)}`);
+    if (!res.ok) return null;
+    const d = (await res.json()) as ShareData;
+    const l = parseLesson(d.lesson);
+    return l.ok ? { ...d, lesson: l.lesson } : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function replyShare(id: string, role: 'companion' | 'advisor', name: string, picks: Pick[], plan: string): Promise<boolean> {
+  try {
+    const res = await fetch('/api/share/reply', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, role, name, picks, plan }) });
+    return res.ok;
+  } catch {
+    return false;
   }
 }

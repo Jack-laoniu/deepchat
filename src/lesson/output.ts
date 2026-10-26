@@ -9,6 +9,7 @@ export const yuan = (n: number) => money(n);
 const H: Record<Lang, Record<string, string>> = {
   zh: {
     portrait: '需求画像（根据用户在游戏里的回答归纳，用户已逐条确认或纠正，以此为准）', portraitOk: '用户确认', portraitFix: '用户说不对', portraitNote: '用户的说法',
+    bookedHave: '已经订好 / 搞定的', bookedNeed: '还没订、还没搞定的（可以帮用户安排）',
     intro: '以下是用户通过「需求闯关」逐项确认过的真实需求（这是需求，不是方案）。请你基于它出具体方案。', plan: '目前的初步清单（估算）', haveMat: '用户手头已有的资料', needMat: '还需要用户补充的资料（出方案前请先向用户要）', 
     goalNote: '这个需求不以花钱为主：下面所有「价格 / 合计 / 上限」都是用户的「{name}」，单位：{unit}。请按这个资源来规划，不要换算成钱。',
     need: '用户原话', quotes: '用户自己说的话（原话，最能代表真实意图）', ask: '问', facts: '用户亲自确认的情况',
@@ -19,6 +20,7 @@ const H: Record<Lang, Record<string, string>> = {
   },
   en: {
     portrait: "Need profile (summarised from the user's answers in the game; the user confirmed or corrected each line — treat it as authoritative)", portraitOk: 'confirmed', portraitFix: 'user says this is wrong', portraitNote: 'user says',
+    bookedHave: 'Already booked / sorted', bookedNeed: 'Not booked or sorted yet (you can help arrange these)',
     intro: 'Below is the user\'s real need, confirmed item by item in the game "Need Quest" (a need, not a plan). Please build the actual plan from it.', plan: 'Draft list so far (estimates)', haveMat: 'Materials the user already has', needMat: 'Materials still needed from the user (ask for them first)', 
     goalNote: 'This need is not mainly about money: every price / total / cap below is the user\'s "{name}", in {unit}. Plan around that resource; do not convert it to money.',
     need: "User's original request", quotes: "In the user's own words (best signal of real intent)", ask: 'Asked', facts: 'Confirmed by the user',
@@ -77,8 +79,10 @@ export function superPrompt(lesson: Lesson, p: Played, crashes: Crash[]): string
 
   const have = p.materials.filter((m) => m.state === 'have');
   const need = p.materials.filter((m) => m.state !== 'have');
-  if (have.length) L.push(`## ${h.haveMat}`, ...have.map((m) => `- ${m.label}: ${m.fact}`), '');
-  if (need.length) L.push(`## ${h.needMat}`, ...need.map((m) => `- ${m.label}${m.state === 'unsure' ? ' (?)' : ''}: ${m.fact}`), '');
+  // 旅游关问的是「订好了没有」，其他需求问的是「手头有没有资料」
+  const trip = !!lesson.city && h.bookedHave;
+  if (have.length) L.push(`## ${trip ? h.bookedHave : h.haveMat}`, ...have.map((m) => `- ${m.label}: ${m.fact}`), '');
+  if (need.length) L.push(`## ${trip ? h.bookedNeed : h.needMat}`, ...need.map((m) => `- ${m.label}${m.state === 'unsure' ? ' (?)' : ''}: ${m.fact}`), '');
 
   L.push(`## ${h.plan}`);
   if (lesson.goal) L.push(`> ${h.goalNote.replace('{name}', lesson.goal.name).replace('{unit}', lesson.goal.unit)}`);

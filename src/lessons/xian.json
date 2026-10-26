@@ -1994,34 +1994,34 @@
       ],
       "bring": [
         {
-          "id": "b_passport",
+          "id": "b_transport",
+          "emoji": "✈️",
+          "label": "Flights / trains",
+          "fact": "Flights or trains to and from Xi'an"
+        },
+        {
+          "id": "b_hotel",
+          "emoji": "🏨",
+          "label": "Hotel",
+          "fact": "Hotel in Xi'an"
+        },
+        {
+          "id": "b_terracotta",
+          "emoji": "🏺",
+          "label": "Terracotta tickets",
+          "fact": "Terracotta Army tickets (official WeChat account, 3–7 days ahead)"
+        },
+        {
+          "id": "b_visa",
           "emoji": "🛂",
-          "label": "Passport country",
-          "fact": "Passport nationality — to check visa-free entry or 240-hour transit (Xianyang Airport is an eligible port)"
+          "label": "Visa / transit",
+          "fact": "Visa or visa-free / 240-hour transit eligibility checked"
         },
         {
-          "id": "b_wechat",
-          "emoji": "💬",
-          "label": "WeChat account",
-          "fact": "A WeChat account: Terracotta Army and Shaanxi History Museum are booked in their official WeChat accounts"
-        },
-        {
-          "id": "b_pay",
-          "emoji": "💳",
-          "label": "Card for Alipay",
-          "fact": "A Visa/Mastercard linked to Alipay or WeChat Pay"
-        },
-        {
-          "id": "b_dates",
-          "emoji": "📅",
-          "label": "Travel dates",
-          "fact": "Exact dates, to book the Terracotta Army 3–7 days ahead (10 for holidays)"
-        },
-        {
-          "id": "b_route",
-          "emoji": "🚄",
-          "label": "Before / after",
-          "fact": "Where they come from and go next (e.g. Beijing, Chengdu), to plan trains"
+          "id": "b_guide",
+          "emoji": "🧑‍🏫",
+          "label": "Guide or driver",
+          "fact": "Local guide or driver"
         }
       ]
     }

@@ -106,17 +106,6 @@ export function ShareSheet({ onClose }: { onClose: () => void }) {
     setNote(t('shareLongPress'));
   };
 
-  const invite = async () => {
-    sfx.tap();
-    const link = `${site()}/?need=${encodeURIComponent(l.need)}&from=friend`;
-    const text = `${t('inviteText', { need: l.need })}\n${link}`;
-    try {
-      if (!inHost() && navigator.share) return void (await navigator.share({ text }));
-    } catch {
-      return;
-    }
-    if (await copyText(text)) setNote(t('shareCopied'));
-  };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={onClose} className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50">
@@ -143,8 +132,6 @@ export function ShareSheet({ onClose }: { onClose: () => void }) {
         </div>
         <div className="mt-4 space-y-3">
           <Btn onClick={sharePoster} disabled={!img}>{t('sharePoster')}</Btn>
-          <Btn tone="white" onClick={invite}>{t('shareInvite')}</Btn>
-          <div className="text-center text-xs font-bold text-slate-400">{t('shareInviteNote')}</div>
           <button
             onClick={async () => (await copyText(caption)) && setNote(t('shareCopied'))}
             className="w-full text-center text-sm font-extrabold text-slate-400 hover:text-slate-600"

@@ -22,6 +22,9 @@ import { getLang, t } from '../i18n';
 import { type Turn } from './Discuss';
 import { NextStep } from './NextStep';
 import { MakeItHappen } from './MakeItHappen';
+import { SendBack, ShareWithFriends } from './FriendShare';
+import { picksOf } from '../lesson/picks';
+import { knockRuleSeen, markKnockRule } from '../api';
 import { FriendChat } from './FriendChat';
 import { ShareSheet } from './ShareSheet';
 
@@ -84,6 +87,11 @@ export function Win() {
   const [bonds] = useState(() => earnOnce(l, p, g.guest));
   const [join, setJoin] = useState<{ id: string; n: number } | undefined>();
   const askIn = (id: string) => setJoin((j) => ({ id, n: (j?.n ?? 0) + 1 }));
+  // 第一次通关：告诉用户「敲门」的规则（之后熟人和名著人物才会主动敲门）
+  const [knockNews] = useState(() => !knockRuleSeen());
+  useEffect(() => {
+    if (knockNews) markKnockRule();
+  }, [knockNews]);
   // 点头像：和这位熟人单独聊（带上这一关的需求单，让他从自己的角度看）
   const [chatWith, setChatWith] = useState<string | null>(null);
 
@@ -173,6 +181,13 @@ export function Win() {
         </div>
       )}
 
+      {knockNews && (
+        <motion.div initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 1 }} className="mt-3 flex items-start gap-2 rounded-2xl border-2 border-amber-200 bg-amber-50 p-3">
+          <Emoji e="🚪" size={30} />
+          <span className="text-[13px] font-bold leading-snug text-amber-800">{t('knockRule')}</span>
+        </motion.div>
+      )}
+
       <button onClick={() => setShowList(true)} className="mt-5 flex flex-wrap justify-center gap-2">
         {p.cart.map((it, i) => (
           <motion.span key={it.id} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.8 + i * 0.08 }}>
@@ -211,7 +226,9 @@ export function Win() {
         </div>
       )}
 
-      {l.city && !inHost() && <MakeItHappen city={l.city} plan={text} />}
+      {g.share && !inHost() && <SendBack plan={text} />}
+      {!g.share && !inHost() && <ShareWithFriends myPicks={picksOf(l, g.answers)} />}
+      {l.city && !inHost() && <MakeItHappen city={l.city} plan={text} booked={p.materials.filter((m) => m.state === 'have').map((m) => m.id)} />}
 
       <NextStep plan={plan} text={text} turns={turns} setTurns={setTurns} join={join} />
 

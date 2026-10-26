@@ -19,6 +19,7 @@ import { FriendChat } from './FriendChat';
 import { PanelGuard } from '../ui/RoundGuard';
 import { loadCode, requestLesson, saveCode, useCanGenerate } from '../api';
 import { inHost } from '../host';
+import { FriendLanding, RepliesCard } from './FriendShare';
 import { forget, memories, memoryOn, memoryText, setMemoryOn, type QuestMemory } from '../memory';
 
 type GenState = { phase: 'idle' } | { phase: 'loading'; started: number } | { phase: 'error'; msg: string };
@@ -34,6 +35,14 @@ export function Home() {
   const [code, setCode] = useState(loadCode);
   const [studio, setStudio] = useState(false);
   // 朋友通过「让朋友帮我选」的链接进来：带着朋友的需求，填好等他开玩（同一个需求服务器有缓存，开得快）
+  // 朋友分享过来的行程：/?s=…
+  const [shareId] = useState(() => {
+    try {
+      return new URLSearchParams(location.search).get('s') ?? '';
+    } catch {
+      return '';
+    }
+  });
   const [friendNeed] = useState(() => {
     try {
       const q = new URLSearchParams(location.search);
@@ -72,6 +81,8 @@ export function Home() {
         <h1 className="mb-3 text-2xl font-black leading-tight text-slate-700">{t('genTitle')}</h1>
       </div>
 
+      {shareId && <FriendLanding id={shareId} />}
+      {!shareId && !inHost() && <RepliesCard />}
       {friendNeed && <div className="mt-3 rounded-2xl border-2 border-sky-300 bg-sky-50 px-3 py-2 text-[15px] font-extrabold text-sky-800">{t('friendAsk', { need: friendNeed })}</div>}
       <div className="mt-3 rounded-3xl border-2 border-b-[5px] border-slate-200 bg-white p-3">
         <textarea

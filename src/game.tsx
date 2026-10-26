@@ -1,3 +1,4 @@
+import type { Pick } from './lesson/picks';
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { requestFinale, serverConfig } from './api';
 import { sfx } from './fx/fx';
@@ -25,6 +26,8 @@ export interface Feedback {
   round: Round;
 }
 
+export type ShareCtx = { id: string; role: 'companion' | 'advisor'; from: string; picks: Pick[] };
+
 interface Game {
   lesson: Lesson | null;
   phase: Phase;
@@ -42,7 +45,11 @@ interface Game {
   guest: string | null;
   /** 请一位客人进来。熟人：加入角色表、主持终章，个性化终章按他的角度重写；名著人物：只在对话里插话 */
   invite(id: string): void;
-  open(lesson: Lesson): void;
+  /** 这一局的全部回答（分享给朋友时提取选择用） */
+  answers: Answer[];
+  /** 朋友分享过来的这一局：分享的人是谁、请我当同行还是参谋、TA 的选择（结算时对比 / 交回） */
+  share: ShareCtx | null;
+  open(lesson: Lesson, share?: ShareCtx): void;
   begin(): void;
   choose(round: Round, optionId: string): void;
   setValue(round: Round, value: number): void;
@@ -81,6 +88,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   // 用户玩完那两关的工夫就生成好了。没有服务器、失败、超时都用关卡里原来的终章。
   const [custom, setCustom] = useState<'idle' | 'pending' | 'done'>('idle');
   const [guests, setGuests] = useState<string[]>([]);
+  const [share, setShare] = useState<ShareCtx | null>(null);
   const guest = guests.find((id) => !isCameo(id)) ?? null;
   const job = useRef(0);
   useEffect(() => {
@@ -161,8 +169,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
         setCustom('idle');
       }
     },
-    open(l) {
+    answers,
+    share,
+    open(l, ctx) {
       job.current++;
+      setShare(ctx ?? null);
       setCustom('idle');
       setGuests([]);
       setLocale(l.lang, l.currency, l.goal);
@@ -171,7 +182,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       setStreak(0);
       setCrashes([]);
       setFeedback(null);
-      setPhase('intro');
+      // 参谋的人不需要「AI 盲猜」那一页，直接开始把关
+      setPhase(ctx?.role === 'advisor' ? 'play' : 'intro');
     },
     begin: () => setPhase('play'),
     choose(round, optionId) {

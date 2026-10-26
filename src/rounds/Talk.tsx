@@ -7,7 +7,8 @@ import { canListen, hush, isSpeaking, listen, prefetchSpeech, speak, speakNow } 
 import { useGame } from '../game';
 import { getLang, t } from '../i18n';
 import { matchFree, walkBeats, type Replies } from '../lesson/engine';
-import { cameoPicks, prefetchChime, requestChime, requestReact, setScene, takeChime, useCanGenerate } from '../api';
+import { cameoPicks, knockedIn, knockRuleSeen, peekChime, prefetchChime, requestChime, requestReact, setScene, takeChime, useCanGenerate } from '../api';
+import { MAX_GUESTS } from '../game';
 import { bondOf, friends, heartsOf, INVITE_AT } from '../bond';
 import { cameoById } from '../chars/cameos';
 import { Face } from '../chars/Face';
@@ -248,13 +249,35 @@ export function Dialogue({
     if (shown < Math.min(3, items.length) || prepared.current === sceneKey) return;
     prepared.current = sceneKey;
     const here = new Set([...speakers, ...g.guests]);
+    const done = knockedIn(g.lesson?.need ?? '');
+    // 准备好了、他还没敲过门、客人还没满：弹出「某某有话要说」
+    const knockWhenReady = (id: string) => {
+      if (!knockRuleSeen() || done.has(id)) return;
+      void peekChime(sceneKey, id)?.then((lines) => {
+        if (!lines || knockRef.current || done.has(id) || gRef.current.guests.includes(id) || gRef.current.guests.length >= MAX_GUESTS) return;
+        done.add(id);
+        setKnock(id);
+      });
+    };
     const friend = friends().find((f) => f.hearts >= INVITE_AT && !here.has(f.id));
-    if (friend) prefetchChime(sceneKey, shown, { ...sceneInput(), who: friend.id, hearts: friend.hearts, joined: true });
+    if (friend) {
+      prefetchChime(sceneKey, shown, { ...sceneInput(), who: friend.id, hearts: friend.hearts, joined: true });
+      knockWhenReady(friend.id);
+    }
     void cameoPicks(g.lesson?.need ?? '').then((p) => {
       const c = p.find((x) => !here.has(x.id));
-      if (c) prefetchChime(sceneKey, shown, { ...sceneInput(), who: c.id, joined: true });
+      if (!c) return;
+      prefetchChime(sceneKey, shown, { ...sceneInput(), who: c.id, joined: true });
+      if (!friend) knockWhenReady(c.id);
     });
   }, [shown, live, sceneKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 敲门：只弹一个，点「请进」就像用户自己请他进来一样（用准备好的话，马上开口）
+  const [knock, setKnock] = useState<string | null>(null);
+  const knockRef = useRef<string | null>(null);
+  knockRef.current = knock;
+  const gRef = useRef(g);
+  gRef.current = g;
   useEffect(() => () => setScene(null), []);
 
   // 客人插话：刚请进来的客人马上加入眼前的对话；之前就请来的，在每段对话开头几句之后插一次话
@@ -338,6 +361,36 @@ export function Dialogue({
           </div>
         </div>
       )}
+
+      <AnimatePresence>
+        {knock && (
+          <motion.div
+            initial={{ y: -20, opacity: 0, scale: 0.9 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: -20, opacity: 0 }}
+            transition={{ type: 'spring', damping: 16, stiffness: 260 }}
+            className="mb-2 flex shrink-0 items-center gap-2 rounded-2xl border-2 border-b-4 border-amber-300 bg-amber-50 px-2 py-1.5"
+          >
+            <motion.span animate={{ rotate: [0, -12, 12, 0] }} transition={{ repeat: Infinity, repeatDelay: 1.2, duration: 0.5 }}>
+              {cameoById(knock) ? <Emoji e={cameoById(knock)!.emoji} size={32} /> : <Face id={knock} size={34} bust mood="happy" />}
+            </motion.span>
+            <span className="min-w-0 flex-1 text-sm font-black text-amber-800">{t('knockSays', { name: cameoById(knock)?.name[getLang() === 'en' ? 'en' : 'zh'] ?? who(knock).name })}</span>
+            <button
+              onClick={() => {
+                sfx.good();
+                g.invite(knock);
+                setKnock(null);
+              }}
+              className="rounded-xl border-2 border-b-4 border-amber-400 bg-white px-2 py-1 text-xs font-black text-amber-700"
+            >
+              {t('knockIn')}
+            </button>
+            <button onClick={() => setKnock(null)} className="px-1 text-sm font-black text-amber-400" aria-label="✕">
+              ✕
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div ref={scroller} className="min-h-0 flex-1 space-y-3 overflow-y-auto pb-2 pr-1">
         <AnimatePresence initial={false}>

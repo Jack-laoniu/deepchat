@@ -44,7 +44,7 @@ export type ReadAnswer = { ok: true } | { ok: false; text?: string };
 /** 用户确认 / 纠正过的需求画像 */
 export type Portrait = { text: string; fact: string; ok: boolean; note?: string };
 
-export type Material = { label: string; fact: string; state: 'have' | 'no' | 'unsure' };
+export type Material = { id: string; label: string; fact: string; state: 'have' | 'no' | 'unsure' };
 
 /** 连环取舍的四条槽 */
 export const METERS = ['money', 'easy', 'good', 'safe'] as const;
@@ -274,7 +274,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
       for (const b of r.bring) {
         const st = a.finale.bring[b.id];
         if (!st) continue;
-        materials.push({ label: b.label, fact: b.fact, state: st });
+        materials.push({ id: b.id, label: b.label, fact: b.fact, state: st });
       }
     } else if ('option' in a) {
       const o = optionsOf(r).find((x) => x.id === a.option);

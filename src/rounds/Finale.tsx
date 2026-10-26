@@ -322,10 +322,10 @@ export function Finale({ round }: { round: BossRound }) {
                 </div>
                 <div className="text-[15px] font-black text-slate-600">{t('finaleBring')}</div>
               </div>
-              {/* 收拾行李：已经有的点一下放进箱子，没放进去的就是还要准备的 */}
+              {/* 已经有的、已经订好的点一下；没点的就是还没搞定（交给 AI 和导游时就是机会） */}
               <div className="mb-2 flex items-center justify-center gap-2">
                 <motion.div key={round.bring.filter((b) => bring[b.id] === 'have').length} animate={{ scale: [1, 1.18, 1], rotate: [0, -6, 6, 0] }} transition={{ duration: 0.35 }}>
-                  <Emoji e="🧳" size={56} />
+                  <Emoji e="📋" size={48} />
                 </motion.div>
                 <div className="text-sm font-black text-slate-500">{t('packHint')}</div>
               </div>
@@ -354,7 +354,7 @@ export function Finale({ round }: { round: BossRound }) {
               </div>
               <Btn
                 onClick={() => {
-                  // 没放进箱子的 = 还没有，交给 AI 时提醒去准备
+                  // 没点的 = 还没有 / 还没订
                   const packed = Object.fromEntries(round.bring.map((b) => [b.id, bring[b.id] === 'have' ? 'have' : 'no'] as const));
                   setBring(packed);
                   finish(packed);

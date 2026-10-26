@@ -12,7 +12,10 @@ type Link = { id: string; emoji: string; url: string };
  * 旅游关通关后「让它成真」：预订入口（联盟链接，服务器按配置给）和「找本地导游」。
  * 导游那一块必须用户自己勾同意，才把需求单和联系方式发出去。只在我们自己的网页上显示。
  */
-export function MakeItHappen({ city, plan }: { city: string; plan: string }) {
+/** 终章里已经订好的东西 → 对应的预订入口就不再显示 */
+const COVERS: Record<string, string[]> = { hotels: ['b_hotel'], tours: ['b_terracotta', 'b_palace', 'b_show'] };
+
+export function MakeItHappen({ city, plan, booked = [] }: { city: string; plan: string; booked?: string[] }) {
   const lang = getLang() === 'zh' ? 'zh' : 'en';
   const name = CITY_NAMES[city]?.[lang] ?? city;
   const [links, setLinks] = useState<Link[]>([]);
@@ -26,7 +29,7 @@ export function MakeItHappen({ city, plan }: { city: string; plan: string }) {
   useEffect(() => {
     fetch(`/api/partners?city=${encodeURIComponent(city)}&lang=${lang}`)
       .then((r) => (r.ok ? r.json() : { links: [] }))
-      .then((d: { links?: Link[] }) => setLinks(d.links ?? []))
+      .then((d: { links?: Link[] }) => setLinks((d.links ?? []).filter((l) => !(COVERS[l.id] ?? []).some((b) => booked.includes(b)))))
       .catch(() => setLinks([]));
   }, [city, lang]);
 
