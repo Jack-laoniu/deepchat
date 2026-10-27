@@ -28,7 +28,11 @@ export interface Feedback {
   round: Round;
 }
 
-export type ShareCtx = { id: string; role: 'companion' | 'advisor'; from: string; picks: Pick[] };
+/** voices：分享的人自己用语音说的回答（选择的 key → 原声），朋友玩到同一个问题时播放 */
+export type ShareCtx = { id: string; role: 'companion' | 'advisor'; from: string; picks: Pick[]; voices?: Record<string, Voice> };
+
+/** 玩家按住说话回答的录音：先留在这台设备上（内存里），分享时才上传 */
+export type Clip = { ask: string; text: string; blob: Blob };
 
 /**
  * 请朋友留一段原声的时机：同行的人和分享的人在一个大分歧上选得不一样（split），
@@ -69,6 +73,9 @@ interface Game {
   answerVoice(v: Voice | null): void;
   /** 朋友这一局留下的原声：选择的 key → 原声 */
   voices: Record<string, Voice>;
+  /** 这一局玩家按住说话回答的录音（提问 id + 转出来的文字） */
+  clips: Clip[];
+  keepClip(c: Clip): void;
   open(lesson: Lesson, share?: ShareCtx): void;
   begin(): void;
   choose(round: Round, optionId: string): void;
@@ -114,6 +121,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [voiceAsk, setVoiceAsk] = useState<VoiceAsk | null>(null);
   const [voices, setVoices] = useState<Record<string, Voice>>({});
   const asked = useRef(new Set<string>());
+  const clips = useRef<Clip[]>([]);
   const askVoice = (after: Answer[]) => {
     if (!share || !lesson || asked.current.size >= MAX_VOICE_ASKS) return;
     const mine = picksOf(lesson, after);
@@ -254,11 +262,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
       setVoiceAsk(null);
     },
     voices,
+    clips: clips.current,
+    keepClip(c) {
+      clips.current = [...clips.current.filter((x) => x.ask !== c.ask), c];
+    },
     open(l, ctx) {
       job.current++;
       ownJob.current++;
       setOwn(null);
       asked.current.clear();
+      clips.current = [];
       setVoices({});
       setVoiceAsk(null);
       setShare(ctx ?? null);

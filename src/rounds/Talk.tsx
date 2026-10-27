@@ -7,7 +7,9 @@ import { canListen, hush, isSpeaking, listen, prefetchSpeech, speak, speakNow } 
 import { useGame } from '../game';
 import { getLang, t } from '../i18n';
 import { matchFree, matches, walkBeats, type Replies } from '../lesson/engine';
-import { cameoPicks, knockedIn, knockRuleSeen, markKnockRule, prefetchChime, requestChime, requestReact, setScene, takeChime, useCanGenerate } from '../api';
+import { canRecord, useRecorder } from '../fx/recorder';
+import { SharerVoice } from '../screens/FriendVoice';
+import { cameoPicks, transcribe, knockedIn, knockRuleSeen, markKnockRule, prefetchChime, requestChime, requestReact, setScene, takeChime, useCanGenerate } from '../api';
 import { MAX_GUESTS } from '../game';
 import { bondOf, friends, heartsOf, INVITE_AT } from '../bond';
 import { memories } from '../memory';
@@ -339,8 +341,15 @@ export function Dialogue({
   // 网页版服务器有 key 时，用户自己打的字由提问的角色现场回应；否则用关卡里预设的台词
   const [pending, setPending] = useState<string | null>(null);
 
-  const answer = async (beat: AskBeat, r: Replies[string]) => {
+  const answer = async (beat: AskBeat, said: Replies[string] | ({ clip?: Blob } & { text: string })) => {
     sfx.good();
+    // 按住说话的录音不进回答里（回答要能存、能发给模型），单独留在这一局里，分享时才上传
+    let r: Replies[string] = said;
+    if ('clip' in said) {
+      const { clip, ...rest } = said;
+      if (clip) g.keepClip({ ask: beat.id, text: rest.text, blob: clip });
+      r = rest;
+    }
     if ('text' in r && live) {
       setPending(r.text);
       const c = who(beat.who);
@@ -440,7 +449,11 @@ export function Dialogue({
 
       <div className="pt-3">
         {pending !== null ? null : waitingAsk ? (
-          <AnswerPanel key={waitingAsk.id} ask={waitingAsk} onAnswer={(r) => void answer(waitingAsk, r)} />
+          <>
+            {/* 朋友玩分享过来的关：分享的人在这一题用语音回答过，先听听 TA 的原声 */}
+            {g.share && <SharerVoice key={waitingAsk.id} ask={waitingAsk} />}
+            <AnswerPanel key={waitingAsk.id} ask={waitingAsk} onAnswer={(r) => void answer(waitingAsk, r)} />
+          </>
         ) : finished ? (
           <Btn onClick={() => onDone(replies)}>{t('done')}</Btn>
         ) : style === 'story' ? (
@@ -487,10 +500,29 @@ function Bubble({ who, text, mine, ask, current, chat }: { who: Who; text: strin
 }
 
 /** 回答面板：点一个现成回答，或用自己的话（打字 / 语音）——每个问题都可以自己说 */
-function AnswerPanel({ ask, onAnswer }: { ask: AskBeat; onAnswer: (r: { option: string } | { text: string }) => void }) {
+/** 自己的话：打字，或者按住说话（clip = 录音，分享时让朋友听到原声） */
+type Own = { text: string; clip?: Blob };
+
+function AnswerPanel({ ask, onAnswer }: { ask: AskBeat; onAnswer: (r: { option: string } | Own) => void }) {
   const [writing, setWriting] = useState(ask.options.length === 0);
   const [text, setText] = useState('');
   const [mic, setMic] = useState<null | (() => void)>(null);
+  // 服务器能转文字：按住说话，录音留着（分享给朋友时，朋友在这一题能听到原声）；否则用浏览器自带的语音输入
+  const cfg = useCanGenerate();
+  const voice = !!cfg?.voice && canRecord();
+  const [heard, setHeard] = useState<'idle' | 'sending' | 'fail'>('idle');
+  const { recording, hold } = useRecorder({
+    maxSec: 20,
+    onDenied: () => setHeard('fail'),
+    onClip: (clip) => {
+      setHeard('sending');
+      void transcribe(clip).then((said) => {
+        if (!said) return setHeard('fail');
+        setHeard('idle');
+        onAnswer({ text: said, clip });
+      });
+    },
+  });
 
   if (!writing) {
     return (
@@ -544,7 +576,18 @@ function AnswerPanel({ ask, onAnswer }: { ask: AskBeat; onAnswer: (r: { option: 
           placeholder={free.placeholder || t('ownPh')}
           className="min-w-0 flex-1 rounded-2xl border-2 border-slate-200 px-4 py-3 text-[17px] font-bold outline-none focus:border-sky-400"
         />
-        {canListen() && (
+        {voice ? (
+          <motion.button
+            {...hold}
+            animate={recording ? { scale: [1, 1.12, 1] } : { scale: 1 }}
+            transition={recording ? { repeat: Infinity, duration: 0.8 } : {}}
+            disabled={heard === 'sending'}
+            className={`flex h-12 w-12 select-none items-center justify-center rounded-2xl border-2 border-b-4 ${recording ? 'border-rose-500 bg-rose-500' : 'border-slate-200 bg-white'} disabled:opacity-60`}
+            aria-label={t('ownVoiceHold')}
+          >
+            <Emoji e={heard === 'sending' ? '⏳' : '🎙️'} size={28} />
+          </motion.button>
+        ) : canListen() && (
           <motion.button
             whileTap={{ scale: 0.9 }}
             animate={mic ? { scale: [1, 1.12, 1] } : { scale: 1 }}
@@ -560,6 +603,9 @@ function AnswerPanel({ ask, onAnswer }: { ask: AskBeat; onAnswer: (r: { option: 
           </motion.button>
         )}
       </div>
+      {voice && (
+        <div className="text-center text-xs font-black text-slate-400">{recording ? t('ownVoiceRec') : heard === 'sending' ? t('ownVoiceSending') : heard === 'fail' ? t('ownVoiceFail') : t('ownVoiceHold')}</div>
+      )}
       <div className="flex gap-2">
         {ask.options.length > 0 && (
           <Btn tone="white" className="w-1/3" onClick={() => setWriting(false)}>

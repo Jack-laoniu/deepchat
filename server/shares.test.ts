@@ -2,7 +2,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { addReply, createShare, decide, loadShare, publicShare } from './shares';
+import { addReply, createShare, decide, loadShare, publicShare, setShareVoices } from './shares';
 
 beforeAll(() => {
   process.env.NEED_QUEST_DATA = mkdtempSync(join(tmpdir(), 'nq-shares-'));
@@ -20,5 +20,13 @@ describe('shares', () => {
     const s = loadShare(made.id)!;
     expect(s.replies[0].decisions).toEqual({ 'arrive.why': 'theirs', boss: 'both' });
     expect('owner' in publicShare(s)).toBe(false);
+  });
+
+  it('only the sharer can attach their own voice answers, and friends can read them', () => {
+    const made = createShare({ role: 'companion', from: 'Jack', lesson: {}, picks: [] })!;
+    const voices = { 'arrive.why': { vid: 'abcdefghij12', text: '玩水上世界' } };
+    expect(setShareVoices(made.id, 'wrong', voices)).toBe(false);
+    expect(setShareVoices(made.id, made.owner, voices)).toBe(true);
+    expect(publicShare(loadShare(made.id)!).voices).toEqual(voices);
   });
 });

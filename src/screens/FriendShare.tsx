@@ -1,11 +1,11 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState, type ReactNode } from 'react';
-import { createShare, decideShare, getShare, keepFriendVoices, myReplies, myShares, replyShare, saveMyShares, type Choice, type ShareData, type ShareReply, type Voice } from '../api';
+import { attachShareVoices, createShare, decideShare, getShare, keepFriendVoices, uploadVoice, myReplies, myShares, replyShare, saveMyShares, type Choice, type ShareData, type ShareReply, type Voice } from '../api';
 import { VoiceLine } from './FriendVoice';
 import { sfx } from '../fx/fx';
 import { useGame } from '../game';
 import { t } from '../i18n';
-import { advisorLesson, companionLesson, type ShareRole } from '../lesson/friends';
+import { advisorLesson, companionLesson, reviewPicks, type ShareRole } from '../lesson/friends';
 import { picksOf, splitsOf, type Pick, type Split, type Splits } from '../lesson/picks';
 import type { Lesson } from '../lesson/schema';
 import { copyText } from '../ui/copy';
@@ -64,8 +64,21 @@ export function ShareWithFriends({ myPicks }: { myPicks: Pick[] }) {
     setBusy(true);
     setNote('');
     const id = await createShare(role, name.trim(), l, myPicks);
+    if (!id) {
+      setBusy(false);
+      return setNote(t('shareFail'));
+    }
+    // 自己按住说话回答的那几题：把录音传上去挂到分享上，朋友玩到同一题时能听到原声
+    const said = myPicks.flatMap((p) => {
+      const c = p.own && g.clips.find((x) => x.ask === p.key.split('.').pop() && x.text === p.label);
+      return c ? [{ key: p.key, blob: c.blob }] : [];
+    });
+    if (said.length) {
+      const up = await Promise.all(said.map(async (s) => ({ key: s.key, v: await uploadVoice(id, s.blob) })));
+      const voices = Object.fromEntries(up.flatMap((u) => ('error' in u.v ? [] : [[u.key, u.v]])));
+      if (Object.keys(voices).length) await attachShareVoices(id, voices);
+    }
     setBusy(false);
-    if (!id) return setNote(t('shareFail'));
     const text = `${t(role === 'companion' ? 'shareInviteCompanion' : 'shareInviteAdvisor', { title: l.title })}\n${site()}/?s=${id}`;
     try {
       if (navigator.share) return void (await navigator.share({ text }));
@@ -108,8 +121,8 @@ export function FriendLanding({ id }: { id: string }) {
   const mineReply = data.replies.find((r) => r.rid && r.rid === myReplies()[id]);
   const start = () => {
     sfx.good();
-    const lesson = data.role === 'advisor' ? (advisorLesson(data.lesson, from, data.picks) ?? companionLesson(data.lesson, from, data.picks)) : companionLesson(data.lesson, from, data.picks);
-    g.open(lesson, { id, role: data.role, from, picks: data.picks });
+    const lesson = data.role === 'advisor' ? (advisorLesson(data.lesson, from, data.picks, data.voices) ?? companionLesson(data.lesson, from, data.picks)) : companionLesson(data.lesson, from, data.picks);
+    g.open(lesson, { id, role: data.role, from, picks: data.picks, voices: data.voices });
   };
   return (
     <motion.div initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="mt-3 rounded-3xl border-2 border-b-4 border-sky-300 bg-sky-50 p-3">
@@ -206,7 +219,7 @@ export function SendBack({ plan }: { plan: string }) {
  * 参谋的人在「把把关」里第 N 张卡上留的话，对应分享的人的第 N 个选择（卡片按这个顺序出的，见 advisorLesson）
  */
 function ownKeys(data: ShareData, voices: Record<string, Voice>): Record<string, Voice> {
-  const chosen = data.picks.filter((p) => !p.own);
+  const chosen = reviewPicks(data.picks, data.voices);
   return Object.fromEntries(
     Object.entries(voices).flatMap(([k, v]) => {
       const card = /^adv_review\.card_(\d+)$/.exec(k);

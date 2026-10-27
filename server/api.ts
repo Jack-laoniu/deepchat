@@ -3,7 +3,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { loadConfig, type Config } from './config';
 import { keep } from './store';
 import { partnerLinks, saveLead } from './partners';
-import { addReply, createShare, decide, loadShare, publicShare } from './shares';
+import { addReply, createShare, decide, loadShare, publicShare, setShareVoices } from './shares';
 import { ttsFromConfig, type Tts } from './tts';
 import { EXT, isVoiceId, loadVoice, MAX_VOICE_BYTES, saveVoice, sttFromConfig, type Stt } from './voice';
 import { genericLesson } from '../src/lesson/generic';
@@ -25,7 +25,8 @@ import { chatFromConfig, chimeIn, discussNeed, finaleFor, friendChat, sceneFor, 
  *   GET  /api/share?id= → 分享的内容和朋友们的回复
  *   POST /api/share/reply { id, name, role, picks, plan } → { rid }（朋友玩完，把结果交回给分享的人）
  *   POST /api/share/decide { id, owner, rid, decisions } → 204（分享的人对分歧拍板：每一处听谁的）
- *   POST /api/voice?share=&lang= （请求体是录音）→ { vid, text }；GET /api/voice?id= → 音频（朋友在分歧处录的原声）
+ *   POST /api/share/voices { id, owner, voices } → 204（分享的人自己用语音说的回答，挂到分享上）
+ *   POST /api/voice?share=&lang= （请求体是录音）→ { vid, text }；不带 share 只转文字 → { text }；GET /api/voice?id= → 音频
  *   POST /api/voice/react { need, who, name, text, recent, lang } → { say, mood }（场上的角色接朋友原声的话）
  *   POST /api/clientlog { message, stack, title, round } → 204（某一回合在浏览器里渲染出错，记进日志）
  *
@@ -63,18 +64,26 @@ async function share(req: IncomingMessage, res: ServerResponse, path: string) {
     const ok = decide(str(body?.id, 20), str(body?.owner, 40), str(body?.rid, 20), body?.decisions);
     return void (ok ? res.writeHead(204).end() : json(res, 404, { error: 'gone' })), true;
   }
-  // 朋友在分歧处录的原声：选择的 key → 原声 id + 转出来的文字
-  const voices: Record<string, { vid: string; text: string }> = {};
-  for (const [k, v] of Object.entries((body?.voices ?? {}) as Record<string, { vid?: unknown; text?: unknown }>).slice(0, 5))
-    // vid 为空：朋友录不了音，打的字
-    if (k.length <= 80 && typeof v?.vid === 'string' && (v.vid === '' || isVoiceId(v.vid)) && str(v.text, 300)) voices[k] = { vid: v.vid, text: str(v.text, 300) };
-  const rid = addReply(str(body?.id, 20), { role, name: str(body?.name, 30), picks, plan: str(body?.plan, 30_000), voices });
+  // 选择的 key → 原声 id + 转出来的文字（vid 为空：录不了音，打的字）
+  const voicesOf = (v: unknown, max: number) => {
+    const out: Record<string, { vid: string; text: string }> = {};
+    for (const [k, x] of Object.entries((v ?? {}) as Record<string, { vid?: unknown; text?: unknown }>).slice(0, max))
+      if (k.length <= 80 && typeof x?.vid === 'string' && (x.vid === '' || isVoiceId(x.vid)) && str(x.text, 300)) out[k] = { vid: x.vid, text: str(x.text, 300) };
+    return out;
+  };
+  // 分享的人自己用语音说的回答，建好分享以后挂上去（要带口令）
+  if (path === '/api/share/voices') {
+    const ok = setShareVoices(str(body?.id, 20), str(body?.owner, 40), voicesOf(body?.voices, 12));
+    return void (ok ? res.writeHead(204).end() : json(res, 404, { error: 'gone' })), true;
+  }
+  // 朋友在分歧处录的原声
+  const rid = addReply(str(body?.id, 20), { role, name: str(body?.name, 30), picks, plan: str(body?.plan, 30_000), voices: voicesOf(body?.voices, 5) });
   return void (rid ? json(res, 200, { rid }) : json(res, 404, { error: 'gone' })), true;
 }
 
 /**
- * 朋友的原声：POST /api/voice?share=<分享 id>&lang=zh（请求体就是录音）→ { vid, text }；GET /api/voice?id=<vid> → 音频。
- * 只收挂在一份有效分享上的录音，每个 IP 每小时有上限。
+ * 原声：POST /api/voice?share=<分享 id>&lang=zh（请求体就是录音）→ { vid, text }；GET /api/voice?id=<vid> → 音频。
+ * 不带 share：只转文字、不存（玩家「用自己的话说」时按住说话）。存下来的只能挂在一份有效分享上。每个 IP 每小时有上限。
  */
 const voiceHits = new Map<string, number[]>();
 async function voice(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<typeof settings>) {
@@ -88,7 +97,8 @@ async function voice(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<
   if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
   if (!cfg.stt) return void json(res, 503, { error: 'disabled' }), true;
   const type = String(req.headers['content-type'] ?? '').split(';')[0].trim();
-  if (!EXT[type] || !loadShare(q.get('share') ?? '')) return void json(res, 400, { error: 'bad' }), true;
+  const keep = q.has('share');
+  if (!EXT[type] || (keep && !loadShare(q.get('share') ?? ''))) return void json(res, 400, { error: 'bad' }), true;
   if (allow(clientIp(req), cfg.sttPerIpPerHour, Infinity, voiceHits, false) !== 'ok') return void json(res, 429, { error: 'rate_ip' }), true;
   const chunks: Buffer[] = [];
   let size = 0;
@@ -102,6 +112,7 @@ async function voice(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<
   try {
     const text = await cfg.stt(audio, type, q.get('lang') === 'en' ? 'en' : 'zh');
     if (!text) return void json(res, 422, { error: 'silent' }), true;
+    if (!keep) return void json(res, 200, { text: text.slice(0, 300) }), true;
     const vid = saveVoice(audio, type);
     if (!vid) return void json(res, 500, { error: 'save' }), true;
     json(res, 200, { vid, text: text.slice(0, 300) });
@@ -253,7 +264,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
     return true;
   }
   if (path === '/api/lead') return lead(req, res);
-  if (path === '/api/share' || path === '/api/share/reply' || path === '/api/share/decide') return share(req, res, path);
+  if (path === '/api/share' || path === '/api/share/reply' || path === '/api/share/decide' || path === '/api/share/voices') return share(req, res, path);
   if (path === '/api/finale') return finale(req, res, cfg);
   if (path === '/api/scene') return scene(req, res, cfg);
   if (path === '/api/voice') return voice(req, res, cfg);

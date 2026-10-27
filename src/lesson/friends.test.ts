@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import xian from '../lessons/xian.json';
 import xianZh from '../lessons/xian-zh.json';
 import type { Answer } from './engine';
-import { advisorLesson, companionLesson } from './friends';
+import { advisorLesson, companionLesson, reviewPicks } from './friends';
 import { comparePicks, picksOf } from './picks';
 import { parseLesson, type Lesson } from './schema';
 
@@ -57,6 +57,20 @@ describe('sharing a trip with real friends', () => {
 
   it('too few choices: no advisor level', () => {
     expect(advisorLesson(load(xian), 'Alex', [])).toBeNull();
+  });
+
+  it('an answer the sharer spoke gets its own review card, in the same order the voices are looked up', () => {
+    const picks = [
+      { key: 'days', q: 'How many days?', label: '3 days' },
+      { key: 'arrive.why', q: 'What brings you?', label: 'water park', own: true },
+      { key: 'arrive.special', q: 'Anything else?', label: 'typed, no voice', own: true },
+      { key: 'when', q: 'When?', label: 'Summer' },
+    ];
+    const voices = { 'arrive.why': { vid: 'abcdefghij12', text: 'water park' } };
+    expect(reviewPicks(picks, voices).map((p) => p.key)).toEqual(['days', 'arrive.why', 'when']);
+    const l = advisorLesson(load(xian), 'Alex', picks, voices)!;
+    const chain = l.rounds.find((r) => r.type === 'chain');
+    expect(chain?.type === 'chain' && chain.cards[1].say).toContain('water park');
   });
 });
 

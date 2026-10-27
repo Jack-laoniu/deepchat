@@ -119,12 +119,20 @@ export function companionLesson(base: Lesson, from: string, picks: Pick[]): Less
   return parseLesson(l).ok ? l : base;
 }
 
+/**
+ * 参谋要把关的那几个决定（最多 8 个，「把把关」里一张卡一个，按这个顺序）：点选的都算；
+ * 自己说的话只算留了原声的（voices 里有），参谋能听到 TA 的原话
+ */
+export function reviewPicks(picks: Pick[], voices: Record<string, unknown> = {}): Pick[] {
+  return picks.filter((p) => !p.own || voices[p.key]).slice(0, 8);
+}
+
 /** 参谋的人：一关「帮 TA 把把关」 */
-export function advisorLesson(base: Lesson, from: string, picks: Pick[]): Lesson | null {
+export function advisorLesson(base: Lesson, from: string, picks: Pick[], voices: Record<string, unknown> = {}): Lesson | null {
   const t = T[langOf(base)];
   const name = fit(from, 8);
   const speakers = [GUIDE, ...base.cast.map((c) => c.id)];
-  const chosen = picks.filter((p) => !p.own).slice(0, 8);
+  const chosen = reviewPicks(picks, voices);
   if (chosen.length < 3) return null;
   const free = (chips: string[], fact: string) => ({
     placeholder: '',

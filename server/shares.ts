@@ -12,8 +12,8 @@ const TTL = 60 * 86400_000;
 const MAX_REPLIES = 20;
 export const isShareId = (id: string) => /^[A-Za-z0-9_-]{8,16}$/.test(id);
 
-/** owner = 分享的人手里的口令，拍板时要带上；读分享时不返回 */
-export type Share = { at: string; role: 'companion' | 'advisor'; from: string; owner?: string; lesson: unknown; picks: unknown[]; replies: Reply[] };
+/** owner = 分享的人手里的口令，拍板时要带上；读分享时不返回。voices = 分享的人自己用语音说的回答（选择的 key → 原声） */
+export type Share = { at: string; role: 'companion' | 'advisor'; from: string; owner?: string; lesson: unknown; picks: unknown[]; replies: Reply[]; voices?: Record<string, { vid: string; text: string }> };
 type Reply = Record<string, unknown> & { rid?: string; decisions?: Record<string, Choice> };
 export type Choice = 'mine' | 'theirs' | 'both';
 const CHOICES = new Set<string>(['mine', 'theirs', 'both']);
@@ -70,6 +70,19 @@ export function addReply(id: string, reply: object): string | null {
     return rid;
   } catch {
     return null;
+  }
+}
+
+/** 分享的人把自己用语音说的回答挂到分享上（朋友玩到同一个问题时能听到）。要带口令 */
+export function setShareVoices(id: string, owner: string, voices: Record<string, { vid: string; text: string }>): boolean {
+  const s = loadShare(id);
+  if (!s || !s.owner || s.owner !== owner) return false;
+  try {
+    s.voices = voices;
+    save(id, s);
+    return true;
+  } catch {
+    return false;
   }
 }
 

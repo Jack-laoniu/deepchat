@@ -285,7 +285,8 @@ export type Choice = 'mine' | 'theirs' | 'both';
 /** 朋友在某个选择上留的原声（vid 为空 = 录不了音，打的字） */
 export type Voice = { vid: string; text: string };
 export type ShareReply = { at: string; rid?: string; role: 'companion' | 'advisor'; name: string; picks: Pick[]; plan: string; decisions?: Record<string, Choice>; decidedAt?: string; voices?: Record<string, Voice> };
-export type ShareData = { at: string; role: 'companion' | 'advisor'; from: string; lesson: Lesson; picks: Pick[]; replies: ShareReply[] };
+/** voices：分享的人自己用语音说的回答（选择的 key → 原声），朋友玩到同一个问题时能听到 */
+export type ShareData = { at: string; role: 'companion' | 'advisor'; from: string; lesson: Lesson; picks: Pick[]; replies: ShareReply[]; voices?: Record<string, Voice> };
 
 /** 我分享出去的行程（这台设备上记着，首页用来看朋友有没有回复） */
 const MINE = 'need-quest-shares';
@@ -370,15 +371,39 @@ export async function decideShare(id: string, rid: string, decisions: Record<str
 
 // ---------------- 朋友的原声 ----------------
 
-/** 上传一段录音（挂在这份分享上），返回原声 id 和转出来的文字；失败返回错误码 */
-export async function uploadVoice(share: string, audio: Blob): Promise<Voice | { error: string }> {
+async function postVoice(audio: Blob, share?: string): Promise<{ vid?: string; text?: string; error?: string }> {
   try {
     const type = audio.type.split(';')[0] || 'audio/webm';
-    const res = await fetch(`/api/voice?share=${encodeURIComponent(share)}&lang=${getLang() === 'en' ? 'en' : 'zh'}`, { method: 'POST', headers: { 'content-type': type }, body: audio });
+    const q = `${share ? `share=${encodeURIComponent(share)}&` : ''}lang=${getLang() === 'en' ? 'en' : 'zh'}`;
+    const res = await fetch(`/api/voice?${q}`, { method: 'POST', headers: { 'content-type': type }, body: audio });
     const d = (await res.json().catch(() => ({}))) as { vid?: string; text?: string; error?: string };
-    return res.ok && d.vid && d.text ? { vid: d.vid, text: d.text } : { error: d.error ?? 'fail' };
+    return res.ok && d.text ? d : { error: d.error ?? 'fail' };
   } catch {
     return { error: 'network' };
+  }
+}
+
+/** 上传一段录音（挂在这份分享上），返回原声 id 和转出来的文字；失败返回错误码 */
+export async function uploadVoice(share: string, audio: Blob): Promise<Voice | { error: string }> {
+  const d = await postVoice(audio, share);
+  return d.vid && d.text ? { vid: d.vid, text: d.text } : { error: d.error ?? 'fail' };
+}
+
+/** 只转文字、不存（玩家按住说话回答问题）；录音留在这台设备上，分享时才上传 */
+export async function transcribe(audio: Blob): Promise<string | null> {
+  const d = await postVoice(audio);
+  return d.text ?? null;
+}
+
+/** 分享的人把自己用语音说的回答挂到分享上 */
+export async function attachShareVoices(id: string, voices: Record<string, Voice>): Promise<boolean> {
+  const owner = myShares().find((m) => m.id === id)?.owner;
+  if (!owner) return false;
+  try {
+    const res = await fetch('/api/share/voices', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, owner, voices }) });
+    return res.ok;
+  } catch {
+    return false;
   }
 }
 

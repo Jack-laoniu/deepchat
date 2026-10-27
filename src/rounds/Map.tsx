@@ -533,17 +533,22 @@ export function MapQuest({ round }: { round: MapRound }) {
 
       <AnimatePresence>
         {spot && (
-          <motion.div className="fixed inset-0 z-[300] flex items-end bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          // 点错了人可以退出来：点外面或点 ✕；聊了一半的不算，这个人还在原地等着
+          <motion.div className="fixed inset-0 z-[300] flex items-end bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(null)}>
             <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 240, damping: 28 }}
+              onClick={(e) => e.stopPropagation()}
               className="mx-auto flex h-[86%] w-full max-w-md flex-col rounded-t-[28px] bg-white px-4 pb-5 pt-3"
             >
               <div className="mx-auto mb-2 h-1.5 w-12 rounded-full bg-slate-200" />
               <div className="mb-1 flex items-center gap-2 text-sm font-black text-slate-400">
-                <Emoji e={spot.emoji} size={22} /> {spot.label}
+                <Emoji e={spot.emoji} size={22} /> <span className="flex-1">{spot.label}</span>
+                <button onClick={() => setOpen(null)} className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-black text-slate-500" aria-label={t('mapLeave')}>
+                  ✕ {t('mapLeave')}
+                </button>
               </div>
               <div className="min-h-0 flex-1">
                 <Dialogue beats={spot.beats} style="chat" partner={spot.who} baseFlags={flags} onDone={(r) => finishChat(layout.placed.find((p) => p.spot.id === spot.id)!, r)} />
