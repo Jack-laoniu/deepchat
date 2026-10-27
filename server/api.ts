@@ -5,12 +5,13 @@ import { keep } from './store';
 import { partnerLinks, saveLead } from './partners';
 import { addReply, createShare, decide, loadShare, publicShare } from './shares';
 import { ttsFromConfig, type Tts } from './tts';
+import { EXT, isVoiceId, loadVoice, MAX_VOICE_BYTES, saveVoice, sttFromConfig, type Stt } from './voice';
 import { genericLesson } from '../src/lesson/generic';
 import { dropDecided } from '../src/lesson/salvage';
 import { parseLesson } from '../src/lesson/schema';
 import { charById } from '../src/chars/library';
 import { cameoById } from '../src/chars/cameos';
-import { chatFromConfig, chimeIn, discussNeed, finaleFor, friendChat, sceneFor, groupChat, suggestCameos, type Member, generateLesson, reactLine, UpstreamError, type GenerateResult, type ModelChoice, type StartChat, type Turn } from './generate';
+import { chatFromConfig, chimeIn, discussNeed, finaleFor, friendChat, sceneFor, groupChat, suggestCameos, type Member, generateLesson, reactLine, voiceReaction, UpstreamError, type GenerateResult, type ModelChoice, type StartChat, type Turn } from './generate';
 
 /**
  * 网页版的生成接口：
@@ -24,6 +25,8 @@ import { chatFromConfig, chimeIn, discussNeed, finaleFor, friendChat, sceneFor, 
  *   GET  /api/share?id= → 分享的内容和朋友们的回复
  *   POST /api/share/reply { id, name, role, picks, plan } → { rid }（朋友玩完，把结果交回给分享的人）
  *   POST /api/share/decide { id, owner, rid, decisions } → 204（分享的人对分歧拍板：每一处听谁的）
+ *   POST /api/voice?share=&lang= （请求体是录音）→ { vid, text }；GET /api/voice?id= → 音频（朋友在分歧处录的原声）
+ *   POST /api/voice/react { need, who, name, text, recent, lang } → { say, mood }（场上的角色接朋友原声的话）
  *   POST /api/clientlog { message, stack, title, round } → 204（某一回合在浏览器里渲染出错，记进日志）
  *
  * 公开网站 + 按量计费，所以有几道保护：按 IP 限频、每日总量上限、并发上限、相同需求缓存。
@@ -60,8 +63,52 @@ async function share(req: IncomingMessage, res: ServerResponse, path: string) {
     const ok = decide(str(body?.id, 20), str(body?.owner, 40), str(body?.rid, 20), body?.decisions);
     return void (ok ? res.writeHead(204).end() : json(res, 404, { error: 'gone' })), true;
   }
-  const rid = addReply(str(body?.id, 20), { role, name: str(body?.name, 30), picks, plan: str(body?.plan, 30_000) });
+  // 朋友在分歧处录的原声：选择的 key → 原声 id + 转出来的文字
+  const voices: Record<string, { vid: string; text: string }> = {};
+  for (const [k, v] of Object.entries((body?.voices ?? {}) as Record<string, { vid?: unknown; text?: unknown }>).slice(0, 5))
+    // vid 为空：朋友录不了音，打的字
+    if (k.length <= 80 && typeof v?.vid === 'string' && (v.vid === '' || isVoiceId(v.vid)) && str(v.text, 300)) voices[k] = { vid: v.vid, text: str(v.text, 300) };
+  const rid = addReply(str(body?.id, 20), { role, name: str(body?.name, 30), picks, plan: str(body?.plan, 30_000), voices });
   return void (rid ? json(res, 200, { rid }) : json(res, 404, { error: 'gone' })), true;
+}
+
+/**
+ * 朋友的原声：POST /api/voice?share=<分享 id>&lang=zh（请求体就是录音）→ { vid, text }；GET /api/voice?id=<vid> → 音频。
+ * 只收挂在一份有效分享上的录音，每个 IP 每小时有上限。
+ */
+const voiceHits = new Map<string, number[]>();
+async function voice(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<typeof settings>) {
+  const q = new URL(req.url ?? '/', 'http://x').searchParams;
+  if (req.method === 'GET') {
+    const v = loadVoice(q.get('id') ?? '');
+    if (!v) return void json(res, 404, { error: 'gone' }), true;
+    res.writeHead(200, { 'content-type': v.type, 'content-length': v.audio.length, 'cache-control': 'private, max-age=86400' }).end(v.audio);
+    return true;
+  }
+  if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
+  if (!cfg.stt) return void json(res, 503, { error: 'disabled' }), true;
+  const type = String(req.headers['content-type'] ?? '').split(';')[0].trim();
+  if (!EXT[type] || !loadShare(q.get('share') ?? '')) return void json(res, 400, { error: 'bad' }), true;
+  if (allow(clientIp(req), cfg.sttPerIpPerHour, Infinity, voiceHits, false) !== 'ok') return void json(res, 429, { error: 'rate_ip' }), true;
+  const chunks: Buffer[] = [];
+  let size = 0;
+  for await (const c of req) {
+    size += (c as Buffer).length;
+    if (size > MAX_VOICE_BYTES) return void json(res, 413, { error: 'too_large' }), true;
+    chunks.push(c as Buffer);
+  }
+  const audio = Buffer.concat(chunks);
+  if (audio.length < 1000) return void json(res, 400, { error: 'empty' }), true;
+  try {
+    const text = await cfg.stt(audio, type, q.get('lang') === 'en' ? 'en' : 'zh');
+    if (!text) return void json(res, 422, { error: 'silent' }), true;
+    const vid = saveVoice(audio, type);
+    if (!vid) return void json(res, 500, { error: 'save' }), true;
+    json(res, 200, { vid, text: text.slice(0, 300) });
+  } catch (e) {
+    upstreamFailed(res, 'stt', e);
+  }
+  return true;
 }
 
 /** 联系本地导游：必须勾了同意；每个 IP 每小时最多 5 条 */
@@ -110,7 +157,7 @@ async function clientLog(req: IncomingMessage, res: ServerResponse) {
  * key、模型、访问码、限额都来自配置文件（见 config.ts），每次请求都读一遍：
  * 文件没改时直接用缓存；改了就重建模型连接，不用重启服务。
  */
-let built: { config: Config; start: StartChat | null; model: ModelChoice | null; tts: Tts | null } | null = null;
+let built: { config: Config; start: StartChat | null; model: ModelChoice | null; tts: Tts | null; stt: Stt | null } | null = null;
 function settings() {
   const { config, error } = loadConfig();
   if (built?.config !== config) {
@@ -118,7 +165,9 @@ function settings() {
     console.error(m ? `online generation: ${m.label}` : 'online generation: off（没有配置 key）');
     const tts = ttsFromConfig(config);
     if (tts) console.error('server tts: on');
-    built = { config, start: m?.start ?? null, model: m, tts };
+    const stt = sttFromConfig(config);
+    if (stt) console.error('voice notes (stt): on');
+    built = { config, start: m?.start ?? null, model: m, tts, stt };
   }
   const l = config.limits ?? {};
   return {
@@ -127,6 +176,8 @@ function settings() {
     budgetMs: (config.generateBudgetSec ?? 300) * 1000,
     tts: built.tts,
     ttsPerIpPerHour: config.tts?.perIpPerHour || 600,
+    stt: built.stt,
+    sttPerIpPerHour: config.stt?.perIpPerHour || 30,
     /** 测试期访问码：设置后，只有带对访问码的请求才能用服务器上的 key 生成 */
     accessCode: config.accessCode || '',
     perIpPerHour: l.perIpPerHour || 5,
@@ -189,7 +240,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   const cfg = settings();
   const client = cfg.client;
   if (path === '/api/config' && req.method === 'GET') {
-    json(res, 200, { generate: !!client, needCode: !!cfg.accessCode, tts: !!cfg.tts, ...(cfg.error ? { configError: cfg.error } : {}) });
+    json(res, 200, { generate: !!client, needCode: !!cfg.accessCode, tts: !!cfg.tts, voice: !!cfg.stt, ...(cfg.error ? { configError: cfg.error } : {}) });
     return true;
   }
   if (path === '/api/discuss') return discuss(req, res, cfg);
@@ -205,6 +256,8 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   if (path === '/api/share' || path === '/api/share/reply' || path === '/api/share/decide') return share(req, res, path);
   if (path === '/api/finale') return finale(req, res, cfg);
   if (path === '/api/scene') return scene(req, res, cfg);
+  if (path === '/api/voice') return voice(req, res, cfg);
+  if (path === '/api/voice/react') return voiceReact(req, res, cfg);
   if (path === '/api/friend') return friend(req, res, cfg);
   if (path === '/api/cameos') return cameos(req, res, cfg);
   if (path === '/api/chime') return chime(req, res, cfg);
@@ -600,6 +653,43 @@ async function react(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<
     json(res, 200, r);
   } catch (e) {
     upstreamFailed(res, 'react', e);
+  } finally {
+    running--;
+  }
+  return true;
+}
+
+/** 朋友的原声刚播完：场上的角色接一句（和插话共用额度） */
+async function voiceReact(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<typeof settings>): Promise<boolean> {
+  if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
+  if (!cfg.client) return void json(res, 503, { error: 'disabled' }), true;
+  let body: Record<string, unknown>;
+  try {
+    body = (await readBody(req, 16_000)) as typeof body;
+  } catch {
+    return void json(res, 400, { error: 'bad_request' }), true;
+  }
+  if (cfg.accessCode && body?.code !== cfg.accessCode) return void json(res, 403, { error: 'code' }), true;
+  const text = str(body?.text, 300);
+  const who = str(body?.who, 40);
+  if (!text || !charById(who)) return void json(res, 400, { error: 'need' }), true;
+  const verdict = allow(clientIp(req), cfg.discussPerIpPerHour * 2, cfg.perDay, chimeHits);
+  if (verdict !== 'ok') return void json(res, 429, { error: verdict === 'ip' ? 'rate_ip' : 'rate_day' }), true;
+  if (running >= cfg.concurrency) return void json(res, 429, { error: 'busy' }), true;
+  running++;
+  try {
+    const r = await voiceReaction(cfg.client, {
+      need: str(body?.need, MAX_NEED_CHARS),
+      who,
+      name: str(body?.name, 30) || 'friend',
+      text,
+      recent: (Array.isArray(body?.recent) ? body.recent : []).slice(-8).map((x) => str(x, 200)).filter(Boolean),
+      lang: body?.lang === 'en' ? 'en' : 'zh',
+    });
+    if (!r) return void json(res, 422, { error: 'refused' }), true;
+    json(res, 200, r);
+  } catch (e) {
+    upstreamFailed(res, 'voice react', e);
   } finally {
     running--;
   }

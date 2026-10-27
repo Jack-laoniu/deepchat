@@ -32,6 +32,14 @@
     "voiceM": "onyx"
   },
 
+  "stt": {
+    "_说明": "语音转文字（可选）：朋友玩你分享的关卡时，在分歧处按住说一句话，转成文字后存进分享。默认用 Groq 的 Whisper，只填 apiKey（gsk_ 开头）就行；不填就不出录音按钮，朋友改成打字。perIpPerHour 每个 IP 每小时最多录几段",
+    "apiKey": "",
+    "baseUrl": "https://api.groq.com/openai/v1",
+    "model": "whisper-large-v3-turbo",
+    "perIpPerHour": 30
+  },
+
   "_generateBudgetSec": "一次生成（含返修、备用模型）最多等多少秒，超时就先给用户一个通用关卡",
   "generateBudgetSec": 300,
 

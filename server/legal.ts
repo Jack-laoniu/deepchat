@@ -70,6 +70,7 @@ export function legalPage(which: 'privacy' | 'terms', config: Config, site: stri
     JURISDICTION: l.jurisdiction || '中华人民共和国法律',
     SITE: site,
     PROVIDERS: providerNames(config),
+    STT_PROVIDER: config.stt?.apiKey ? (/groq\.com/.test(config.stt.baseUrl || 'https://api.groq.com') ? 'Groq（Whisper）' : new URL(config.stt.baseUrl!).host) : '（暂未开启）',
   };
   const md = (which === 'privacy' ? privacyMd : termsMd).replace(/\{\{(\w+)\}\}/g, (m, k: string) => fill[k] ?? m);
   const title = which === 'privacy' ? '隐私政策 · Privacy Policy' : '用户协议 · Terms of Use';

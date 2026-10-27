@@ -5,15 +5,16 @@ import { memoryText } from './memory';
 import type { Pick } from './lesson/picks';
 import { CAMEOS } from './chars/cameos';
 
-export type ServerConfig = { generate: boolean; needCode: boolean; tts: boolean };
+/** voice：服务器能把录音转成文字（朋友可以在分歧处留原声） */
+export type ServerConfig = { generate: boolean; needCode: boolean; tts: boolean; voice: boolean };
 
 /** 服务端有没有配 API key（网页版能不能在线生成）。整页只问一次 */
 let configOnce: Promise<ServerConfig> | null = null;
 export const serverConfig = () =>
   (configOnce ??= fetch('/api/config')
     .then((r) => (r.ok ? r.json() : {}))
-    .then((d: { generate?: boolean; needCode?: boolean; tts?: boolean }) => ({ generate: !!d.generate, needCode: !!d.needCode, tts: !!d.tts }))
-    .catch(() => ({ generate: false, needCode: false, tts: false })));
+    .then((d: { generate?: boolean; needCode?: boolean; tts?: boolean; voice?: boolean }) => ({ generate: !!d.generate, needCode: !!d.needCode, tts: !!d.tts, voice: !!d.voice }))
+    .catch(() => ({ generate: false, needCode: false, tts: false, voice: false })));
 
 export function useCanGenerate() {
   const [cfg, setCfg] = useState<ServerConfig | null>(null);
@@ -281,7 +282,9 @@ export async function requestChime(input: ChimeInput): Promise<ChimeLines> {
 
 export type Choice = 'mine' | 'theirs' | 'both';
 /** decisions：分享的人对每个分歧点拍的板（key 是选择的 key） */
-export type ShareReply = { at: string; rid?: string; role: 'companion' | 'advisor'; name: string; picks: Pick[]; plan: string; decisions?: Record<string, Choice>; decidedAt?: string };
+/** 朋友在某个选择上留的原声（vid 为空 = 录不了音，打的字） */
+export type Voice = { vid: string; text: string };
+export type ShareReply = { at: string; rid?: string; role: 'companion' | 'advisor'; name: string; picks: Pick[]; plan: string; decisions?: Record<string, Choice>; decidedAt?: string; voices?: Record<string, Voice> };
 export type ShareData = { at: string; role: 'companion' | 'advisor'; from: string; lesson: Lesson; picks: Pick[]; replies: ShareReply[] };
 
 /** 我分享出去的行程（这台设备上记着，首页用来看朋友有没有回复） */
@@ -336,9 +339,9 @@ export const myReplies = (): Record<string, string> => {
   }
 };
 
-export async function replyShare(id: string, role: 'companion' | 'advisor', name: string, picks: Pick[], plan: string): Promise<boolean> {
+export async function replyShare(id: string, role: 'companion' | 'advisor', name: string, picks: Pick[], plan: string, voices: Record<string, Voice> = {}): Promise<boolean> {
   try {
-    const res = await fetch('/api/share/reply', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, role, name, picks, plan }) });
+    const res = await fetch('/api/share/reply', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, role, name, picks, plan, voices }) });
     const d = (await res.json().catch(() => ({}))) as { rid?: string };
     if (res.ok && d.rid) {
       try {
@@ -362,5 +365,57 @@ export async function decideShare(id: string, rid: string, decisions: Record<str
     return res.ok;
   } catch {
     return false;
+  }
+}
+
+// ---------------- 朋友的原声 ----------------
+
+/** 上传一段录音（挂在这份分享上），返回原声 id 和转出来的文字；失败返回错误码 */
+export async function uploadVoice(share: string, audio: Blob): Promise<Voice | { error: string }> {
+  try {
+    const type = audio.type.split(';')[0] || 'audio/webm';
+    const res = await fetch(`/api/voice?share=${encodeURIComponent(share)}&lang=${getLang() === 'en' ? 'en' : 'zh'}`, { method: 'POST', headers: { 'content-type': type }, body: audio });
+    const d = (await res.json().catch(() => ({}))) as { vid?: string; text?: string; error?: string };
+    return res.ok && d.vid && d.text ? { vid: d.vid, text: d.text } : { error: d.error ?? 'fail' };
+  } catch {
+    return { error: 'network' };
+  }
+}
+
+export const voiceUrl = (vid: string) => `/api/voice?id=${encodeURIComponent(vid)}`;
+
+/** 原声播完，场上的角色接一句 */
+export async function requestVoiceReact(input: { need: string; who: string; name: string; text: string; recent: string[] }): Promise<{ say: string; mood?: string } | null> {
+  try {
+    const res = await fetch('/api/voice/react', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ...input, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode() }) });
+    const d = (await res.json().catch(() => ({}))) as { say?: string; mood?: string };
+    return res.ok && d.say ? { say: d.say, mood: d.mood } : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 分享的人这台设备上记着的朋友原声：下次玩同一关、走到同一个问题时，朋友带着原声来敲门。
+ * key 是选择的 key（回合 id 开头），need 用来对上是哪一关
+ */
+export type FriendVoice = Voice & { need: string; key: string; name: string; q: string };
+const VOICES = 'need-quest-friend-voices';
+export const friendVoices = (): FriendVoice[] => {
+  try {
+    return JSON.parse(localStorage.getItem(VOICES) ?? '[]') as FriendVoice[];
+  } catch {
+    return [];
+  }
+};
+export function keepFriendVoices(need: string, name: string, voices: Record<string, Voice>, q: (key: string) => string) {
+  const fresh = Object.entries(voices).map(([key, v]) => ({ ...v, need, key, name, q: q(key) }));
+  if (!fresh.length) return;
+  const same = (a: FriendVoice, b: FriendVoice) => a.need === b.need && a.key === b.key && a.name === b.name;
+  const old = friendVoices().filter((x) => !fresh.some((f) => same(f, x)));
+  try {
+    localStorage.setItem(VOICES, JSON.stringify([...fresh, ...old].slice(0, 40)));
+  } catch {
+    /* 存不了就算了 */
   }
 }

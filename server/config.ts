@@ -19,6 +19,11 @@ export interface Config {
    * 走 OpenAI 兼容的 /audio/speech 接口；apiKey/baseUrl 不填就沿用 openai 那组。
    */
   tts?: { enabled?: boolean; apiKey?: string; baseUrl?: string; model?: string; voiceF?: string; voiceM?: string; perIpPerHour?: number };
+  /**
+   * 语音转文字（朋友在分歧处录的原声）：OpenAI 兼容的 /audio/transcriptions 接口，默认 Groq 的 Whisper。
+   * 只填 apiKey 就能用；不填就不弹录音，朋友改成打字
+   */
+  stt?: { apiKey?: string; baseUrl?: string; model?: string; perIpPerHour?: number };
   /** 测试访问码：填了以后网页上要输入它才能生成 */
   accessCode?: string;
   limits?: { perIpPerHour?: number; perDay?: number; concurrency?: number; discussPerIpPerHour?: number };

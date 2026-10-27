@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState, type ReactNode } from 'react';
-import { createShare, decideShare, getShare, myReplies, myShares, replyShare, saveMyShares, type Choice, type ShareData, type ShareReply } from '../api';
+import { createShare, decideShare, getShare, keepFriendVoices, myReplies, myShares, replyShare, saveMyShares, type Choice, type ShareData, type ShareReply, type Voice } from '../api';
+import { VoiceLine } from './FriendVoice';
 import { sfx } from '../fx/fx';
 import { useGame } from '../game';
 import { t } from '../i18n';
@@ -177,7 +178,7 @@ export function SendBack({ plan }: { plan: string }) {
   const send = async () => {
     sfx.tap();
     setState('sending');
-    setState((await replyShare(s.id, s.role, name.trim(), mine, plan)) ? 'sent' : 'fail');
+    setState((await replyShare(s.id, s.role, name.trim(), mine, plan, g.voices)) ? 'sent' : 'fail');
   };
 
   return (
@@ -200,6 +201,21 @@ export function SendBack({ plan }: { plan: string }) {
   );
 }
 
+/**
+ * 朋友原声挂在哪个选择上，换成分享的人自己关卡里的 key：
+ * 参谋的人在「把把关」里第 N 张卡上留的话，对应分享的人的第 N 个选择（卡片按这个顺序出的，见 advisorLesson）
+ */
+function ownKeys(data: ShareData, voices: Record<string, Voice>): Record<string, Voice> {
+  const chosen = data.picks.filter((p) => !p.own);
+  return Object.fromEntries(
+    Object.entries(voices).flatMap(([k, v]) => {
+      const card = /^adv_review\.card_(\d+)$/.exec(k);
+      const key = card ? chosen[Number(card[1]) - 1]?.key : k;
+      return key ? [[key, v]] : [];
+    }),
+  );
+}
+
 /** 分享的人回到首页：朋友回复过的分享都在这（新回复的醒目），点开看分歧、拍板 */
 export function RepliesCard() {
   const [items, setItems] = useState<{ id: string; title: string; seen: number; data: ShareData }[]>([]);
@@ -210,6 +226,8 @@ export function RepliesCard() {
     void Promise.all(list.map(async (m) => ({ m, data: await getShare(m.id) }))).then((rs) => {
       if (!alive) return;
       setItems(rs.flatMap(({ m, data }) => (data && data.replies.length ? [{ id: m.id, title: m.title, seen: m.seen, data }] : [])));
+      // 朋友留的原声记到这台设备上：下次玩同一关、走到同一个问题时，朋友带着原声来敲门
+      for (const { data } of rs) for (const r of data?.replies ?? []) if (data && r.voices) keepFriendVoices(data.lesson.need, r.name || t('friendSomeone'), ownKeys(data, r.voices), (k) => data.picks.find((p) => p.key === k)?.q ?? '');
     });
     return () => {
       alive = false;
@@ -269,16 +287,19 @@ function DecideCompanion({ id, data, reply }: { id: string; data: ShareData; rep
   return (
     <>
       <SplitsView sp={sp} a={t('you')} b={name}>
-        {canDecide && sp.big.length > 0
-          ? (d) =>
-              sp.big.includes(d) && (
-                <div className="mt-1.5 flex flex-wrap gap-1">
-                  {chip(d.key, 'mine', `${t('decideMe')}：${d.mine.label}`)}
-                  {chip(d.key, 'theirs', `${name}：${d.theirs.label}`)}
-                  {chip(d.key, 'both', t('decideBoth'))}
-                </div>
-              )
-          : undefined}
+        {(d) => (
+          <>
+            {/* 朋友在这一处留的原声：先听 TA 怎么说，再拍板 */}
+            {reply.voices?.[d.key] && <VoiceLine name={name} voice={reply.voices[d.key]} />}
+            {canDecide && sp.big.includes(d) && (
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {chip(d.key, 'mine', `${t('decideMe')}：${d.mine.label}`)}
+                {chip(d.key, 'theirs', `${name}：${d.theirs.label}`)}
+                {chip(d.key, 'both', t('decideBoth'))}
+              </div>
+            )}
+          </>
+        )}
       </SplitsView>
       {canDecide && sp.big.length > 0 && (
         <div className="mt-2">
@@ -320,6 +341,7 @@ function RepliesView({ id, title, data, onClose }: { id: string; title: string; 
                   {t('repliesRethink')} {rethink.map((p) => p.q).join(' · ')}
                 </div>
               )}
+              {r.role === 'advisor' && rethink.map((p) => r.voices?.[p.key] && <VoiceLine key={p.key} name={r.name || t('friendSomeone')} voice={r.voices[p.key]} />)}
               {said(r).length > 0 && (
                 <div className="mt-1 space-y-0.5 text-xs font-bold text-slate-600">
                   {said(r).map((p) => (

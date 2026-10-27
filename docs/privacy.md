@@ -42,6 +42,7 @@
 - **找本地导游**：只有你自己填写并勾选同意后，我们才会保存你填的称呼、联系方式、补充说明，以及这一局生成的需求单（行程偏好、预算、你的原话等），用来转给我们合作的本地导游，由导游联系你。这些信息存在我们的服务器上，保存 12 个月，或在你要求时提前删除（联系 {{CONTACT}}）。我们只把它转给为你匹配的导游，不出售，也不用于其他用途。
 
 - **分享给朋友**：你点「邀请同行的人」或「请朋友帮我参谋」时，我们会把这一关的内容、你做过的选择和你填的名字存到服务器上，生成一个链接。**拿到链接的人都能看到这些内容**，请只发给你想让他看到的人。朋友玩完点「发给你」时，他的选择、填的名字和需求单也存进同一份分享里，只有拿着这个链接的人能看到。分享内容保存 60 天后自动删除，你也可以联系我们提前删除。
+- **朋友留的原声**：朋友玩你分享的关卡时，在你们选得不一样的地方可以按住说一句话（或者打字）。只有他自己按住录音按钮时才会录，每段最长 15 秒。录音会发给语音转文字服务（{{STT_PROVIDER}}）转成文字，音频和文字存在我们的服务器上，挂在这份分享下，只给发起分享的人听；60 天后自动删除，也可以联系我们提前删除。发起分享的人以后玩到同一个问题时会听到这段原声，游戏里的角色会接一句话，这句话是 AI 写的，会标明「AI 角色接话」，不会冒充朋友本人说话。我们不会用这段声音去模仿朋友的声音。
 
 ## 四、第三方资源
 
@@ -84,6 +85,8 @@ Need Quest is a small game that turns a vague need into a clear plan through sto
 **Booking links and local guides (our website only).** After a quest we may show links to partner sites (hotels, tours, eSIMs). Some are affiliate links: we may earn a commission at no cost to you, and the partner's own privacy policy applies once you leave our site. If — and only if — you fill in the "ask a local guide" form and tick the consent box, we store your name, contact details, note and the trip brief from your quest, and pass them only to the local guide matched to you. We keep them for 12 months or until you ask us to delete them ({{CONTACT}}). We never sell them.
 
 **Sharing with friends.** When you invite a travel companion or ask a friend for advice, we store the level, the choices you made and the name you entered, and create a link. Anyone with the link can see them, so only send it to people you want to see it. When your friend sends their answers back, their choices, name and need list are stored in the same share. Shares are deleted automatically after 60 days, or earlier on request.
+
+**Voice notes from friends.** While playing a level you shared, a friend may hold a button to leave a short voice note (up to 15 seconds) where your choices differ, or type one instead. Nothing is recorded unless they hold the button. The audio is sent to a speech-to-text service ({{STT_PROVIDER}}) for a transcript; the audio and transcript are stored with the share, are only played to the person who shared it, and are deleted after 60 days or earlier on request. When the sharer later reaches the same question, the note is played and a game character replies; that reply is written by AI and labelled as such, never presented as the friend's words. We never use the recording to imitate the friend's voice.
 
 **Children.** Not directed at children under 14 (under 13 where that is the applicable age).
 
