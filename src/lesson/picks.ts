@@ -104,13 +104,13 @@ export function splitsOf(lesson: Lesson, mine: Pick[], theirs: Pick[]): Splits {
     else all.push({ key: m.key, q: m.q, mine: m, theirs: o, weight: weigh(m, o) });
   });
   all.sort((a, b) => b.weight - a.weight);
-  // 只有一个人走过的条件回合（路线不一样）：列出回合标题
+  // 只有一个人走过的条件场景（地图、剧情；路线不一样）：列出场景标题
   const played = (ps: Pick[]) => new Set(ps.map((p) => p.key.split('.')[0]));
   const a = played(mine);
   const b = played(theirs);
   const title = (id: string) => {
     const r = lesson.rounds.find((x) => x.id === id);
-    return r?.if ? ('title' in r && r.title ? r.title : 'q' in r ? r.q : null) : null;
+    return r?.if && (r.type === 'map' || r.type === 'talk') ? r.title : null;
   };
   const only = (x: Set<string>, y: Set<string>) => [...x].filter((id) => !y.has(id)).flatMap((id) => title(id) ?? []);
   return { same, big: all.filter((s) => s.weight >= 3), small: all.filter((s) => s.weight < 3), route: { mine: only(a, b), theirs: only(b, a) } };

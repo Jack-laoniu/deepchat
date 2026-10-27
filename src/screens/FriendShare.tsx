@@ -34,7 +34,7 @@ function SplitsView({ sp, a, b, children }: { sp: Splits; a: string; b: string; 
     <div className="mt-2 space-y-1.5">
       {route && (
         <div className="rounded-2xl border-2 border-rose-300 bg-rose-50 p-2 text-xs font-black text-rose-700">
-          {t('splitRoute', { a, b, x: sp.route.mine.join('、') || '—', y: sp.route.theirs.join('、') || '—' })}
+          {t('splitRoute', { a, b, x: sp.route.mine.join(' / ') || '—', y: sp.route.theirs.join(' / ') || '—' })}
         </div>
       )}
       {sp.big.length > 0 ? <div className="text-sm font-black text-amber-700">⚡ {t('splitBig', { n: sp.big.length })}</div> : !route && <div className="text-sm font-black text-emerald-600">🎉 {t('splitNone')}</div>}
