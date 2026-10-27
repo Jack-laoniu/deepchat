@@ -6,7 +6,7 @@ import { sfx } from '../fx/fx';
 import { canListen, hush, isSpeaking, listen, prefetchSpeech, speak, speakNow } from '../fx/voice';
 import { useGame } from '../game';
 import { getLang, t } from '../i18n';
-import { matchFree, walkBeats, type Replies } from '../lesson/engine';
+import { matchFree, matches, walkBeats, type Replies } from '../lesson/engine';
 import { cameoPicks, knockedIn, knockRuleSeen, markKnockRule, peekChime, prefetchChime, requestChime, requestReact, setScene, takeChime, useCanGenerate } from '../api';
 import { MAX_GUESTS } from '../game';
 import { bondOf, friends, heartsOf, INVITE_AT } from '../bond';
@@ -83,7 +83,9 @@ function withExtras(items: Item[], extras: Extra[]): Item[] {
 function transcript(beats: Beat[], replies: Replies, baseFlags: Set<string>): Item[] {
   const out: Item[] = [];
   const { visible } = walkBeats(beats, replies, baseFlags);
-  const push = (key: string, l: Line) => out.push({ key, kind: 'line', who: l.who, say: l.say, mood: l.mood });
+  // 回应台词也可以带 if：按「到这句为止」已经选过的标记挑一句（比如选了华山，后面就别再说兵马俑）
+  const flags = new Set(baseFlags);
+  const push = (key: string, l: Line) => matches(l.if, flags) && out.push({ key, kind: 'line', who: l.who, say: l.say, mood: l.mood });
   visible.forEach((b, i) => {
     if (b.type === 'line') return push(`l${i}`, b);
     out.push({ key: `a${b.id}`, kind: 'ask', beat: b });
@@ -92,12 +94,14 @@ function transcript(beats: Beat[], replies: Replies, baseFlags: Set<string>): It
     if ('option' in r) {
       const o = b.options.find((x) => x.id === r.option);
       if (!o) return;
+      o.set.forEach((f) => flags.add(f));
       push(`m${b.id}`, { who: 'me', say: `${o.emoji} ${o.label}` });
       o.reply.forEach((l, j) => push(`r${b.id}${j}`, { ...l, mood: l.mood ?? o.mood }));
     } else {
       push(`m${b.id}`, { who: 'me', say: r.text });
-      if (r.react) return push(`r${b.id}0`, { who: b.who, say: r.react.say, mood: r.react.mood });
       const hits = b.free ? matchFree(b.free, r.text) : [];
+      hits.forEach((m) => m.set.forEach((f) => flags.add(f)));
+      if (r.react) return push(`r${b.id}0`, { who: b.who, say: r.react.say, mood: r.react.mood });
       const reacts = hits.flatMap((m) => m.reply);
       (reacts.length ? reacts : b.free?.reply ?? []).forEach((l, j) => push(`r${b.id}${j}`, l));
     }
@@ -233,6 +237,13 @@ export function Dialogue({
     }, isMe ? 250 : 500 + len * 45);
     return () => clearTimeout(timer);
   }, [style, shown, items, waitingAsk, talking]);
+
+  // 剧情模式：用户刚回答完（最后一句是「我」），角色的回应直接接上，不用再点「继续」
+  useEffect(() => {
+    if (style !== 'story' || waitingAsk || shown >= items.length || last?.kind !== 'line' || last.who !== 'me') return;
+    const timer = setTimeout(() => setShown((n) => n + 1), 350);
+    return () => clearTimeout(timer);
+  }, [style, shown, items.length, waitingAsk, last]);
 
   // 这段对话的标识和上下文（插话、影子后台都用）
   const sceneKey = `${g.played?.current?.id ?? ''}:${items[0]?.key ?? ''}`;

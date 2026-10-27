@@ -278,7 +278,41 @@
               "reply": [
                 {
                   "who": "xiaofang",
-                  "say": "八千张脸没一张一样，正好玩找不同。"
+                  "say": "八千张脸没一张一样，正好玩找不同。",
+                  "if": {
+                    "any": [
+                      "history"
+                    ]
+                  }
+                },
+                {
+                  "who": "ajie",
+                  "say": "带娃爬华山？那下山的时候是谁背谁？",
+                  "if": {
+                    "any": [
+                      "nature"
+                    ]
+                  }
+                },
+                {
+                  "who": "xiaofang",
+                  "say": "带娃就对了，一碗面三个人吃，不浪费。",
+                  "if": {
+                    "any": [
+                      "foodie"
+                    ]
+                  }
+                },
+                {
+                  "who": "xiaofang",
+                  "say": "好，行程按午睡时间来排。",
+                  "if": {
+                    "none": [
+                      "history",
+                      "nature",
+                      "foodie"
+                    ]
+                  }
                 }
               ]
             },
@@ -323,7 +357,27 @@
               "id": "l_some",
               "emoji": "🚶",
               "label": "能走，别爬山",
-              "fact": "平路能走，不想爬山"
+              "fact": "平路能走，不想爬山",
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "那华山咱们坐索道，山顶见。",
+                  "if": {
+                    "any": [
+                      "nature"
+                    ]
+                  }
+                },
+                {
+                  "who": "ajie",
+                  "say": "能走就行，剩下的交给地铁。",
+                  "if": {
+                    "none": [
+                      "nature"
+                    ]
+                  }
+                }
+              ]
             },
             {
               "id": "l_knees",

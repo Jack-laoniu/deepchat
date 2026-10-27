@@ -279,7 +279,41 @@
               "reply": [
                 {
                   "who": "xiaofang",
-                  "say": "Kids love it: 8,000 faces, all different. Spot-the-difference!"
+                  "say": "Kids love it: 8,000 faces, all different. Spot-the-difference!",
+                  "if": {
+                    "any": [
+                      "history"
+                    ]
+                  }
+                },
+                {
+                  "who": "ajie",
+                  "say": "Kids up a mountain. Who carries whom on the way down?",
+                  "if": {
+                    "any": [
+                      "nature"
+                    ]
+                  }
+                },
+                {
+                  "who": "xiaofang",
+                  "say": "Perfect. One bowl of noodles, three people, zero waste.",
+                  "if": {
+                    "any": [
+                      "foodie"
+                    ]
+                  }
+                },
+                {
+                  "who": "xiaofang",
+                  "say": "Great. We plan around nap time.",
+                  "if": {
+                    "none": [
+                      "history",
+                      "nature",
+                      "foodie"
+                    ]
+                  }
                 }
               ]
             },
@@ -324,7 +358,27 @@
               "id": "l_some",
               "emoji": "🚶",
               "label": "Walking's fine, hiking no",
-              "fact": "Comfortable walking, but no long hikes"
+              "fact": "Comfortable walking, but no long hikes",
+              "reply": [
+                {
+                  "who": "xiaofang",
+                  "say": "Then the mountain gets a cable car. See you at the top.",
+                  "if": {
+                    "any": [
+                      "nature"
+                    ]
+                  }
+                },
+                {
+                  "who": "ajie",
+                  "say": "Walking is fine. The metro does the rest.",
+                  "if": {
+                    "none": [
+                      "nature"
+                    ]
+                  }
+                }
+              ]
             },
             {
               "id": "l_knees",
