@@ -7,9 +7,10 @@ import { canListen, hush, isSpeaking, listen, prefetchSpeech, speak, speakNow } 
 import { useGame } from '../game';
 import { getLang, t } from '../i18n';
 import { matchFree, walkBeats, type Replies } from '../lesson/engine';
-import { cameoPicks, knockedIn, knockRuleSeen, peekChime, prefetchChime, requestChime, requestReact, setScene, takeChime, useCanGenerate } from '../api';
+import { cameoPicks, knockedIn, knockRuleSeen, markKnockRule, peekChime, prefetchChime, requestChime, requestReact, setScene, takeChime, useCanGenerate } from '../api';
 import { MAX_GUESTS } from '../game';
 import { bondOf, friends, heartsOf, INVITE_AT } from '../bond';
+import { memories } from '../memory';
 import { cameoById } from '../chars/cameos';
 import { Face } from '../chars/Face';
 import { inHost } from '../host';
@@ -33,6 +34,9 @@ export interface Who {
 }
 
 /** speaker id → 显示名、颜色、声音。名字跟随界面语言 */
+/** 敲门的资格：看过规则说明，或者以前通关过（规则会在第一次敲门时补上说明） */
+const mayKnock = () => knockRuleSeen() || memories().length > 0;
+
 export function useCast() {
   const cast = useGame().lesson!.cast;
   return useMemo(() => {
@@ -250,31 +254,40 @@ export function Dialogue({
     prepared.current = sceneKey;
     const here = new Set([...speakers, ...g.guests]);
     const done = knockedIn(g.lesson?.need ?? '');
-    // 准备好了、他还没敲过门、客人还没满：弹出「某某有话要说」
-    const knockWhenReady = (id: string) => {
-      if (!knockRuleSeen() || done.has(id)) return;
-      void peekChime(sceneKey, id)?.then((lines) => {
-        if (!lines || knockRef.current || done.has(id) || gRef.current.guests.includes(id) || gRef.current.guests.length >= MAX_GUESTS) return;
-        done.add(id);
-        setKnock(id);
-      });
+    // 准备好了、他还没敲过门、客人还没满：弹出「某某有话要说」。成功了返回 true
+    const knockWhenReady = async (id: string): Promise<boolean> => {
+      if (!mayKnock() || done.has(id)) return false;
+      const lines = await peekChime(sceneKey, id);
+      if (!lines || knockRef.current || done.has(id) || gRef.current.guests.includes(id) || gRef.current.guests.length >= MAX_GUESTS) return false;
+      done.add(id);
+      setKnock(id);
+      return true;
     };
     const friend = friends().find((f) => f.hearts >= INVITE_AT && !here.has(f.id));
-    if (friend) {
-      prefetchChime(sceneKey, shown, { ...sceneInput(), who: friend.id, hearts: friend.hearts, joined: true });
-      knockWhenReady(friend.id);
-    }
-    void cameoPicks(g.lesson?.need ?? '').then((p) => {
+    if (friend) prefetchChime(sceneKey, shown, { ...sceneInput(), who: friend.id, hearts: friend.hearts, joined: true });
+    const cameo = cameoPicks(g.lesson?.need ?? '').then((p) => {
       const c = p.find((x) => !here.has(x.id));
-      if (!c) return;
-      prefetchChime(sceneKey, shown, { ...sceneInput(), who: c.id, joined: true });
-      if (!friend) knockWhenReady(c.id);
+      if (c) prefetchChime(sceneKey, shown, { ...sceneInput(), who: c.id, joined: true });
+      return c?.id;
     });
+    // 熟人优先；熟人的话没准备出来，就让名著人物来敲
+    void (async () => {
+      if (friend && (await knockWhenReady(friend.id))) return;
+      const c = await cameo;
+      if (c) await knockWhenReady(c);
+    })();
   }, [shown, live, sceneKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 敲门：只弹一个，点「请进」就像用户自己请他进来一样（用准备好的话，马上开口）
   const [knock, setKnock] = useState<string | null>(null);
   const knockRef = useRef<string | null>(null);
+  // 还没看过规则就敲门了：在提示条里顺带说一次
+  const [knockNews, setKnockNews] = useState(false);
+  useEffect(() => {
+    if (!knock || knockRuleSeen()) return;
+    setKnockNews(true);
+    markKnockRule();
+  }, [knock]);
   knockRef.current = knock;
   const gRef = useRef(g);
   gRef.current = g;
@@ -374,7 +387,10 @@ export function Dialogue({
             <motion.span animate={{ rotate: [0, -12, 12, 0] }} transition={{ repeat: Infinity, repeatDelay: 1.2, duration: 0.5 }}>
               {cameoById(knock) ? <Emoji e={cameoById(knock)!.emoji} size={32} /> : <Face id={knock} size={34} bust mood="happy" />}
             </motion.span>
-            <span className="min-w-0 flex-1 text-sm font-black text-amber-800">{t('knockSays', { name: cameoById(knock)?.name[getLang() === 'en' ? 'en' : 'zh'] ?? who(knock).name })}</span>
+            <span className="min-w-0 flex-1 text-sm font-black text-amber-800">
+              {t('knockSays', { name: cameoById(knock)?.name[getLang() === 'en' ? 'en' : 'zh'] ?? who(knock).name })}
+              {knockNews && <span className="block text-[11px] font-bold leading-snug text-amber-700/80">{t('knockRule')}</span>}
+            </span>
             <button
               onClick={() => {
                 sfx.good();

@@ -70,7 +70,7 @@ function Stand({ x, y, w, h, z = 0, top = 0, above, align = 'center', children, 
     <div
       data-npc={data}
       onClick={onClick}
-      className={`absolute ${onClick ? 'cursor-pointer' : 'pointer-events-none'}`}
+      className={`absolute ${onClick ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`}
       style={{ left: x, top: y - h - top, width: w, height: h + top, transformOrigin: '50% 100%', transform: `translateZ(${z}px) rotateX(${-TILT}deg)` }}
     >
       {above && (
@@ -280,16 +280,28 @@ export function MapQuest({ round }: { round: MapRound }) {
         className="relative flex-1 select-none overflow-hidden rounded-[28px] border-2 border-b-[6px] shadow-inner"
         style={{ background: theme.outside, borderColor: theme.edge, perspective: `${BH * 2.4}px`, perspectiveOrigin: '50% 10%' }}
       >
-        {/* 场地：整块往后倒，里面的东西再竖起来 */}
+        {/* 地面层：地砖、光、影子、可点的格子都是平的，单独一层先画。
+            Safari / 微信内置浏览器按整块的中心远近排前后，地面和人放在同一个 3D 层里，站在后排的人腿会被地面盖住 */}
         <motion.div
           className="absolute"
-          style={{ left: boardLeft, top: camTop, width: BW, height: BH, transformStyle: 'preserve-3d', transformOrigin: '50% 100%', rotateX: TILT }}
+          style={{ left: boardLeft, top: camTop, width: BW, height: BH, transformOrigin: '50% 100%', rotateX: TILT }}
         >
           {/* 围栏外的边（草坪 / 墙脚），再铺地砖 */}
           <div className="absolute" style={{ left: -T * 0.45, top: -T * 0.45, width: BW + T * 0.9, height: BH + T * 0.6, background: theme.edge, borderRadius: T * 0.3 }} />
           <div className="absolute inset-0" style={{ backgroundImage: theme.floor, backgroundSize: theme.floorSize(T), borderRadius: T * 0.12, transform: 'translateZ(0.2px)' }} />
           {/* 光：左上亮，四周压暗 */}
           <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(120% 90% at 20% 0%, rgba(255,250,230,.55), rgba(255,250,230,0) 60%), radial-gradient(100% 100% at 50% 50%, rgba(0,0,0,0) 60%, rgba(0,0,0,.18))', transform: 'translateZ(0.3px)' }} />
+
+          {/* 影子 */}
+          {layout.decor.map((d, i) => (
+            <Shadow key={`d${i}`} x={d.c * T} y={(d.r + 1) * T} w={T} T={T} />
+          ))}
+          {layout.placed.map((p) => (
+            <Fragment key={p.spot.id}>
+              <Shadow x={p.c * T} y={(p.r + 1) * T} w={p.w * T} T={T} />
+              {!p.behind && <Shadow x={(p.npc.c + 0.5) * T - charW / 2 + charW * 0.1} y={(p.npc.r + 1) * T} w={charW * 0.8} T={T * 0.6} />}
+            </Fragment>
+          ))}
 
           {/* 点地面走路：每一格都是一个可点的格子 */}
           {Array.from({ length: ROWS * COLS }, (_, i) => {
@@ -317,6 +329,13 @@ export function MapQuest({ round }: { round: MapRound }) {
             />
           )}
 
+        </motion.div>
+
+        {/* 立着的东西（道具、人、墙）：一层 3D，叠在地面层上面；层本身不挡点击 */}
+        <motion.div
+          className="pointer-events-none absolute"
+          style={{ left: boardLeft, top: camTop, width: BW, height: BH, transformStyle: 'preserve-3d', transformOrigin: '50% 100%', rotateX: TILT }}
+        >
           {/* 后墙（室内）或后排树篱（室外） */}
           <Stand x={-T * 0.45} y={0} w={BW + T * 0.9} h={theme.wall ? T * 1.7 : T * 0.9} z={-1}>
             {theme.wall ? (
@@ -347,7 +366,6 @@ export function MapQuest({ round }: { round: MapRound }) {
             const s = PROP_SIZE[d.kind];
             return (
               <Fragment key={i}>
-                <Shadow x={d.c * T} y={(d.r + 1) * T} w={T} T={T} />
                 <Stand x={d.c * T} y={(d.r + 0.95) * T} w={T} h={s.h * T}>
                   <PropArt kind={d.kind} />
                 </Stand>
@@ -372,7 +390,6 @@ export function MapQuest({ round }: { round: MapRound }) {
             return (
               // 用 Fragment 而不是 div：包一层普通 div 会把里面的 3D 压扁成平面，道具就「躺」在地上看不见了
               <Fragment key={p.spot.id}>
-                <Shadow x={p.c * T} y={(p.r + 1) * T} w={p.w * T} T={T} />
                 <Stand
                   x={p.c * T}
                   y={(p.r + 0.97) * T}
@@ -388,7 +405,6 @@ export function MapQuest({ round }: { round: MapRound }) {
                   <PropArt kind={p.kind} />
                   {p.behind && <div className="absolute inset-x-0 bottom-[12%] flex justify-center">{sign}</div>}
                 </Stand>
-                {!p.behind && <Shadow x={npcX + charW * 0.1} y={(p.npc.r + 1) * T} w={charW * 0.8} T={T * 0.6} />}
                 {/* 盒子放宽到 4 格，给头顶的话留地方；只有人和气泡能点，空白处点了照样走路 */}
                 <Stand
                   x={npcX + charW / 2 - T * 2}
