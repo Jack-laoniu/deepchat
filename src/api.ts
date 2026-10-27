@@ -246,12 +246,14 @@ export async function requestChime(input: ChimeInput): Promise<ChimeLines> {
 
 // ---------------- 分享给真实的朋友 ----------------
 
-export type ShareReply = { at: string; role: 'companion' | 'advisor'; name: string; picks: Pick[]; plan: string };
+export type Choice = 'mine' | 'theirs' | 'both';
+/** decisions：分享的人对每个分歧点拍的板（key 是选择的 key） */
+export type ShareReply = { at: string; rid?: string; role: 'companion' | 'advisor'; name: string; picks: Pick[]; plan: string; decisions?: Record<string, Choice>; decidedAt?: string };
 export type ShareData = { at: string; role: 'companion' | 'advisor'; from: string; lesson: Lesson; picks: Pick[]; replies: ShareReply[] };
 
 /** 我分享出去的行程（这台设备上记着，首页用来看朋友有没有回复） */
 const MINE = 'need-quest-shares';
-export type MyShare = { id: string; title: string; role: 'companion' | 'advisor'; at: number; seen: number };
+export type MyShare = { id: string; title: string; role: 'companion' | 'advisor'; at: number; seen: number; owner?: string };
 export const myShares = (): MyShare[] => {
   try {
     return JSON.parse(localStorage.getItem(MINE) ?? '[]') as MyShare[];
@@ -270,9 +272,9 @@ export const saveMyShares = (list: MyShare[]) => {
 export async function createShare(role: 'companion' | 'advisor', from: string, lesson: Lesson, picks: Pick[]): Promise<string | null> {
   try {
     const res = await fetch('/api/share', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ role, from, lesson, picks }) });
-    const d = (await res.json().catch(() => ({}))) as { id?: string };
+    const d = (await res.json().catch(() => ({}))) as { id?: string; owner?: string };
     if (!res.ok || !d.id) return null;
-    saveMyShares([{ id: d.id, title: lesson.title, role, at: Date.now(), seen: 0 }, ...myShares()]);
+    saveMyShares([{ id: d.id, title: lesson.title, role, at: Date.now(), seen: 0, owner: d.owner }, ...myShares()]);
     return d.id;
   } catch {
     return null;
@@ -291,9 +293,39 @@ export async function getShare(id: string): Promise<ShareData | null> {
   }
 }
 
+/** 我交回过的分享（分享 id → 我那条回复的 id），回头打开链接能看到对方怎么拍板 */
+const REPLIED = 'need-quest-replied';
+export const myReplies = (): Record<string, string> => {
+  try {
+    return JSON.parse(localStorage.getItem(REPLIED) ?? '{}') as Record<string, string>;
+  } catch {
+    return {};
+  }
+};
+
 export async function replyShare(id: string, role: 'companion' | 'advisor', name: string, picks: Pick[], plan: string): Promise<boolean> {
   try {
     const res = await fetch('/api/share/reply', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, role, name, picks, plan }) });
+    const d = (await res.json().catch(() => ({}))) as { rid?: string };
+    if (res.ok && d.rid) {
+      try {
+        localStorage.setItem(REPLIED, JSON.stringify({ ...myReplies(), [id]: d.rid }));
+      } catch {
+        /* 记不住就看不到拍板结果，不影响交回 */
+      }
+    }
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/** 分享的人拍板：和这位朋友的每个分歧点听谁的 */
+export async function decideShare(id: string, rid: string, decisions: Record<string, Choice>): Promise<boolean> {
+  const owner = myShares().find((m) => m.id === id)?.owner;
+  if (!owner) return false;
+  try {
+    const res = await fetch('/api/share/decide', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, owner, rid, decisions }) });
     return res.ok;
   } catch {
     return false;

@@ -62,16 +62,28 @@ const THEMES: Record<MapRound['scene'], Theme> = {
 };
 
 /**
- * 立在场地上的东西（道具、人）：底边贴着地面，竖起来朝向镜头。
- * top 是头顶上方的空间（放招牌、气泡）——3D 里超出盒子的部分会被后面的东西挡住，所以要算进盒子里。
+ * 地面是一块倒下去的 3D 平面；立着的东西（道具、人、墙）不放进 3D 里，而是按透视算出脚底在屏幕上的位置和缩放，
+ * 当成普通的 2D 图层画，前后顺序直接用脚底离镜头的远近（zIndex）。
+ * Safari / 微信内置浏览器给 3D 图层排前后不可靠（按整块中心比远近），柜台后面的人会把腿露到柜台前面来；2D 图层的顺序在所有浏览器里都一样。
  */
-function Stand({ x, y, w, h, z = 0, top = 0, above, align = 'center', children, onClick, data }: { x: number; y: number; w: number; h: number; z?: number; top?: number; above?: ReactNode; align?: 'start' | 'center' | 'end'; children: ReactNode; onClick?: () => void; data?: string }) {
+type View = { cam: MotionValue<number>; at: (x: number, y: number, cam: number) => { x: number; y: number; s: number } };
+
+/**
+ * 立在场地上的东西：底边中点贴着地面 (x + w/2, y)。
+ * top 是头顶上方的空间（放招牌、气泡），算在盒子里。
+ */
+function Stand({ view, x, y, w, h, z = 0, top = 0, above, align = 'center', children, onClick, data }: { view: View; x: number; y: number; w: number; h: number; z?: number; top?: number; above?: ReactNode; align?: 'start' | 'center' | 'end'; children: ReactNode; onClick?: () => void; data?: string }) {
+  const H = h + top;
+  const transform = useTransform(view.cam, (c) => {
+    const p = view.at(x + w / 2, y, c);
+    return `translate(${p.x - w / 2}px, ${p.y - H}px) scale(${p.s})`;
+  });
   return (
-    <div
+    <motion.div
       data-npc={data}
       onClick={onClick}
-      className={`absolute ${onClick ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`}
-      style={{ left: x, top: y - h - top, width: w, height: h + top, transformOrigin: '50% 100%', transform: `translateZ(${z}px) rotateX(${-TILT}deg)` }}
+      className={`absolute left-0 top-0 ${onClick ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`}
+      style={{ width: w, height: H, transformOrigin: `${w / 2}px ${H}px`, transform, zIndex: Math.round(y) + z }}
     >
       {above && (
         <div className={`absolute inset-x-0 top-0 flex items-end px-1 ${align === 'start' ? 'justify-start' : align === 'end' ? 'justify-end' : 'justify-center'}`} style={{ height: top }}>
@@ -81,16 +93,19 @@ function Stand({ x, y, w, h, z = 0, top = 0, above, align = 'center', children, 
       <div className="absolute inset-x-0 bottom-0" style={{ height: h }}>
         {children}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 /** 跟着 motion value 走的竖立物（玩家） */
-function Walker({ mx, my, T, w, h, children }: { mx: MotionValue<number>; my: MotionValue<number>; T: number; w: number; h: number; children: ReactNode }) {
-  const left = useTransform(mx, (v) => (v + 0.5) * T - w / 2);
-  const top = useTransform(my, (v) => (v + 0.92) * T - h);
+function Walker({ view, mx, my, T, w, h, children }: { view: View; mx: MotionValue<number>; my: MotionValue<number>; T: number; w: number; h: number; children: ReactNode }) {
+  const transform = useTransform([mx, my, view.cam], ([c, r, cam]: number[]) => {
+    const p = view.at((c + 0.5) * T, (r + 0.92) * T, cam);
+    return `translate(${p.x - w / 2}px, ${p.y - h}px) scale(${p.s})`;
+  });
+  const zIndex = useTransform(my, (r) => Math.round((r + 0.92) * T));
   return (
-    <motion.div className="pointer-events-none absolute" style={{ left, top, width: w, height: h, transformOrigin: '50% 100%', rotateX: -TILT }}>
+    <motion.div className="pointer-events-none absolute left-0 top-0" style={{ width: w, height: h, transformOrigin: `${w / 2}px ${h}px`, transform, zIndex }}>
       {children}
     </motion.div>
   );
@@ -173,6 +188,20 @@ export function MapQuest({ round }: { round: MapRound }) {
     const want = size.h * 0.6 - BH + (BH - (r + 0.9) * T) * cos;
     return Math.min(topTop, Math.max(bottomTop, want));
   });
+  // 地面层的透视（和下面 perspective / perspectiveOrigin / rotateX 一致）：场地上一点 → 屏幕上的位置和缩放
+  const persp = BH * 2.4;
+  const sin = Math.sin((TILT * Math.PI) / 180);
+  const view: View = {
+    cam: camTop,
+    at: (x, y, cam) => {
+      const dy = y - BH;
+      const z = dy * sin;
+      const s = persp / (persp - z);
+      const ox = size.w / 2;
+      const oy = size.h * 0.1;
+      return { x: ox + (boardLeft + x - ox) * s, y: oy + (cam + BH + dy * cos - oy) * s, s };
+    },
+  };
 
   const flags = useMemo(() => {
     let f = g.played!.flags;
@@ -278,7 +307,7 @@ export function MapQuest({ round }: { round: MapRound }) {
       <div
         ref={box}
         className="relative flex-1 select-none overflow-hidden rounded-[28px] border-2 border-b-[6px] shadow-inner"
-        style={{ background: theme.outside, borderColor: theme.edge, perspective: `${BH * 2.4}px`, perspectiveOrigin: '50% 10%' }}
+        style={{ background: theme.outside, borderColor: theme.edge, perspective: `${persp}px`, perspectiveOrigin: '50% 10%' }}
       >
         {/* 地面层：地砖、光、影子、可点的格子都是平的，单独一层先画。
             Safari / 微信内置浏览器按整块的中心远近排前后，地面和人放在同一个 3D 层里，站在后排的人腿会被地面盖住 */}
@@ -331,13 +360,10 @@ export function MapQuest({ round }: { round: MapRound }) {
 
         </motion.div>
 
-        {/* 立着的东西（道具、人、墙）：一层 3D，叠在地面层上面；层本身不挡点击 */}
-        <motion.div
-          className="pointer-events-none absolute"
-          style={{ left: boardLeft, top: camTop, width: BW, height: BH, transformStyle: 'preserve-3d', transformOrigin: '50% 100%', rotateX: TILT }}
-        >
+        {/* 立着的东西（道具、人、墙）：2D 图层叠在地面层上面，按脚底远近排前后；层本身不挡点击 */}
+        <div className="pointer-events-none absolute inset-0" style={{ isolation: 'isolate' }}>
           {/* 后墙（室内）或后排树篱（室外） */}
-          <Stand x={-T * 0.45} y={0} w={BW + T * 0.9} h={theme.wall ? T * 1.7 : T * 0.9} z={-1}>
+          <Stand view={view} x={-T * 0.45} y={0} w={BW + T * 0.9} h={theme.wall ? T * 1.7 : T * 0.9} z={-1}>
             {theme.wall ? (
               <div className="relative h-full w-full rounded-t-xl border-[3px] border-b-0 border-[#3A2A26]" style={{ background: theme.wall }}>
                 <div className="absolute inset-x-0 bottom-0 h-[14%] bg-black/15" />
@@ -366,7 +392,7 @@ export function MapQuest({ round }: { round: MapRound }) {
             const s = PROP_SIZE[d.kind];
             return (
               <Fragment key={i}>
-                <Stand x={d.c * T} y={(d.r + 0.95) * T} w={T} h={s.h * T}>
+                <Stand view={view} x={d.c * T} y={(d.r + 0.95) * T} w={T} h={s.h * T}>
                   <PropArt kind={d.kind} />
                 </Stand>
               </Fragment>
@@ -388,9 +414,9 @@ export function MapQuest({ round }: { round: MapRound }) {
               </div>
             );
             return (
-              // 用 Fragment 而不是 div：包一层普通 div 会把里面的 3D 压扁成平面，道具就「躺」在地上看不见了
               <Fragment key={p.spot.id}>
                 <Stand
+                  view={view}
                   x={p.c * T}
                   y={(p.r + 0.97) * T}
                   w={p.w * T}
@@ -407,6 +433,7 @@ export function MapQuest({ round }: { round: MapRound }) {
                 </Stand>
                 {/* 盒子放宽到 4 格，给头顶的话留地方；只有人和气泡能点，空白处点了照样走路 */}
                 <Stand
+                  view={view}
                   x={npcX + charW / 2 - T * 2}
                   y={npcY}
                   w={T * 4}
@@ -450,12 +477,12 @@ export function MapQuest({ round }: { round: MapRound }) {
           })}
 
           {/* 玩家 */}
-          <Walker mx={mx} my={my} T={T} w={charW} h={charH}>
+          <Walker view={view} mx={mx} my={my} T={T} w={charW} h={charH}>
             <div className="absolute bottom-[-4%] left-1/2 h-[10%] w-[80%] -translate-x-1/2 rounded-[50%] bg-black/20" />
             <motion.div className="absolute bottom-[-6%] left-1/2 h-[12%] w-[95%] -translate-x-1/2 rounded-[50%] border-[3px] border-yellow-300" animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.4 }} />
             <Character id="me" size={charW} act={walking ? 'walk' : allDone ? 'jump' : 'idle'} facing={facing} back={back} mood={allDone ? 'happy' : 'neutral'} />
           </Walker>
-        </motion.div>
+        </div>
 
         {/* 背包：拿到的道具都在这，显示一共省了多少 */}
         <div className="absolute right-2 top-2 z-[260] flex items-center gap-1 rounded-2xl border-2 border-b-4 border-amber-500 bg-amber-50 px-2 py-1 shadow-lg" data-bag>

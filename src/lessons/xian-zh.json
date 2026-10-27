@@ -1335,7 +1335,12 @@
             }
           ]
         }
-      ]
+      ],
+      "if": {
+        "none": [
+          "nature"
+        ]
+      }
     },
     {
       "type": "swipe",
@@ -1360,6 +1365,446 @@
           "heights_fear"
         ]
       }
+    },
+    {
+      "type": "map",
+      "id": "hua_base",
+      "title": "华山脚下",
+      "emoji": "⛰️",
+      "scene": "park",
+      "if": {
+        "any": [
+          "nature"
+        ]
+      },
+      "spots": [
+        {
+          "id": "cable",
+          "emoji": "🚡",
+          "label": "索道站",
+          "who": "xiaobei",
+          "x": 24,
+          "y": 28,
+          "prop": "building",
+          "beats": [
+            {
+              "who": "xiaobei",
+              "say": "五座峰，两条索道。西峰的贵，但一路是悬崖；北峰的便宜。",
+              "mood": "thinking"
+            },
+            {
+              "who": "ajie",
+              "say": "有没有一条直接送到山顶饭馆的？",
+              "mood": "happy"
+            },
+            {
+              "who": "xiaobei",
+              "say": "没有。山顶饭馆的价格，本身就是一座山。",
+              "mood": "smug"
+            },
+            {
+              "who": "xiaobei",
+              "say": "腿脚不方便就两头都坐索道，几乎不用爬。",
+              "mood": "happy",
+              "if": {
+                "any": [
+                  "mobility_low",
+                  "seniors"
+                ]
+              }
+            },
+            {
+              "id": "hua_route",
+              "who": "xiaobei",
+              "q": "上山怎么走？",
+              "options": [
+                {
+                  "id": "hr_cable",
+                  "emoji": "🚡",
+                  "label": "上下都坐索道",
+                  "fact": "华山：西峰索道上、北峰索道下（门票 160，西峰索道 140 + 景交 40，北峰索道 80 + 景交 20）",
+                  "reply": [
+                    {
+                      "who": "ajie",
+                      "say": "明智。台阶留给照片里的别人。",
+                      "mood": "happy"
+                    }
+                  ],
+                  "set": [
+                    "hua"
+                  ],
+                  "add": [
+                    {
+                      "id": "hua",
+                      "emoji": "⛰️",
+                      "name": "华山一日",
+                      "price": 560,
+                      "spec": "高铁、门票、两段索道和景交车（估算）"
+                    }
+                  ]
+                },
+                {
+                  "id": "hr_half",
+                  "emoji": "🥾",
+                  "label": "索道上，走下来",
+                  "fact": "西峰索道上山，从北峰一路走下来（下山台阶最伤膝盖）",
+                  "reply": [
+                    {
+                      "who": "xiaobei",
+                      "say": "下山才是真考试。膝盖会给你打分。",
+                      "mood": "smug"
+                    }
+                  ],
+                  "set": [
+                    "hua",
+                    "hua_hike"
+                  ],
+                  "add": [
+                    {
+                      "id": "hua",
+                      "emoji": "⛰️",
+                      "name": "华山一日",
+                      "price": 460,
+                      "spec": "高铁、门票、西峰索道上山（估算）"
+                    }
+                  ]
+                },
+                {
+                  "id": "hr_climb",
+                  "emoji": "🧗",
+                  "label": "全程爬上去",
+                  "fact": "全程徒步上华山，单程约 4–6 小时台阶",
+                  "reply": [
+                    {
+                      "who": "ajie",
+                      "say": "我负责在山顶给你鼓掌。坐索道上去鼓。",
+                      "mood": "smug"
+                    }
+                  ],
+                  "set": [
+                    "hua",
+                    "hua_hike"
+                  ],
+                  "add": [
+                    {
+                      "id": "hua",
+                      "emoji": "⛰️",
+                      "name": "华山一日",
+                      "price": 320,
+                      "spec": "高铁和门票，全程徒步（估算）"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "plank",
+              "who": "xiaobei",
+              "q": "长空栈道走不走？",
+              "options": [
+                {
+                  "id": "pl_yes",
+                  "emoji": "🪵",
+                  "label": "走！",
+                  "fact": "想走华山长空栈道（安全带约 30 元，节假日要排很久）",
+                  "reply": [
+                    {
+                      "who": "ajie",
+                      "say": "你刚才说你恐高。我记得的。",
+                      "mood": "worried",
+                      "if": {
+                        "any": [
+                          "heights_fear"
+                        ]
+                      }
+                    },
+                    {
+                      "who": "xiaobei",
+                      "say": "系好安全带，别往下看。往下看也没用。",
+                      "mood": "smug",
+                      "if": {
+                        "none": [
+                          "heights_fear"
+                        ]
+                      }
+                    }
+                  ],
+                  "set": [
+                    "plank"
+                  ]
+                },
+                {
+                  "id": "pl_no",
+                  "emoji": "📸",
+                  "label": "远远拍一张",
+                  "fact": "不走长空栈道，远处拍照就好",
+                  "reply": [
+                    {
+                      "who": "xiaobei",
+                      "say": "远看最好看。近看全是排队的人。"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "night",
+          "emoji": "🌅",
+          "label": "夜爬",
+          "who": "wang",
+          "x": 76,
+          "y": 30,
+          "prop": "bench",
+          "beats": [
+            {
+              "who": "wang",
+              "say": "年轻人都半夜爬，凌晨到东峰看日出。",
+              "mood": "smug"
+            },
+            {
+              "who": "ajie",
+              "say": "凌晨四点？我平时这个点刚睡。",
+              "mood": "surprised"
+            },
+            {
+              "who": "wang",
+              "say": "那正好，不用倒时差。",
+              "mood": "happy"
+            },
+            {
+              "who": "wang",
+              "say": "山顶风大，凌晨冷得很。我年年说，年年有人穿短袖。",
+              "mood": "thinking"
+            },
+            {
+              "id": "hua_night",
+              "who": "wang",
+              "q": "想看华山日出吗？",
+              "options": [
+                {
+                  "id": "hn_climb",
+                  "emoji": "🔦",
+                  "label": "夜爬看日出",
+                  "fact": "想夜爬华山、在东峰看日出（要头灯和保暖衣物，节假日夜里也很挤）",
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "带头灯。手机那点光，只够照亮你的后悔。",
+                      "mood": "smug"
+                    }
+                  ],
+                  "set": [
+                    "night_hike"
+                  ]
+                },
+                {
+                  "id": "hn_stay",
+                  "emoji": "🛏️",
+                  "label": "山顶住一晚",
+                  "fact": "想在华山山顶住一晚，第二天早上看日出（山上住宿简陋且贵，要提前订）",
+                  "reply": [
+                    {
+                      "who": "ajie",
+                      "say": "山顶住一晚，我们离月亮最近的一次。",
+                      "mood": "happy"
+                    }
+                  ],
+                  "set": [
+                    "hua_stay"
+                  ],
+                  "add": [
+                    {
+                      "id": "hua_inn",
+                      "emoji": "🛏️",
+                      "name": "山顶住一晚",
+                      "price": 400,
+                      "spec": "山上客栈，简陋、贵，要提前订（估算）"
+                    }
+                  ]
+                },
+                {
+                  "id": "hn_day",
+                  "emoji": "☀️",
+                  "label": "白天去当天回",
+                  "fact": "白天上山，当天回西安",
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "也好。太阳每天都升，你的床就一张。"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gear",
+          "emoji": "🧤",
+          "label": "租装备",
+          "who": "daliu",
+          "x": 70,
+          "y": 72,
+          "prop": "kiosk",
+          "beats": [
+            {
+              "who": "daliu",
+              "say": "军大衣！手套！头灯！山脚价，全西安最官方！",
+              "mood": "happy"
+            },
+            {
+              "who": "ajie",
+              "say": "你怎么从回民街跑到华山来了？",
+              "mood": "surprised"
+            },
+            {
+              "who": "daliu",
+              "say": "游客在哪儿，我就在哪儿。我也有挂绳。",
+              "mood": "smug"
+            },
+            {
+              "who": "daliu",
+              "say": "手套必须买。铁链子抓一天，手会记仇的。",
+              "mood": "thinking"
+            },
+            {
+              "id": "hua_gear",
+              "who": "daliu",
+              "q": "装备怎么准备？",
+              "options": [
+                {
+                  "id": "ge_here",
+                  "emoji": "🧤",
+                  "label": "山脚现买",
+                  "fact": "装备在山脚现买现租（手套、雨衣、大衣）",
+                  "reply": [
+                    {
+                      "who": "daliu",
+                      "say": "明智！今天手套买一送……不送。",
+                      "mood": "smug"
+                    }
+                  ]
+                },
+                {
+                  "id": "ge_bring",
+                  "emoji": "🎒",
+                  "label": "自己带齐",
+                  "fact": "自己带手套、头灯、保暖衣和水",
+                  "reply": [
+                    {
+                      "who": "daliu",
+                      "say": "那……买瓶水？山上的水比这贵三倍。",
+                      "mood": "sad"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "gift": {
+            "id": "water_tip",
+            "emoji": "💧",
+            "label": "山脚买水",
+            "fact": "在山脚买够水和干粮，山上越往上越贵",
+            "price": -40,
+            "say": "山上一瓶水，山下能买一箱。"
+          }
+        },
+        {
+          "id": "noodle",
+          "emoji": "🍜",
+          "label": "山脚面馆",
+          "who": "ayi",
+          "x": 26,
+          "y": 70,
+          "prop": "counter",
+          "beats": [
+            {
+              "who": "ayi",
+              "say": "上山之前先吃碗面。爬山靠碳水，不靠意志。",
+              "mood": "happy"
+            },
+            {
+              "who": "ajie",
+              "say": "你不是在回民街泡馍店吗？",
+              "mood": "surprised"
+            },
+            {
+              "who": "ayi",
+              "say": "分店。游客往哪儿走，面就往哪儿开。",
+              "mood": "smug"
+            },
+            {
+              "id": "hdiet",
+              "who": "ayi",
+              "q": "有什么不吃的吗？",
+              "options": [
+                {
+                  "id": "hd_any",
+                  "emoji": "😋",
+                  "label": "啥都吃",
+                  "fact": "没有忌口",
+                  "reply": [
+                    {
+                      "who": "ayi",
+                      "say": "好，大碗的。",
+                      "mood": "happy"
+                    }
+                  ]
+                },
+                {
+                  "id": "hd_halal",
+                  "emoji": "🕌",
+                  "label": "吃清真",
+                  "fact": "吃清真：回民街都是清真；出了回民街，肉夹馍常是猪肉，炒菜常放料酒",
+                  "reply": [
+                    {
+                      "who": "ayi",
+                      "say": "出了城认准「清真」两个字。"
+                    }
+                  ],
+                  "set": [
+                    "halal"
+                  ]
+                },
+                {
+                  "id": "hd_veg",
+                  "emoji": "🥬",
+                  "label": "吃素",
+                  "fact": "吃素：西安羊肉多，油泼面、凉皮可以，记得问清浇头",
+                  "reply": [
+                    {
+                      "who": "ayi",
+                      "say": "油泼面，不放肉，放一勺热油。"
+                    }
+                  ],
+                  "set": [
+                    "veg"
+                  ]
+                },
+                {
+                  "id": "hd_mild",
+                  "emoji": "🌶️",
+                  "label": "别太辣",
+                  "fact": "不太能吃辣，点菜要说「少辣」",
+                  "reply": [
+                    {
+                      "who": "ayi",
+                      "say": "少辣。我们的少辣，也是辣。",
+                      "mood": "smug"
+                    }
+                  ],
+                  "set": [
+                    "spicy_averse"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "type": "chain",
@@ -1565,6 +2010,9 @@
         "any": [
           "mobility_low",
           "seniors"
+        ],
+        "none": [
+          "nature"
         ]
       },
       "beats": [
@@ -1608,7 +2056,8 @@
       "if": {
         "none": [
           "mobility_low",
-          "seniors"
+          "seniors",
+          "nature"
         ]
       },
       "options": [

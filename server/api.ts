@@ -3,7 +3,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { loadConfig, type Config } from './config';
 import { keep } from './store';
 import { partnerLinks, saveLead } from './partners';
-import { addReply, createShare, loadShare } from './shares';
+import { addReply, createShare, decide, loadShare, publicShare } from './shares';
 import { ttsFromConfig, type Tts } from './tts';
 import { genericLesson } from '../src/lesson/generic';
 import { dropDecided } from '../src/lesson/salvage';
@@ -20,9 +20,10 @@ import { chatFromConfig, chimeIn, discussNeed, finaleFor, friendChat, groupChat,
  *   POST /api/discuss   { plan, history, message, lang } → { reply } | { error }（结算后继续聊需求）
  *   GET  /api/partners?city=&lang= → { links }（结算页的预订入口）
  *   POST /api/lead      { city, lang, name, contact, note, plan, consent } → 204（用户同意后，把需求单交给本地导游）
- *   POST /api/share     { role, from, lesson, picks } → { id }（把行程分享给真实的朋友：同行的人 / 参谋的人）
+ *   POST /api/share     { role, from, lesson, picks } → { id, owner }（把行程分享给真实的朋友：同行的人 / 参谋的人；owner 是分享的人拍板用的口令）
  *   GET  /api/share?id= → 分享的内容和朋友们的回复
- *   POST /api/share/reply { id, name, role, picks, plan } → 204（朋友玩完，把结果交回给分享的人）
+ *   POST /api/share/reply { id, name, role, picks, plan } → { rid }（朋友玩完，把结果交回给分享的人）
+ *   POST /api/share/decide { id, owner, rid, decisions } → 204（分享的人对分歧拍板：每一处听谁的）
  *   POST /api/clientlog { message, stack, title, round } → 204（某一回合在浏览器里渲染出错，记进日志）
  *
  * 公开网站 + 按量计费，所以有几道保护：按 IP 限频、每日总量上限、并发上限、相同需求缓存。
@@ -36,7 +37,7 @@ async function share(req: IncomingMessage, res: ServerResponse, path: string) {
   const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
   if (req.method === 'GET' && path === '/api/share') {
     const s = loadShare(new URL(req.url ?? '/', 'http://x').searchParams.get('id') ?? '');
-    return void (s ? json(res, 200, s) : json(res, 404, { error: 'gone' })), true;
+    return void (s ? json(res, 200, publicShare(s)) : json(res, 404, { error: 'gone' })), true;
   }
   if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
   let body: Record<string, unknown> | null = null;
@@ -51,12 +52,16 @@ async function share(req: IncomingMessage, res: ServerResponse, path: string) {
   if (path === '/api/share') {
     const parsed = parseLesson(body?.lesson);
     if (!parsed.ok) return void json(res, 400, { error: 'lesson' }), true;
-    const id = createShare({ role, from: str(body?.from, 30), lesson: parsed.lesson, picks });
-    console.error(id ? `share created (${role})` : 'share: could not save');
-    return void (id ? json(res, 200, { id }) : json(res, 500, { error: 'save' })), true;
+    const made = createShare({ role, from: str(body?.from, 30), lesson: parsed.lesson, picks });
+    console.error(made ? `share created (${role})` : 'share: could not save');
+    return void (made ? json(res, 200, made) : json(res, 500, { error: 'save' })), true;
   }
-  const ok = addReply(str(body?.id, 20), { role, name: str(body?.name, 30), picks, plan: str(body?.plan, 30_000) });
-  return void (ok ? res.writeHead(204).end() : json(res, 404, { error: 'gone' })), true;
+  if (path === '/api/share/decide') {
+    const ok = decide(str(body?.id, 20), str(body?.owner, 40), str(body?.rid, 20), body?.decisions);
+    return void (ok ? res.writeHead(204).end() : json(res, 404, { error: 'gone' })), true;
+  }
+  const rid = addReply(str(body?.id, 20), { role, name: str(body?.name, 30), picks, plan: str(body?.plan, 30_000) });
+  return void (rid ? json(res, 200, { rid }) : json(res, 404, { error: 'gone' })), true;
 }
 
 /** 联系本地导游：必须勾了同意；每个 IP 每小时最多 5 条 */
@@ -196,7 +201,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
     return true;
   }
   if (path === '/api/lead') return lead(req, res);
-  if (path === '/api/share' || path === '/api/share/reply') return share(req, res, path);
+  if (path === '/api/share' || path === '/api/share/reply' || path === '/api/share/decide') return share(req, res, path);
   if (path === '/api/finale') return finale(req, res, cfg);
   if (path === '/api/friend') return friend(req, res, cfg);
   if (path === '/api/cameos') return cameos(req, res, cfg);

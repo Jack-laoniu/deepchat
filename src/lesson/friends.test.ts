@@ -59,3 +59,22 @@ describe('sharing a trip with real friends', () => {
     expect(advisorLesson(load(xian), 'Alex', [])).toBeNull();
   });
 });
+
+describe('splitsOf', () => {
+  it('ranks route-changing choices first and lists rounds only one of them played', async () => {
+    const { splitsOf } = await import('./picks');
+    const { parseLesson } = await import('./schema');
+    const xian = (await import('../lessons/xian.json')).default;
+    const l = parseLesson(xian);
+    if (!l.ok) throw new Error(l.errors.join('\n'));
+    const P = (key: string, label: string, q = key) => ({ key, q, label });
+    const me = [P('arrive.why', 'Noodles. So many noodles'), P('days', '3 days'), P('quarter.lane.diet', 'I eat everything'), P('heights', 'Love them')];
+    const friend = [P('arrive.why', 'Mountains & views'), P('days', '3 days'), P('hua_base.cable.hua_route', 'Cable both ways'), P('heights', 'Absolutely not')];
+    const sp = splitsOf(l.lesson, me, friend);
+    expect(sp.big[0].key).toBe('arrive.why');
+    expect(sp.big[0].weight).toBe(5);
+    expect(sp.same.map((p) => p.key)).toEqual(['days']);
+    expect(sp.route.mine).toEqual(['Muslim Quarter night']);
+    expect(sp.route.theirs).toEqual(['Foot of Mount Hua']);
+  });
+});

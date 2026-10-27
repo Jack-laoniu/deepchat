@@ -1336,7 +1336,12 @@
             }
           ]
         }
-      ]
+      ],
+      "if": {
+        "none": [
+          "nature"
+        ]
+      }
     },
     {
       "type": "swipe",
@@ -1361,6 +1366,446 @@
           "heights_fear"
         ]
       }
+    },
+    {
+      "type": "map",
+      "id": "hua_base",
+      "title": "Foot of Mount Hua",
+      "emoji": "⛰️",
+      "scene": "park",
+      "if": {
+        "any": [
+          "nature"
+        ]
+      },
+      "spots": [
+        {
+          "id": "cable",
+          "emoji": "🚡",
+          "label": "Cable car",
+          "who": "xiaobei",
+          "x": 24,
+          "y": 28,
+          "prop": "building",
+          "beats": [
+            {
+              "who": "xiaobei",
+              "say": "Five peaks, two cable cars. West: pricey, all cliffs. North: cheaper.",
+              "mood": "thinking"
+            },
+            {
+              "who": "ajie",
+              "say": "Is there one that drops you at a summit restaurant?",
+              "mood": "happy"
+            },
+            {
+              "who": "xiaobei",
+              "say": "No. The summit restaurant's prices are their own mountain.",
+              "mood": "smug"
+            },
+            {
+              "who": "xiaobei",
+              "say": "Bad knees? Cable car both ways. Almost no stairs.",
+              "mood": "happy",
+              "if": {
+                "any": [
+                  "mobility_low",
+                  "seniors"
+                ]
+              }
+            },
+            {
+              "id": "hua_route",
+              "who": "xiaobei",
+              "q": "How do you go up?",
+              "options": [
+                {
+                  "id": "hr_cable",
+                  "emoji": "🚡",
+                  "label": "Cable both ways",
+                  "fact": "Mount Hua: West Peak cable car up, North Peak down (entry ¥160, West cable ¥140 + shuttle ¥40, North cable ¥80 + shuttle ¥20)",
+                  "reply": [
+                    {
+                      "who": "ajie",
+                      "say": "Wise. Let other people's photos have the stairs.",
+                      "mood": "happy"
+                    }
+                  ],
+                  "set": [
+                    "hua"
+                  ],
+                  "add": [
+                    {
+                      "id": "hua",
+                      "emoji": "⛰️",
+                      "name": "Mount Hua day",
+                      "price": 80,
+                      "spec": "HSR, entry, two cable cars + shuttles (estimate)"
+                    }
+                  ]
+                },
+                {
+                  "id": "hr_half",
+                  "emoji": "🥾",
+                  "label": "Cable up, walk down",
+                  "fact": "West Peak cable car up, then hike down via North Peak (the descent is hardest on knees)",
+                  "reply": [
+                    {
+                      "who": "xiaobei",
+                      "say": "Going down is the real exam. Your knees grade it.",
+                      "mood": "smug"
+                    }
+                  ],
+                  "set": [
+                    "hua",
+                    "hua_hike"
+                  ],
+                  "add": [
+                    {
+                      "id": "hua",
+                      "emoji": "⛰️",
+                      "name": "Mount Hua day",
+                      "price": 66,
+                      "spec": "HSR, entry, West Peak cable car up (estimate)"
+                    }
+                  ]
+                },
+                {
+                  "id": "hr_climb",
+                  "emoji": "🧗",
+                  "label": "Climb it all",
+                  "fact": "Wants to hike Mount Hua all the way: roughly 4–6 hours of stone stairs one way",
+                  "reply": [
+                    {
+                      "who": "ajie",
+                      "say": "I'll cheer for you at the top. I'll take the cable car to do it.",
+                      "mood": "smug"
+                    }
+                  ],
+                  "set": [
+                    "hua",
+                    "hua_hike"
+                  ],
+                  "add": [
+                    {
+                      "id": "hua",
+                      "emoji": "⛰️",
+                      "name": "Mount Hua day",
+                      "price": 46,
+                      "spec": "HSR and entry, hiking all the way (estimate)"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "plank",
+              "who": "xiaobei",
+              "q": "The plank walk on the cliff?",
+              "options": [
+                {
+                  "id": "pl_yes",
+                  "emoji": "🪵",
+                  "label": "Let's do it",
+                  "fact": "Wants to do the Changkong plank walk (harness ~¥30, long queues on holidays)",
+                  "reply": [
+                    {
+                      "who": "ajie",
+                      "say": "You said you were scared of heights. I remember.",
+                      "mood": "worried",
+                      "if": {
+                        "any": [
+                          "heights_fear"
+                        ]
+                      }
+                    },
+                    {
+                      "who": "xiaobei",
+                      "say": "Clip in, don't look down. Looking down won't help.",
+                      "mood": "smug",
+                      "if": {
+                        "none": [
+                          "heights_fear"
+                        ]
+                      }
+                    }
+                  ],
+                  "set": [
+                    "plank"
+                  ]
+                },
+                {
+                  "id": "pl_no",
+                  "emoji": "📸",
+                  "label": "Photo from afar",
+                  "fact": "Skips the plank walk; a photo from a safe distance is enough",
+                  "reply": [
+                    {
+                      "who": "xiaobei",
+                      "say": "It's prettiest from afar. Up close it's all queue."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "night",
+          "emoji": "🌅",
+          "label": "Night hike",
+          "who": "wang",
+          "x": 76,
+          "y": 30,
+          "prop": "bench",
+          "beats": [
+            {
+              "who": "wang",
+              "say": "Young people climb at midnight and catch sunrise on East Peak.",
+              "mood": "smug"
+            },
+            {
+              "who": "ajie",
+              "say": "4 a.m.? That is when I usually go to bed.",
+              "mood": "surprised"
+            },
+            {
+              "who": "wang",
+              "say": "Perfect. No jet lag then.",
+              "mood": "happy"
+            },
+            {
+              "who": "wang",
+              "say": "Freezing up top at dawn. Every year I warn them. Every year: T-shirts.",
+              "mood": "thinking"
+            },
+            {
+              "id": "hua_night",
+              "who": "wang",
+              "q": "Sunrise on the mountain?",
+              "options": [
+                {
+                  "id": "hn_climb",
+                  "emoji": "🔦",
+                  "label": "Night hike",
+                  "fact": "Wants to night-hike Mount Hua for sunrise on East Peak (needs headlamp and warm layers; crowded even at night on holidays)",
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "Bring a headlamp. Phone light only shows you your regrets.",
+                      "mood": "smug"
+                    }
+                  ],
+                  "set": [
+                    "night_hike"
+                  ]
+                },
+                {
+                  "id": "hn_stay",
+                  "emoji": "🛏️",
+                  "label": "Sleep on top",
+                  "fact": "Wants to stay overnight on Mount Hua for sunrise (summit rooms are basic and pricey; book ahead)",
+                  "reply": [
+                    {
+                      "who": "ajie",
+                      "say": "A night on the summit. Closest we'll ever be to the moon.",
+                      "mood": "happy"
+                    }
+                  ],
+                  "set": [
+                    "hua_stay"
+                  ],
+                  "add": [
+                    {
+                      "id": "hua_inn",
+                      "emoji": "🛏️",
+                      "name": "Summit night",
+                      "price": 60,
+                      "spec": "Summit inn: basic, pricey, book ahead (estimate)"
+                    }
+                  ]
+                },
+                {
+                  "id": "hn_day",
+                  "emoji": "☀️",
+                  "label": "Day trip only",
+                  "fact": "Goes up in daylight and returns to Xi'an the same day",
+                  "reply": [
+                    {
+                      "who": "wang",
+                      "say": "Fair. The sun rises daily. Your bed is just the one."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gear",
+          "emoji": "🧤",
+          "label": "Gear stall",
+          "who": "daliu",
+          "x": 70,
+          "y": 72,
+          "prop": "kiosk",
+          "beats": [
+            {
+              "who": "daliu",
+              "say": "Army coats! Gloves! Headlamps! Most official prices in Xi'an!",
+              "mood": "happy"
+            },
+            {
+              "who": "ajie",
+              "say": "How did you get here from the Muslim Quarter?",
+              "mood": "surprised"
+            },
+            {
+              "who": "daliu",
+              "say": "I go where the tourists go. I brought my lanyard.",
+              "mood": "smug"
+            },
+            {
+              "who": "daliu",
+              "say": "Gloves are a must. Grip chains all day and your hands hold a grudge.",
+              "mood": "thinking"
+            },
+            {
+              "id": "hua_gear",
+              "who": "daliu",
+              "q": "Gear: how?",
+              "options": [
+                {
+                  "id": "ge_here",
+                  "emoji": "🧤",
+                  "label": "Buy it here",
+                  "fact": "Buys or rents gear at the foot of the mountain (gloves, raincoat, coat)",
+                  "reply": [
+                    {
+                      "who": "daliu",
+                      "say": "Wise! Gloves today, buy one get… none free.",
+                      "mood": "smug"
+                    }
+                  ]
+                },
+                {
+                  "id": "ge_bring",
+                  "emoji": "🎒",
+                  "label": "Bring my own",
+                  "fact": "Brings own gloves, headlamp, warm layers and water",
+                  "reply": [
+                    {
+                      "who": "daliu",
+                      "say": "Then… water? Up there it costs three times this.",
+                      "mood": "sad"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "gift": {
+            "id": "water_tip",
+            "emoji": "💧",
+            "label": "Water tip",
+            "fact": "Buys water and snacks at the foot; prices rise with every peak",
+            "price": -6,
+            "say": "One bottle up there buys a crate down here."
+          }
+        },
+        {
+          "id": "noodle",
+          "emoji": "🍜",
+          "label": "Noodles",
+          "who": "ayi",
+          "x": 26,
+          "y": 70,
+          "prop": "counter",
+          "beats": [
+            {
+              "who": "ayi",
+              "say": "Eat noodles before the climb. Mountains run on carbs, not willpower.",
+              "mood": "happy"
+            },
+            {
+              "who": "ajie",
+              "say": "Weren't you at the paomo shop in town?",
+              "mood": "surprised"
+            },
+            {
+              "who": "ayi",
+              "say": "Branch shop. Noodles follow the tourists.",
+              "mood": "smug"
+            },
+            {
+              "id": "hdiet",
+              "who": "ayi",
+              "q": "Anything you can't eat?",
+              "options": [
+                {
+                  "id": "hd_any",
+                  "emoji": "😋",
+                  "label": "I eat everything",
+                  "fact": "No dietary restrictions",
+                  "reply": [
+                    {
+                      "who": "ayi",
+                      "say": "Good. Big bowl.",
+                      "mood": "happy"
+                    }
+                  ]
+                },
+                {
+                  "id": "hd_halal",
+                  "emoji": "🕌",
+                  "label": "I eat halal",
+                  "fact": "Eats halal — the Muslim Quarter is all halal; outside it, roujiamo is often pork and cooking wine is common",
+                  "reply": [
+                    {
+                      "who": "ayi",
+                      "say": "Outside the Quarter, look for the 清真 sign."
+                    }
+                  ],
+                  "set": [
+                    "halal"
+                  ]
+                },
+                {
+                  "id": "hd_veg",
+                  "emoji": "🥬",
+                  "label": "Vegetarian",
+                  "fact": "Vegetarian — Xi'an is lamb-heavy; biangbiang noodles and liangpi work if toppings are checked",
+                  "reply": [
+                    {
+                      "who": "ayi",
+                      "say": "Biangbiang, no meat, one ladle of hot oil."
+                    }
+                  ],
+                  "set": [
+                    "veg"
+                  ]
+                },
+                {
+                  "id": "hd_mild",
+                  "emoji": "🌶️",
+                  "label": "Not too spicy",
+                  "fact": "Avoids spicy food; ask for 少辣 (less chili)",
+                  "reply": [
+                    {
+                      "who": "ayi",
+                      "say": "Less chili. Our less chili is still chili.",
+                      "mood": "smug"
+                    }
+                  ],
+                  "set": [
+                    "spicy_averse"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "type": "chain",
@@ -1566,6 +2011,9 @@
         "any": [
           "mobility_low",
           "seniors"
+        ],
+        "none": [
+          "nature"
         ]
       },
       "beats": [
@@ -1609,7 +2057,8 @@
       "if": {
         "none": [
           "mobility_low",
-          "seniors"
+          "seniors",
+          "nature"
         ]
       },
       "options": [

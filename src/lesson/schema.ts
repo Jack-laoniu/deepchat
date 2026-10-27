@@ -418,7 +418,7 @@ export const LessonShape = z.object({
       line: short(28),
       items: z.array(Item).min(2).max(8),
     }),
-    rounds: z.array(Round).min(3).max(16),
+    rounds: z.array(Round).min(3).max(20),
     secret: upto(60).optional(),
     /** 我们手写、审过的标杆关：终章不再让模型重写 */
     curated: z.boolean().optional(),
