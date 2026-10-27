@@ -229,7 +229,7 @@ export function Win() {
 
       {g.share && !inHost() && <SendBack plan={text} />}
       {/* 终章上的分歧：请朋友留原声的卡片在结算页弹出（交回之前） */}
-      <AnimatePresence>{g.voiceAsk && <VoiceAsk key={g.voiceAsk.key} />}</AnimatePresence>
+      <AnimatePresence>{g.voiceAsk && <VoiceAsk key={g.voiceAsk.key} ask={g.voiceAsk} />}</AnimatePresence>
       {!g.share && !inHost() && <ShareWithFriends myPicks={picksOf(l, g.answers)} />}
       {l.city && !inHost() && <MakeItHappen city={l.city} plan={text} booked={p.materials.filter((m) => m.state === 'have').map((m) => m.id)} />}
 

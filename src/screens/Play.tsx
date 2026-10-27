@@ -133,7 +133,7 @@ export function Play() {
         {current && !g.feedback && <FriendVoiceKnock key={current.id} round={current} />}
       </div>
       {/* 朋友玩分享过来的关：在分歧处请他留一句原声 */}
-      <AnimatePresence>{g.voiceAsk && !g.feedback && <VoiceAsk key={g.voiceAsk.key} />}</AnimatePresence>
+      <AnimatePresence>{g.voiceAsk && !g.feedback && <VoiceAsk key={g.voiceAsk.key} ask={g.voiceAsk} />}</AnimatePresence>
       {p.done > 0 && !g.feedback && (
         <button onClick={g.undo} className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs font-extrabold text-slate-300 hover:text-slate-500">
           {t('undo')}
