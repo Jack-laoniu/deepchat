@@ -10,7 +10,7 @@ import { dropDecided } from '../src/lesson/salvage';
 import { parseLesson } from '../src/lesson/schema';
 import { charById } from '../src/chars/library';
 import { cameoById } from '../src/chars/cameos';
-import { chatFromConfig, chimeIn, discussNeed, finaleFor, friendChat, groupChat, suggestCameos, type Member, generateLesson, reactLine, UpstreamError, type GenerateResult, type ModelChoice, type StartChat, type Turn } from './generate';
+import { chatFromConfig, chimeIn, discussNeed, finaleFor, friendChat, sceneFor, groupChat, suggestCameos, type Member, generateLesson, reactLine, UpstreamError, type GenerateResult, type ModelChoice, type StartChat, type Turn } from './generate';
 
 /**
  * 网页版的生成接口：
@@ -139,6 +139,7 @@ function settings() {
 
 const hits = new Map<string, number[]>();
 const talkHits = new Map<string, number[]>();
+const chimeHits = new Map<string, number[]>();
 const ttsHits = new Map<string, number[]>();
 let day = '';
 let dayCount = 0;
@@ -203,6 +204,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   if (path === '/api/lead') return lead(req, res);
   if (path === '/api/share' || path === '/api/share/reply' || path === '/api/share/decide') return share(req, res, path);
   if (path === '/api/finale') return finale(req, res, cfg);
+  if (path === '/api/scene') return scene(req, res, cfg);
   if (path === '/api/friend') return friend(req, res, cfg);
   if (path === '/api/cameos') return cameos(req, res, cfg);
   if (path === '/api/chime') return chime(req, res, cfg);
@@ -342,6 +344,40 @@ async function finale(req: IncomingMessage, res: ServerResponse, cfg: ReturnType
   return true;
 }
 
+/** 用户自己的路线：按「最想干啥」的原话现写一个场景（和终章一样，拿整关来校验） */
+async function scene(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<typeof settings>): Promise<boolean> {
+  if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
+  if (!cfg.client) return void json(res, 503, { error: 'disabled' }), true;
+  let body: { lesson?: unknown; goal?: unknown; journey?: unknown; code?: unknown };
+  try {
+    body = (await readBody(req, 120_000)) as typeof body;
+  } catch {
+    return void json(res, 400, { error: 'bad_request' }), true;
+  }
+  if (cfg.accessCode && body?.code !== cfg.accessCode) return void json(res, 403, { error: 'code' }), true;
+  const parsed = parseLesson(body?.lesson);
+  const goal = typeof body?.goal === 'string' ? body.goal.trim().slice(0, 200) : '';
+  if (!parsed.ok || !goal) return void json(res, 400, { error: 'need' }), true;
+  const journey = typeof body?.journey === 'string' ? body.journey.slice(0, 8000) : '';
+
+  const verdict = allow(clientIp(req), cfg.discussPerIpPerHour, cfg.perDay, talkHits);
+  if (verdict !== 'ok') return void json(res, 429, { error: verdict === 'ip' ? 'rate_ip' : 'rate_day' }), true;
+  if (running >= cfg.concurrency) return void json(res, 429, { error: 'busy' }), true;
+
+  running++;
+  const t0 = Date.now();
+  try {
+    const r = await sceneFor(cfg.client, { lesson: parsed.lesson, goal, journey }, t0 + 90_000);
+    console.error(`scene: ${r ? ('use' in r ? `use ${r.use}` : 'new') : 'kept the placeholder'} after ${Math.round((Date.now() - t0) / 1000)}s ${goal.slice(0, 30)}`);
+    json(res, 200, r ?? {});
+  } catch (e) {
+    upstreamFailed(res, 'scene', e);
+  } finally {
+    running--;
+  }
+  return true;
+}
+
 /** 和熟人单独聊天：交情、讲过的故事、一起闯过的需求由前端带来（只存在用户设备上） */
 async function friend(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<typeof settings>): Promise<boolean> {
   if (req.method !== 'POST') return void json(res, 405, { error: 'method' }), true;
@@ -444,7 +480,8 @@ async function chime(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<
     .slice(0, 6)
     .map((o) => ({ id: o.id, name: o.name.slice(0, 20) }));
 
-  const verdict = allow(clientIp(req), cfg.discussPerIpPerHour, cfg.perDay, talkHits);
+  // 插话单独计数（聊天额度的两倍）：影子后台每段对话都会替敲门的人提前准备一次，和「继续聊」挤一个额度很快就用完
+  const verdict = allow(clientIp(req), cfg.discussPerIpPerHour * 2, cfg.perDay, chimeHits);
   if (verdict !== 'ok') return void json(res, 429, { error: verdict === 'ip' ? 'rate_ip' : 'rate_day' }), true;
   if (running >= cfg.concurrency) return void json(res, 429, { error: 'busy' }), true;
   running++;
@@ -458,6 +495,7 @@ async function chime(req: IncomingMessage, res: ServerResponse, cfg: ReturnType<
       recent,
       pending: typeof body.pending === 'string' ? body.pending.slice(0, 120) : undefined,
       others,
+      speaker: typeof body.speaker === 'string' && others.some((o) => o.id === body.speaker) ? body.speaker : undefined,
     });
     if (!lines) return void json(res, 422, { error: 'refused' }), true;
     json(res, 200, { lines });

@@ -437,3 +437,45 @@ export function FinaleWait({ round }: { round: BossRound }) {
     </div>
   );
 }
+
+/**
+ * 用户开场用自己的话说了最想干啥，按原话现写的新场景还没好：小芳在画地图。
+ * 8 秒后可以点「先逛现成的」；45 秒还没好就自动用占位的场景。
+ */
+export function SceneWait({ goal }: { goal: string }) {
+  const g = useGame();
+  const [canSkip, setCanSkip] = useState(false);
+  useEffect(() => {
+    const a = setTimeout(() => setCanSkip(true), 8000);
+    const b = setTimeout(() => g.skipSceneWait(), 45_000);
+    return () => {
+      clearTimeout(a);
+      clearTimeout(b);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-5 text-center">
+      <div className="relative">
+        <div className="overflow-hidden rounded-3xl bg-sky-50">
+          <Character id={GUIDE} size={120} bust mood="thinking" />
+        </div>
+        <motion.div className="absolute -right-4 -top-4" animate={{ rotate: [-12, 12, -12] }} transition={{ duration: 1.2, repeat: Infinity }}>
+          <Emoji e="🗺️" size={44} />
+        </motion.div>
+      </div>
+      <div className="max-w-[18rem] text-lg font-black text-slate-600">{t('sceneWait', { goal: goal.slice(0, 24) })}</div>
+      <div className="flex gap-1.5">
+        {[0, 1, 2].map((i) => (
+          <motion.span key={i} className="h-2.5 w-2.5 rounded-full bg-sky-400" animate={{ y: [0, -8, 0] }} transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }} />
+        ))}
+      </div>
+      <AnimatePresence>
+        {canSkip && (
+          <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={g.skipSceneWait} className="text-sm font-black text-slate-400">
+            {t('sceneWaitSkip')}
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

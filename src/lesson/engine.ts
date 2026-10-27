@@ -154,7 +154,10 @@ export function walkBeats(beats: Beat[], replies: Replies, baseFlags: Set<string
     const r = replies[b.id];
     if (!r) break; // 停在还没回答的提问上
     if ('option' in r) b.options.find((o) => o.id === r.option)?.set.forEach((f) => flags.add(f));
-    else if (b.free) matchFree(b.free, r.text).forEach((m) => m.set.forEach((f) => flags.add(f)));
+    else if (b.free) {
+      b.free.set.forEach((f) => flags.add(f));
+      matchFree(b.free, r.text).forEach((m) => m.set.forEach((f) => flags.add(f)));
+    }
   }
   return { visible, flags };
 }
@@ -208,6 +211,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
         const text = r.text.trim();
         facts.push(b.free.fact.replace('{v}', text));
         quotes.push({ q: b.q, text });
+        b.free.set.forEach((f) => flags.add(f));
         for (const m of matchFree(b.free, text)) {
           m.set.forEach((f) => flags.add(f));
           if (m.fact) facts.push(m.fact);

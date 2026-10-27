@@ -161,6 +161,8 @@ export function MapQuest({ round }: { round: MapRound }) {
   const box = useRef<HTMLDivElement>(null);
   const walkId = useRef(0);
   const allDone = round.spots.every((s) => done[s.id]);
+  const left = round.spots.filter((s) => !done[s.id]).length;
+  const enough = round.spots.length > 3 && round.spots.length - left >= 3;
   const spot = round.spots.find((s) => s.id === open);
 
   useLayoutEffect(() => {
@@ -524,8 +526,9 @@ export function MapQuest({ round }: { round: MapRound }) {
         {!moved && hintAt && <HandHint show mode="tap" from={{ x: 50, y: 92 }} to={hintAt} label={t('tapToGo')} />}
       </div>
 
-      <Btn className="mt-3" disabled={!allDone || !!flying} onClick={() => g.talk(round, done)}>
-        {allDone ? t('allAsked') : t('missing', { n: round.spots.filter((s) => !done[s.id]).length })}
+      {/* 人多的地图不用全聊完：聊过 3 个就能走，剩下的可以跳过 */}
+      <Btn className="mt-3" disabled={!(allDone || enough) || !!flying} onClick={() => g.talk(round, done)}>
+        {allDone ? t('allAsked') : enough ? t('mapEnough', { n: left }) : t('missing', { n: left })}
       </Btn>
 
       <AnimatePresence>

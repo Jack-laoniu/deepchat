@@ -94,6 +94,24 @@ This is the payoff of everything the user did: the finale must USE their data, n
 
 Output the finale round as a single JSON object only (with "type": "boss"), no explanation.`;
 
+/** 用户用自己的话说了最想干啥，写好的场景都不合适：现写一个地图场景顶上 */
+export const SCENE_RULES = `You write ONE map round for a "Need Quest" level (a Duolingo-style mini game that collects a user's real need; it never gives the final plan — a downstream AI, a local guide or a merchant does that).
+Early in the level the user said, IN THEIR OWN WORDS, what they most want. The pre-written scenes don't fit that, so you write a new scene about exactly what they said. They will walk around it as a little 3D place (like Duolingo Adventures) and talk to the characters.
+
+The round: {"type": "map", "title" (≤ 14, names the real place or activity), "emoji", "scene": street | park | home | shop | office (closest look), "spots": [...]}.
+- 3–4 spots (x, y from 0–100; keep y between 20 and 75, spread them out). Each spot: id, emoji, label (≤ 6), "who" (a character from the cast — prefer the local characters), "prop" (building | counter | car | sofa | bench | kiosk | desk | shelf | table | bed), "beats" (6–10).
+- Make it REAL: specific knowledge about that place or activity in this city — how to get there, the best time, crowds, tickets or booking, what locals actually do, the common tourist mistake. Prices only as rough estimates; never invent official numbers or rules you aren't sure of — if unsure, have a character say to check before going.
+- Each spot asks 1–2 questions whose answers a local guide or merchant would need (time of day, group, budget, walking ability, interests, booking, food). Question: {"id", "who", "q" (≤ 24), "options": 2–4 × {id, emoji, label ≤ 8, fact (full detail for the downstream AI), optional "set" flags, optional "reply": 1–2 lines}}. Allow "free" (the user's own words) on at least one question: {"placeholder", "chips" (≤ 4), "fact" with {v}}.
+- At least one spot has a "gift" the character hands over that SAVES the user money (a tip, a coupon: negative "price" on the gift itself), with "say" (≤ 28).
+- Lines: {"who", "say" (≤ 40), "mood"}. Characters talk like real people with personality, disagree a little, and the user's travel buddy reacts.
+- Text limits are in "width": a CJK char = 1, a Latin letter ≈ 0.55.
+- Use only characters from the cast. ids: lowercase letters, digits, underscores. Never put a raw double quote (") inside a string; use 「」 or ‘ ’.
+- Only use "if" with flags that already exist in this level or are set by your own options.
+${HUMOR_BRIEF}
+
+If what the user said is really just one of the existing scenes listed, output {"use": "<that round id>"} instead of writing a new one.
+Output JSON only: {"round": {...}} or {"use": "..."}.`;
+
 export function generatorPrompt(need: string, lang: 'zh' | 'en' = 'zh', memory = ''): string {
   return `${GENERATOR_RULES}
 

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { getLang, t, type MsgKey } from './i18n';
-import { parseLesson, type BossRound, type Lesson } from './lesson/schema';
+import { parseLesson, type BossRound, type Lesson, type MapRound } from './lesson/schema';
 import { memoryText } from './memory';
 import type { Pick } from './lesson/picks';
+import { CAMEOS } from './chars/cameos';
 
 export type ServerConfig = { generate: boolean; needCode: boolean; tts: boolean };
 
@@ -133,6 +134,23 @@ export async function requestFinale(lesson: Lesson, journey: string, guest?: str
   }
 }
 
+/** 用户自己的路线：按「最想干啥」的原话现写一个场景；模型觉得就是现成的某个场景时返回 { use } */
+export async function requestScene(lesson: Lesson, goal: string, journey: string): Promise<{ scene: MapRound; cast: Lesson['cast'] } | { use: string } | null> {
+  try {
+    const res = await fetch('/api/scene', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ lesson, goal, journey, code: loadCode() }),
+      signal: AbortSignal.timeout(100_000),
+    });
+    const data = (await res.json().catch(() => ({}))) as { scene?: MapRound; cast?: Lesson['cast']; use?: string };
+    if (!res.ok) return null;
+    return data.scene && Array.isArray(data.cast) ? { scene: data.scene, cast: data.cast } : data.use ? { use: data.use } : null;
+  } catch {
+    return null;
+  }
+}
+
 /** 和熟人单独聊天；失败返回错误码 */
 export async function requestFriend(input: {
   who: string;
@@ -166,6 +184,8 @@ type ChimeInput = {
   recent: string[];
   pending?: string;
   others: { id: string; name: string }[];
+  /** 用户眼前正在聊的那个人：客人要接他的话，他也要回客人一句 */
+  speaker?: string;
 };
 type ChimeLines = { who: string; say: string; mood?: string }[] | null;
 
@@ -215,6 +235,13 @@ export function takeChime(key: string, who: string, shown: number): Promise<Chim
   return r && shown - r.shown <= 6 && Date.now() - r.at < 180_000 ? r.lines : null;
 }
 
+/** 推荐不出来时的兜底：按需求文字固定挑一位 */
+function fallbackCameo(need: string): { id: string; hook: string } {
+  let h = 0;
+  for (const c of need) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return { id: CAMEOS[h % CAMEOS.length].id, hook: '' };
+}
+
 /** 按需求推荐的名著人物（邀请面板和影子后台共用，同一个需求只问一次） */
 const picksOf = new Map<string, Promise<{ id: string; hook: string }[]>>();
 export function cameoPicks(need: string): Promise<{ id: string; hook: string }[]> {
@@ -225,7 +252,13 @@ export function cameoPicks(need: string): Promise<{ id: string; hook: string }[]
       fetch('/api/cameos', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ need, lang: getLang() === 'en' ? 'en' : 'zh', code: loadCode() }) })
         .then((r) => r.json())
         .then((d: { picks?: { id: string; hook: string }[] }) => d.picks ?? [])
-        .catch(() => []),
+        .catch(() => [] as { id: string; hook: string }[])
+        .then((picks) => {
+          // 没推荐出来（限流、模型出错）：这次按需求挑一位兜底，下次再问
+          if (picks.length) return picks;
+          picksOf.delete(k);
+          return [fallbackCameo(need)];
+        }),
     );
   return picksOf.get(k)!;
 }

@@ -1,6 +1,8 @@
 import type { Pick } from './lesson/picks';
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { requestFinale, serverConfig } from './api';
+import { requestFinale, requestScene, serverConfig } from './api';
+import { inHost } from './host';
+import { branchOf, withOwnScene } from './lesson/branch';
 import { sfx } from './fx/fx';
 import { hush } from './fx/voice';
 import { jingle } from './fx/music';
@@ -8,7 +10,7 @@ import { detectLang, money, pickCheer, setLocale, t } from './i18n';
 import { gambleCrashes, optionsOf, play, revealsProblem, type Answer, type Crash, type Meter, type Played, type Replies } from './lesson/engine';
 import { bossOf, journeyText, withBoss } from './lesson/journey';
 import { isCameo } from './chars/cameos';
-import { parseLesson, type FixRound, type Lesson, type Round } from './lesson/schema';
+import { asksOf, parseLesson, type FixRound, type Lesson, type MapRound, type Round } from './lesson/schema';
 
 /** 一关最多请几位客人 */
 export const MAX_GUESTS = 2;
@@ -39,6 +41,10 @@ interface Game {
   finaleWaiting: boolean;
   /** 不等个性化终章了，用关卡里原来的 */
   skipFinaleWait(): void;
+  /** 用户自己说的路线：新场景还在后台写，而用户已经走到这一关了：先等一下 */
+  sceneWaiting: { goal: string } | null;
+  /** 不等了，先用占位的场景 */
+  skipSceneWait(): void;
   /** 请进这一关的客人（熟人或名著人物，最多 2 位）：他们会加入正在进行的对话 */
   guests: string[];
   /** 请来的熟人（第一位）：他主持终章 */
@@ -87,6 +93,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
   // 个性化终章：玩到只剩两关 + 终章时，把这一局的选择和原话交给模型，在后台重写终章；
   // 用户玩完那两关的工夫就生成好了。没有服务器、失败、超时都用关卡里原来的终章。
   const [custom, setCustom] = useState<'idle' | 'pending' | 'done'>('idle');
+  // 用户自己的路线：开场用自己的话说了最想干啥 → 先放占位场景，后台按原话现写一个（玩中间几关的工夫就写好了）
+  const [own, setOwn] = useState<{ goal: string; status: 'pending' | 'done' } | null>(null);
+  const ownJob = useRef(0);
   const [guests, setGuests] = useState<string[]>([]);
   const [share, setShare] = useState<ShareCtx | null>(null);
   const guest = guests.find((id) => !isCameo(id)) ?? null;
@@ -139,6 +148,35 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return f;
   };
 
+  /** 开场「最想干啥」用自己的话回答了：放占位场景，后台让模型按原话写新场景 */
+  const ownRoute = (base: Lesson, round: Round, replies: Replies) => {
+    const b = branchOf(base);
+    const r = b && asksOf(round).some((a) => a.id === b.ask.id) ? replies[b.ask.id] : undefined;
+    if (!b || !r || !('text' in r) || !r.text.trim()) return;
+    const goal = r.text.trim();
+    const placed = withOwnScene(base);
+    setLesson(placed);
+    const my = ++ownJob.current;
+    setOwn({ goal, status: 'pending' });
+    const journey = journeyText(placed, play(placed, answers));
+    void serverConfig()
+      .then((c) => (c.generate && !inHost() ? requestScene(placed, goal, journey) : null))
+      .then((res) => {
+        if (ownJob.current !== my) return;
+        if (res) {
+          const scene = 'scene' in res ? res.scene : placed.rounds.find((x): x is MapRound => x.id === res.use && x.type === 'map');
+          const cast = 'cast' in res ? res.cast : null;
+          if (scene)
+            setLesson((cur) => {
+              if (!cur || branchOf(cur)?.ownId !== b.ownId) return cur;
+              const next = withOwnScene(cast ? { ...cur, cast: [...cur.cast, ...cast.filter((c) => !cur.cast.some((x) => x.id === c.id))] } : cur, scene);
+              return parseLesson(next).ok ? next : cur;
+            });
+        }
+        setOwn({ goal, status: 'done' });
+      });
+  };
+
   const game: Game = {
     lesson,
     phase,
@@ -147,6 +185,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
     crashes,
     feedback,
     finaleWaiting: false,
+    sceneWaiting: own?.status === 'pending' && lesson && played?.current?.id === branchOf(lesson)?.ownId ? { goal: own.goal } : null,
+    skipSceneWait() {
+      ownJob.current++;
+      setOwn((o) => (o ? { ...o, status: 'done' } : o));
+    },
     skipFinaleWait() {
       job.current++;
       setCustom('done');
@@ -173,6 +216,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
     share,
     open(l, ctx) {
       job.current++;
+      ownJob.current++;
+      setOwn(null);
       setShare(ctx ?? null);
       setCustom('idle');
       setGuests([]);
@@ -224,6 +269,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         };
       });
       if (f?.tone === 'good') sfx.good();
+      if (lesson && round.type === 'talk') ownRoute(lesson, round, replies as Replies);
     },
     chain(round, picks, accepted) {
       const f = commit({ round: round.id, chain: { picks, accepted } }, (b, a, problem) => ({

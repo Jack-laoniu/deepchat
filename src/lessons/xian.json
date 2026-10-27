@@ -236,6 +236,13 @@
                 "who": "xiaofang",
                 "say": "Writing that on page one of your pass."
               }
+            ],
+            "set": [
+              "own_goal"
+            ],
+            "branch": [
+              "quarter",
+              "hua_base"
             ]
           }
         },
@@ -1339,7 +1346,8 @@
       ],
       "if": {
         "none": [
-          "nature"
+          "nature",
+          "own_goal"
         ]
       }
     },
@@ -1376,6 +1384,9 @@
       "if": {
         "any": [
           "nature"
+        ],
+        "none": [
+          "own_goal"
         ]
       },
       "spots": [

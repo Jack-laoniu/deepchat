@@ -78,3 +78,32 @@ describe('splitsOf', () => {
     expect(sp.route.theirs).toEqual(['Foot of Mount Hua']);
   });
 });
+
+describe('own route', () => {
+  it('a goal in their own words gets its own scene in place of the written versions', async () => {
+    const { branchOf, withOwnScene } = await import('./branch');
+    const { play } = await import('./engine');
+    const { parseLesson } = await import('./schema');
+    const xian = (await import('../lessons/xian.json')).default;
+    const l = parseLesson(xian);
+    if (!l.ok) throw new Error(l.errors.join('\n'));
+    const b = branchOf(l.lesson)!;
+    expect(b.ownId).toBe('own_quarter');
+    const placed = withOwnScene(l.lesson);
+    expect(parseLesson(placed).ok).toBe(true);
+    const scene = { ...b.base, title: 'Calligraphy street' };
+    const done = withOwnScene(placed, scene);
+    expect(done.rounds.filter((r) => r.id === 'own_quarter')).toHaveLength(1);
+    // own words → own scene only; picking noodles → the Muslim Quarter only
+    const { matches } = await import('./engine');
+    const maps = (flags: Set<string>) => done.rounds.filter((r) => r.type === 'map' && matches(r.if, flags)).map((r) => r.id);
+    const own = play(done, [{ round: 'arrive', talk: { why: { text: 'calligraphy shops' } } } as never]);
+    const food = play(done, [{ round: 'arrive', talk: { why: { option: 'w_food' } } } as never]);
+    const hike = play(done, [{ round: 'arrive', talk: { why: { option: 'w_mountain' } } } as never]);
+    expect(maps(own.flags)).toEqual(['own_quarter']);
+    expect(maps(food.flags)).toEqual(['quarter']);
+    expect(maps(hike.flags)).toEqual(['hua_base']);
+    expect(own.flags.has('own_goal')).toBe(true);
+    expect(food.flags.has('own_goal')).toBe(false);
+  });
+});

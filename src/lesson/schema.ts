@@ -144,6 +144,13 @@ export const Free = z.object({
     .default([]),
   /** 没命中任何关键词时角色的反应 */
   reply: z.array(Line).default([]),
+  /** 只要用自己的话回答（不管说了什么）就打上的标记 */
+  set: z.array(id).default([]),
+  /**
+   * 用自己的话说了「最想干啥」这种决定路线的事：这几个回合（几个版本的场景）都不合适，
+   * 让模型按用户的原话现写一个新场景顶上（id 是 own_ + 第一个的 id，出现条件是 set 里的标记）
+   */
+  branch: z.array(id).max(3).optional(),
 });
 export type Free = z.infer<typeof Free>;
 
@@ -445,7 +452,7 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
         ...(r.type === 'place' ? r.things.flatMap((t) => r.zones.map((z) => `${t.id}_${z.id}`)) : []),
         ...(r.type === 'day' ? r.moments.flatMap((m) => m.options.flatMap((o) => o.set)) : []),
         ...(r.type === 'map' ? r.spots.flatMap((s) => s.gift?.set ?? []) : []),
-        ...asksOf(r).flatMap((a) => [...a.options.flatMap((o) => o.set), ...(a.free?.match.flatMap((m) => m.set) ?? [])]),
+        ...asksOf(r).flatMap((a) => [...a.options.flatMap((o) => o.set), ...(a.free?.match.flatMap((m) => m.set) ?? []), ...(a.free?.set ?? [])]),
       ]),
     );
     const checkCond = (c: Cond | undefined, path: (string | number)[]) =>
@@ -476,6 +483,8 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
       if (new Set(askIds).size !== askIds.length) err(['rounds', i], '同一关里提问 id 重复');
       asksOf(r).forEach((a) => {
         if (!a.options.length && !a.free) err(['rounds', i], `提问 ${a.id} 既没有选项也不允许自由回答`);
+        for (const b of a.free?.branch ?? []) if (!l.rounds.some((x) => x.id === b && x.type === 'map')) err(['rounds', i], `提问 ${a.id} 的 branch 里 ${b} 不是这一关的地图回合`);
+        if (a.free?.branch?.length && !a.free.set.length) err(['rounds', i], `提问 ${a.id} 有 branch 就要有 set（新场景靠这个标记出现）`);
       });
     });
     // 「换成便宜的」写成了新 id 又没移除旧的：两样都算钱，省钱方案反而加钱

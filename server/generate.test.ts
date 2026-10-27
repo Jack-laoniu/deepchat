@@ -305,3 +305,23 @@ describe('OpenAI-compatible provider', () => {
     expect(user).toContain('插混/增程');
   });
 });
+
+describe('sceneFor', () => {
+  it('writes a scene for the goal in their own words, or reuses a written one', async () => {
+    const { sceneFor } = await import('./generate');
+    const { parseLesson } = await import('../src/lesson/schema');
+    const xian = (await import('../src/lessons/xian.json')).default;
+    const l = parseLesson(xian);
+    if (!l.ok) throw new Error(l.errors.join('\n'));
+    const quarter = l.lesson.rounds.find((r) => r.id === 'quarter')!;
+    const scene = { ...quarter, title: 'Calligraphy lane', id: 'whatever', if: undefined };
+    const broken = { ...scene, spots: scene.type === 'map' ? scene.spots.map((s, i) => (i === 0 ? { ...s, who: 'ghost' } : s)) : [] };
+    const a = fakeClient([JSON.stringify({ round: broken }), JSON.stringify({ round: scene })]);
+    const r = await sceneFor(a.client, { lesson: l.lesson, goal: 'calligraphy shops', journey: '' });
+    expect(r && 'scene' in r && r.scene.id).toBe('own_quarter');
+    expect(r && 'scene' in r && r.scene.title).toBe('Calligraphy lane');
+    expect(a.calls).toHaveLength(2);
+    const b = fakeClient([JSON.stringify({ use: 'hua_base' })]);
+    expect(await sceneFor(b.client, { lesson: l.lesson, goal: 'climb Huashan at night', journey: '' })).toEqual({ use: 'hua_base' });
+  });
+});

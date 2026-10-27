@@ -235,6 +235,13 @@
                 "who": "xiaofang",
                 "say": "记下了，写在文牒第一页。"
               }
+            ],
+            "set": [
+              "own_goal"
+            ],
+            "branch": [
+              "quarter",
+              "hua_base"
             ]
           }
         },
@@ -1338,7 +1345,8 @@
       ],
       "if": {
         "none": [
-          "nature"
+          "nature",
+          "own_goal"
         ]
       }
     },
@@ -1375,6 +1383,9 @@
       "if": {
         "any": [
           "nature"
+        ],
+        "none": [
+          "own_goal"
         ]
       },
       "spots": [

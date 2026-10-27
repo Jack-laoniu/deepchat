@@ -7,7 +7,7 @@ import { canListen, hush, isSpeaking, listen, prefetchSpeech, speak, speakNow } 
 import { useGame } from '../game';
 import { getLang, t } from '../i18n';
 import { matchFree, matches, walkBeats, type Replies } from '../lesson/engine';
-import { cameoPicks, knockedIn, knockRuleSeen, markKnockRule, peekChime, prefetchChime, requestChime, requestReact, setScene, takeChime, useCanGenerate } from '../api';
+import { cameoPicks, knockedIn, knockRuleSeen, markKnockRule, prefetchChime, requestChime, requestReact, setScene, takeChime, useCanGenerate } from '../api';
 import { MAX_GUESTS } from '../game';
 import { bondOf, friends, heartsOf, INVITE_AT } from '../bond';
 import { memories } from '../memory';
@@ -254,9 +254,10 @@ export function Dialogue({
       .map((it) => (it.kind === 'ask' ? `${who(it.beat.who).name} (${it.beat.who}): ${it.beat.q}` : `${it.who === 'me' ? 'User' : who(it.who).name || 'Narrator'} (${it.who}): ${it.say}`)),
     pending: waitingAsk?.q,
     others: speakers.map((id) => ({ id, name: who(id).name })),
+    speaker: partner ?? [...items.slice(0, shown)].reverse().map((it) => (it.kind === 'ask' ? it.beat.who : it.who)).find((id) => speakers.includes(id) && id !== GUIDE) ?? speakers[0],
   });
 
-  // 熟人的影子后台：对话进行到第 3 句时，替最可能被请来的两位（交情最深的熟人、最对这个需求的名著人物）先把进场的话准备好
+  // 熟人的影子后台：对话进行到第 3 句时，挑一位来敲门（交情够的熟人，或最对这个需求的名著人物），同时把他进场的话准备好
   const prepared = useRef('');
   useEffect(() => {
     if (!live) return;
@@ -265,27 +266,18 @@ export function Dialogue({
     prepared.current = sceneKey;
     const here = new Set([...speakers, ...g.guests]);
     const done = knockedIn(g.lesson?.need ?? '');
-    // 准备好了、他还没敲过门、客人还没满：弹出「某某有话要说」。成功了返回 true
-    const knockWhenReady = async (id: string): Promise<boolean> => {
-      if (!mayKnock() || done.has(id)) return false;
-      const lines = await peekChime(sceneKey, id);
-      if (!lines || knockRef.current || done.has(id) || gRef.current.guests.includes(id) || gRef.current.guests.length >= MAX_GUESTS) return false;
+    // 熟人优先（交情够的），没有就请最对这个需求的名著人物。只给要敲门的那一位准备进场的话，省额度
+    // 一关最多敲两次门（拒绝了也算），免得每段对话都有人敲
+    if (done.size >= 2) return;
+    void (async () => {
+      const friend = friends().find((f) => f.hearts >= INVITE_AT && !here.has(f.id) && !done.has(f.id));
+      const id = friend?.id ?? (await cameoPicks(g.lesson?.need ?? '')).map((c) => c.id).find((c) => !here.has(c) && !done.has(c));
+      if (!id) return;
+      prefetchChime(sceneKey, shown, { ...sceneInput(), who: id, hearts: friend?.hearts, joined: true });
+      // 不等话准备好就先敲门：点「请进」时话多半已经好了，没好就等它几秒
+      if (!mayKnock() || knockRef.current || gRef.current.guests.includes(id) || gRef.current.guests.length >= MAX_GUESTS) return;
       done.add(id);
       setKnock(id);
-      return true;
-    };
-    const friend = friends().find((f) => f.hearts >= INVITE_AT && !here.has(f.id));
-    if (friend) prefetchChime(sceneKey, shown, { ...sceneInput(), who: friend.id, hearts: friend.hearts, joined: true });
-    const cameo = cameoPicks(g.lesson?.need ?? '').then((p) => {
-      const c = p.find((x) => !here.has(x.id));
-      if (c) prefetchChime(sceneKey, shown, { ...sceneInput(), who: c.id, joined: true });
-      return c?.id;
-    });
-    // 熟人优先；熟人的话没准备出来，就让名著人物来敲
-    void (async () => {
-      if (friend && (await knockWhenReady(friend.id))) return;
-      const c = await cameo;
-      if (c) await knockWhenReady(c);
     })();
   }, [shown, live, sceneKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -423,13 +415,14 @@ export function Dialogue({
         <AnimatePresence initial={false}>
           {visible.map((it, i) =>
             it.kind === 'ask' ? (
-              <Bubble key={it.key} who={who(it.beat.who)} text={it.beat.q} ask current={i === visible.length - 1} chat={style === 'chat'} />
+              <Bubble key={it.key} who={who(it.beat.who)} text={it.beat.q} ask current={i === visible.length - 1} chat={style === 'chat' && it.beat.who === partner} />
             ) : it.who === 'narrator' ? (
               <motion.div key={it.key} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="px-6 text-center text-sm font-bold italic text-slate-400">
                 {it.say}
               </motion.div>
             ) : (
-              <Bubble key={it.key} who={who(it.who)} text={it.say} mine={it.who === 'me'} current={i === visible.length - 1} chat={style === 'chat'} />
+              // 聊天模式里只有对面那个人不用头像和名字；旅伴、请来的客人插话都要标出是谁
+              <Bubble key={it.key} who={who(it.who)} text={it.say} mine={it.who === 'me'} current={i === visible.length - 1} chat={style === 'chat' && (it.who === partner || it.who === 'me')} />
             ),
           )}
         </AnimatePresence>

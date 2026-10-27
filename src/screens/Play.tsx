@@ -9,7 +9,7 @@ import { MAX_GUESTS, useGame } from '../game';
 import type { Round } from '../lesson/schema';
 import { Pick } from '../rounds/Pick';
 import { Fix } from '../rounds/Repair';
-import { Finale, FinaleWait } from '../rounds/Finale';
+import { Finale, FinaleWait, SceneWait } from '../rounds/Finale';
 import { Slider } from '../rounds/Slider';
 import { Swipe } from '../rounds/Swipe';
 import { Talk } from '../rounds/Talk';
@@ -120,7 +120,7 @@ export function Play() {
               className="h-full"
             >
               <RoundGuard round={current} title={g.lesson?.title ?? ''} onSkip={() => skip(g, current)} onHome={g.home}>
-                {g.finaleWaiting && current.type === 'boss' ? <FinaleWait round={current} /> : <RoundView round={current} />}
+                {g.finaleWaiting && current.type === 'boss' ? <FinaleWait round={current} /> : g.sceneWaiting ? <SceneWait goal={g.sceneWaiting.goal} /> : <RoundView round={current} />}
               </RoundGuard>
             </motion.div>
           )}
