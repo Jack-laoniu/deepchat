@@ -13,8 +13,7 @@ const load = (x: unknown) => {
 };
 
 const answers: Answer[] = [
-  { round: 'days', option: 'd3' },
-  { round: 'when', option: 'm_spring' },
+  { round: 'pass', trip: { month: 4, nights: 3, adults: 2, kids: 0, rooms: 1 } },
   { round: 'bus', talk: { how: { option: 'h_metro' } } },
   { round: 'day2', chain: { picks: { c_wall: 'right', c_museum: 'right', c_goose: 'left', c_night: 'right' } } },
   { round: 'heights', option: 'ht_no' },
@@ -26,7 +25,7 @@ describe('sharing a trip with real friends', () => {
     const picks = picksOf(base, answers);
 
     it(`${name}: picks are keyed by question and carry the chosen label`, () => {
-      expect(picks.find((p) => p.key === 'days')?.label).toBe(base.rounds.find((r) => r.id === 'days')!.type === 'pick' ? (base.rounds.find((r) => r.id === 'days') as any).options[1].label : '');
+      expect(picks.find((p) => p.key === 'pass.nights')?.label).toMatch(/3/);
       expect(picks.some((p) => p.key === 'bus.how')).toBe(true);
       expect(picks.filter((p) => p.key.startsWith('day2.'))).toHaveLength(4);
     });
@@ -49,10 +48,10 @@ describe('sharing a trip with real friends', () => {
   it('comparing two companions finds what they disagree on', () => {
     const base = load(xian);
     const mine = picksOf(base, answers);
-    const theirs = picksOf(base, [{ round: 'days', option: 'd4' }, { round: 'when', option: 'm_spring' }]);
+    const theirs = picksOf(base, [{ round: 'pass', trip: { month: 4, nights: 5, adults: 2, kids: 0, rooms: 1 } }]);
     const c = comparePicks(mine, theirs);
-    expect(c.same.map((p) => p.key)).toEqual(['when']);
-    expect(c.diff.map((d) => d.mine.key)).toEqual(['days']);
+    expect(c.same.map((p) => p.key)).toEqual(['pass.dates', 'pass.party']);
+    expect(c.diff.map((d) => d.mine.key)).toEqual(['pass.nights']);
   });
 
   it('too few choices: no advisor level', () => {

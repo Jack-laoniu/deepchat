@@ -533,77 +533,54 @@
       ]
     },
     {
-      "type": "pick",
-      "id": "days",
-      "q": "玩几天？",
-      "emoji": "📅",
-      "options": [
+      "type": "trip",
+      "id": "pass",
+      "title": "通关文牒",
+      "emoji": "🛂",
+      "say": "领文牒先登记：哪天到、住几晚、几个人。",
+      "scale": [
         {
-          "id": "d2",
-          "emoji": "2️⃣",
-          "label": "2 天",
-          "fact": "在西安玩 2 天：兵马俑加古城",
-          "price": -500,
-          "set": [
-            "short"
-          ]
+          "item": "hotel",
+          "per": "room_night",
+          "price": 500,
+          "name": "酒店{n}晚"
         },
         {
-          "id": "d3",
-          "emoji": "3️⃣",
-          "label": "3 天",
-          "fact": "在西安玩 3 天"
+          "item": "tour",
+          "per": "person",
+          "price": 225
         },
         {
-          "id": "d4",
-          "emoji": "4️⃣",
-          "label": "4~5 天",
-          "fact": "在西安玩 4~5 天，能加华山或者留一天慢慢逛",
-          "price": 800,
-          "set": [
-            "long"
-          ]
+          "item": "tickets",
+          "per": "person",
+          "price": 125
+        },
+        {
+          "item": "food",
+          "per": "person_day",
+          "price": 75
+        },
+        {
+          "item": "rides",
+          "per": "person_day",
+          "price": 40
         }
-      ]
-    },
-    {
-      "type": "pick",
-      "id": "when",
-      "q": "什么时候去？",
-      "emoji": "🗓️",
-      "options": [
+      ],
+      "seasons": [
         {
-          "id": "m_spring",
-          "emoji": "🌸",
-          "label": "春天",
-          "fact": "春天出行（4、5 月舒服，五一人多）"
+          "set": "golden",
+          "from": "10-01",
+          "to": "10-07"
         },
         {
-          "id": "m_summer",
-          "emoji": "☀️",
-          "label": "暑假",
-          "fact": "暑假出行（热，7、8 月华山常有雾）",
-          "set": [
-            "hot"
-          ]
+          "set": "hot",
+          "from": "07-01",
+          "to": "08-31"
         },
         {
-          "id": "m_oct",
-          "emoji": "🇨🇳",
-          "label": "国庆",
-          "fact": "国庆假期出行（10 月 1~7 日）",
-          "set": [
-            "golden"
-          ]
-        },
-        {
-          "id": "m_winter",
-          "emoji": "❄️",
-          "label": "11 月到 3 月",
-          "fact": "11 月到次年 3 月出行（冷、人少；11 月 14 日后陕历博恢复周一闭馆）",
-          "set": [
-            "cold"
-          ]
+          "set": "cold",
+          "from": "11-01",
+          "to": "03-15"
         }
       ]
     },

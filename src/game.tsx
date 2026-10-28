@@ -9,6 +9,7 @@ import { jingle } from './fx/music';
 import { detectLang, money, pickCheer, setLocale, t } from './i18n';
 import { gambleCrashes, optionsOf, play, revealsProblem, type Answer, type Crash, type Meter, type Played, type Replies } from './lesson/engine';
 import { bossOf, journeyText, withBoss } from './lesson/journey';
+import type { Trip } from './lesson/trip';
 import { isCameo } from './chars/cameos';
 import { asksOf, parseLesson, type FixRound, type Lesson, type MapRound, type Round } from './lesson/schema';
 
@@ -91,6 +92,8 @@ interface Game {
   place(round: Round, spots: Record<string, string>): void;
   /** 无文字的一天整轮提交：时刻 → 选项 */
   day(round: Round, picks: Record<string, string>): void;
+  /** 文牒登记提交：日期、晚数、人数、房间 */
+  trip(round: Round, t: Trip): void;
   /** 终章整轮提交：选的做法、追问回答、资料有没有 */
   finale(round: Round, answer: Extract<Answer, { finale: unknown }>['finale']): void;
   next(): void;
@@ -367,6 +370,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
         tip: problem ? problem.q : undefined,
         delta: a.total - b.total,
         emoji: problem ? problem.emoji : '🌙',
+        round,
+      }));
+      if (f?.tone === 'good') sfx.good();
+    },
+    trip(round, tr) {
+      const f = commit({ round: round.id, trip: tr }, (b, a, problem) => ({
+        tone: problem ? 'warn' : 'good',
+        title: problem ? t('oops') : t('tripStamped'),
+        tip: problem ? problem.q : undefined,
+        delta: a.total - b.total,
+        emoji: problem ? problem.emoji : '🛂',
         round,
       }));
       if (f?.tone === 'good') sfx.good();

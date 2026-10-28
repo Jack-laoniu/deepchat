@@ -378,7 +378,35 @@ export const DayRound = z.object({
 });
 export type DayRound = z.infer<typeof DayRound>;
 
-export const Round = z.discriminatedUnion('type', [PickRound, SwipeRound, SliderRound, FixRound, BossRound, TalkRound, MapRound, ChainRound, SortRound, PlaceRound, DayRound]);
+/** 文牒登记自动打的标记：有孩子、一个人、人多、短途（≤2 晚）、长一点（≥4 晚）、旅居（≥10 晚） */
+export const TRIP_FLAGS = ['kids', 'solo', 'group', 'short', 'long', 'stay'] as const;
+const MMDD = z.string().regex(/^\d\d-\d\d$/);
+
+/**
+ * 文牒登记：旅行的硬条件——哪天到（具体日期，或者只知道几月）、住几晚、几个大人几个孩子、几间房。
+ * 订酒店、订门票、找导游都要按这些检索。方案里跟着天数 / 人数走的东西自动算价（scale），
+ * 日期落在哪个季节（seasons）、人数和天数（TRIP_FLAGS）自动打标记，后面的回合可以用 if 引用。
+ */
+export const TripRound = z.object({
+  type: z.literal('trip'),
+  id,
+  title: short(14),
+  emoji,
+  /** 谁来登记，和他说的一句开场白 */
+  who: id.optional(),
+  say: upto(40).optional(),
+  /**
+   * 方案里哪些东西按天数 / 人数算钱：room_night 每间每晚、person_day 每人每天、person 每人一次。
+   * name 里的 {n} 换成晚数 / 天数 / 人数（如「酒店{n}晚」）
+   */
+  scale: z.array(z.object({ item: id, per: z.enum(['room_night', 'person_day', 'person']), price: z.number().min(0), name: upto(10).optional() })).default([]),
+  /** 日期（或月份）落在这个区间就打上标记，MM-DD，可以跨年（如 11-01 到 03-15） */
+  seasons: z.array(z.object({ set: id, from: MMDD, to: MMDD })).default([]),
+  if: Cond.optional(),
+});
+export type TripRound = z.infer<typeof TripRound>;
+
+export const Round = z.discriminatedUnion('type', [PickRound, SwipeRound, SliderRound, FixRound, BossRound, TalkRound, MapRound, ChainRound, SortRound, PlaceRound, DayRound, TripRound]);
 export type Round = z.infer<typeof Round>;
 export type PickRound = z.infer<typeof PickRound>;
 export type SwipeRound = z.infer<typeof SwipeRound>;
@@ -451,6 +479,7 @@ export const Lesson = LessonShape.superRefine((l, ctx) => {
         ...(r.type === 'sort' ? r.cards.flatMap((c) => r.bins.map((b) => `${c.id}_${b.id}`)) : []),
         ...(r.type === 'place' ? r.things.flatMap((t) => r.zones.map((z) => `${t.id}_${z.id}`)) : []),
         ...(r.type === 'day' ? r.moments.flatMap((m) => m.options.flatMap((o) => o.set)) : []),
+        ...(r.type === 'trip' ? [...TRIP_FLAGS, ...r.seasons.map((s) => s.set)] : []),
         ...(r.type === 'map' ? r.spots.flatMap((s) => s.gift?.set ?? []) : []),
         ...asksOf(r).flatMap((a) => [...a.options.flatMap((o) => o.set), ...(a.free?.match.flatMap((m) => m.set) ?? []), ...(a.free?.set ?? [])]),
       ]),

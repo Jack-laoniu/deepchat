@@ -18,6 +18,7 @@ import { Chain } from '../rounds/Chain';
 import { Sort } from '../rounds/Sort';
 import { Place } from '../rounds/Place';
 import { Day } from '../rounds/Day';
+import { Trip } from '../rounds/Trip';
 import { FeedbackSheet } from '../ui/FeedbackSheet';
 import { RoundGuard } from '../ui/RoundGuard';
 import { filledOf, puzzleOf } from '../lesson/puzzle';
@@ -51,6 +52,8 @@ function RoundView({ round }: { round: Round }) {
       return <Place round={round} />;
     case 'day':
       return <Day round={round} />;
+    case 'trip':
+      return <Trip round={round} />;
   }
 }
 
@@ -76,6 +79,8 @@ function skip(g: ReturnType<typeof useGame>, r: Round) {
       return g.place(r, {});
     case 'day':
       return g.day(r, {});
+    case 'trip':
+      return g.trip(r, { nights: 3, adults: 2, kids: 0, rooms: 1 });
   }
 }
 

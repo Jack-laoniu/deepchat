@@ -534,77 +534,54 @@
       ]
     },
     {
-      "type": "pick",
-      "id": "days",
-      "q": "How many days?",
-      "emoji": "📅",
-      "options": [
+      "type": "trip",
+      "id": "pass",
+      "title": "Your travel pass",
+      "emoji": "🛂",
+      "say": "Pass first: when you land, how long, who's coming.",
+      "scale": [
         {
-          "id": "d2",
-          "emoji": "2️⃣",
-          "label": "2 days",
-          "fact": "2 days in Xi'an — Terracotta plus the old city",
-          "price": -80,
-          "set": [
-            "short"
-          ]
+          "item": "hotel",
+          "per": "room_night",
+          "price": 80,
+          "name": "Hotel {n} nts"
         },
         {
-          "id": "d3",
-          "emoji": "3️⃣",
-          "label": "3 days",
-          "fact": "3 days in Xi'an"
+          "item": "tour",
+          "per": "person",
+          "price": 35
         },
         {
-          "id": "d4",
-          "emoji": "4️⃣",
-          "label": "4–5 days",
-          "fact": "4–5 days in Xi'an — room for Mount Hua or a slow day",
-          "price": 120,
-          "set": [
-            "long"
-          ]
+          "item": "tickets",
+          "per": "person",
+          "price": 18
+        },
+        {
+          "item": "food",
+          "per": "person_day",
+          "price": 11
+        },
+        {
+          "item": "rides",
+          "per": "person_day",
+          "price": 5
         }
-      ]
-    },
-    {
-      "type": "pick",
-      "id": "when",
-      "q": "When are you going?",
-      "emoji": "🗓️",
-      "options": [
+      ],
+      "seasons": [
         {
-          "id": "m_spring",
-          "emoji": "🌸",
-          "label": "Spring",
-          "fact": "Traveling in spring (Apr–May is mild; crowds spike around May Day)"
+          "set": "golden",
+          "from": "10-01",
+          "to": "10-07"
         },
         {
-          "id": "m_summer",
-          "emoji": "☀️",
-          "label": "Summer",
-          "fact": "Traveling in summer (hot; Mount Hua often foggy Jul–Aug)",
-          "set": [
-            "hot"
-          ]
+          "set": "hot",
+          "from": "07-01",
+          "to": "08-31"
         },
         {
-          "id": "m_oct",
-          "emoji": "🇨🇳",
-          "label": "Early October",
-          "fact": "Traveling in early October, around the National Day holiday (1–7 Oct)",
-          "set": [
-            "golden"
-          ]
-        },
-        {
-          "id": "m_winter",
-          "emoji": "❄️",
-          "label": "Nov – March",
-          "fact": "Traveling Nov–Mar (cold, quiet; Shaanxi History Museum closed Mondays after 14 Nov)",
-          "set": [
-            "cold"
-          ]
+          "set": "cold",
+          "from": "11-01",
+          "to": "03-15"
         }
       ]
     },

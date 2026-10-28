@@ -1,6 +1,7 @@
 import { money } from '../i18n';
 import { optionsOf, type Answer, type Replies } from './engine';
 import { asksOf, type Beat, type Cond, type Lesson } from './schema';
+import { tripPicks } from './trip';
 
 /**
  * 一局里用户做过的每个选择，按「问题」排开（key 在同一关里固定）。
@@ -41,6 +42,8 @@ export function picksOf(lesson: Lesson, answers: Answer[]): Pick[] {
         const side = a.chain.picks[c.id];
         if (side) out.push({ key: `${r.id}.${c.id}`, q: c.say, label: c[side].label, emoji: c[side].emoji });
       }
+    } else if ('trip' in a && r.type === 'trip') {
+      out.push(...tripPicks(r.id, a.trip, lesson.lang));
     } else if ('finale' in a && r.type === 'boss') {
       const o = r.options.find((x) => x.id === a.finale.option);
       if (o) out.push({ key: r.id, q: r.q, label: o.label, emoji: o.emoji });
@@ -68,7 +71,7 @@ export function comparePicks(mine: Pick[], theirs: Pick[]): { same: Pick[]; diff
 /**
  * 同行的两个人之间的分歧，按「有多大」排好：
  * - 改变了路线的选择（选项打的标记决定了后面出哪些回合，比如「最想干啥：吃 / 爬山」）、终局怎么玩 → 5
- * - 预算差三成以上 → 4；单选题 → 3；对话里的提问 → 2；滑卡 → 1
+ * - 文牒登记（日期、天数、人数）、预算差三成以上 → 4；单选题 → 3；对话里的提问 → 2；滑卡 → 1
  * 自己打的字没法比，不算。big = 值得让发起人拍板的那几处（≥ 3）
  */
 export type Split = { key: string; q: string; mine: Pick; theirs: Pick; weight: number };
@@ -89,6 +92,8 @@ export function splitsOf(lesson: Lesson, mine: Pick[], theirs: Pick[]): Splits {
     const r = roundOf(m.key);
     if (changesRoute(m.key, m.label) || changesRoute(o.key, o.label)) return 5;
     if (r?.type === 'boss') return 5;
+    // 日期、天数、人数是硬条件：对不上就订不了同一间酒店
+    if (r?.type === 'trip') return 4;
     if (r?.type === 'slider' && m.value !== undefined && o.value !== undefined) return Math.abs(m.value - o.value) / Math.max(1, Math.max(m.value, o.value)) >= 0.3 ? 4 : 1;
     if (r?.type === 'pick') return 3;
     if (r?.type === 'chain' || r?.type === 'swipe') return 1;

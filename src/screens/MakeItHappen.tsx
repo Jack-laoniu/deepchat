@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { sfx } from '../fx/fx';
 import { getLang, t, type MsgKey } from '../i18n';
 import { CITY_NAMES } from '../travel/cities';
+import { checkout, type Trip } from '../lesson/trip';
 import { Btn } from '../ui/kit';
 import { Emoji } from '../ui/Emoji';
 
@@ -15,7 +16,19 @@ type Link = { id: string; emoji: string; url: string };
 /** 终章里已经订好的东西 → 对应的预订入口就不再显示 */
 const COVERS: Record<string, string[]> = { hotels: ['b_hotel'], tours: ['b_terracotta', 'b_palace', 'b_show'] };
 
-export function MakeItHappen({ city, plan, booked = [] }: { city: string; plan: string; booked?: string[] }) {
+/** 预订链接带上文牒登记的日期和人数（日期没定就不带日期） */
+function tripQuery(t?: Trip): string {
+  if (!t) return '';
+  const q = new URLSearchParams({ adults: String(t.adults), children: String(t.kids), rooms: String(t.rooms) });
+  const out = checkout(t);
+  if (t.start && out) {
+    q.set('checkin', t.start);
+    q.set('checkout', out);
+  }
+  return `&${q}`;
+}
+
+export function MakeItHappen({ city, plan, trip, booked = [] }: { city: string; plan: string; trip?: Trip; booked?: string[] }) {
   const lang = getLang() === 'zh' ? 'zh' : 'en';
   const name = CITY_NAMES[city]?.[lang] ?? city;
   const [links, setLinks] = useState<Link[]>([]);
@@ -27,7 +40,7 @@ export function MakeItHappen({ city, plan, booked = [] }: { city: string; plan: 
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'fail'>('idle');
 
   useEffect(() => {
-    fetch(`/api/partners?city=${encodeURIComponent(city)}&lang=${lang}`)
+    fetch(`/api/partners?city=${encodeURIComponent(city)}&lang=${lang}${tripQuery(trip)}`)
       .then((r) => (r.ok ? r.json() : { links: [] }))
       .then((d: { links?: Link[] }) => setLinks((d.links ?? []).filter((l) => !(COVERS[l.id] ?? []).some((b) => booked.includes(b)))))
       .catch(() => setLinks([]));
@@ -40,7 +53,7 @@ export function MakeItHappen({ city, plan, booked = [] }: { city: string; plan: 
       const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ city, lang, name: who, contact, note, plan, consent: agree }),
+        body: JSON.stringify({ city, lang, name: who, contact, note, plan, trip, consent: agree }),
       });
       setState(res.ok ? 'sent' : 'fail');
     } catch {

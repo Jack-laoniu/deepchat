@@ -292,77 +292,54 @@
       ]
     },
     {
-      "type": "pick",
-      "id": "days",
-      "q": "How many days?",
-      "emoji": "📅",
-      "options": [
+      "type": "trip",
+      "id": "pass",
+      "title": "Your travel pass",
+      "emoji": "🛂",
+      "say": "Pass first: when you land, how long, who's coming.",
+      "scale": [
         {
-          "id": "d3",
-          "emoji": "3️⃣",
-          "label": "3 days",
-          "fact": "3 days in Beijing",
-          "price": -120,
-          "set": [
-            "short"
-          ]
+          "item": "hotel",
+          "per": "room_night",
+          "price": 120,
+          "name": "Hotel {n} nts"
         },
         {
-          "id": "d4",
-          "emoji": "4️⃣",
-          "label": "4 days",
-          "fact": "4 days in Beijing"
+          "item": "tour",
+          "per": "person",
+          "price": 45
         },
         {
-          "id": "d6",
-          "emoji": "6️⃣",
-          "label": "5–6 days",
-          "fact": "5–6 days in Beijing, room for a slow day or a day trip",
-          "price": 240,
-          "set": [
-            "long"
-          ]
+          "item": "tickets",
+          "per": "person",
+          "price": 30
+        },
+        {
+          "item": "food",
+          "per": "person_day",
+          "price": 16
+        },
+        {
+          "item": "rides",
+          "per": "person_day",
+          "price": 6
         }
-      ]
-    },
-    {
-      "type": "pick",
-      "id": "when",
-      "q": "When are you going?",
-      "emoji": "🗓️",
-      "options": [
+      ],
+      "seasons": [
         {
-          "id": "m_spring",
-          "emoji": "🌸",
-          "label": "Spring",
-          "fact": "Traveling in spring (Mar–May)"
+          "set": "golden",
+          "from": "10-01",
+          "to": "10-07"
         },
         {
-          "id": "m_summer",
-          "emoji": "☀️",
-          "label": "Summer",
-          "fact": "Traveling in summer (hot, humid, school-holiday crowds)",
-          "set": [
-            "hot"
-          ]
+          "set": "hot",
+          "from": "07-01",
+          "to": "08-31"
         },
         {
-          "id": "m_oct",
-          "emoji": "🇨🇳",
-          "label": "Early October",
-          "fact": "Traveling in early October, around China's National Day holiday",
-          "set": [
-            "golden"
-          ]
-        },
-        {
-          "id": "m_winter",
-          "emoji": "❄️",
-          "label": "Winter",
-          "fact": "Traveling in winter (cold, dry, few crowds)",
-          "set": [
-            "cold"
-          ]
+          "set": "cold",
+          "from": "11-01",
+          "to": "03-15"
         }
       ]
     },

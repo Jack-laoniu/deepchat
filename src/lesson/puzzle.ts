@@ -34,6 +34,8 @@ export function piecesOf(r: Round): Piece[] {
     case 'pick':
     case 'swipe':
       return ['priority'];
+    case 'trip':
+      return ['life'];
     case 'chain':
       return ['tradeoff'];
     case 'fix':

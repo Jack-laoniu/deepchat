@@ -167,6 +167,7 @@ describe('play', () => {
         else if (c.type === 'sort') answers.push({ round: c.id, sort: Object.fromEntries(c.cards.map((x) => [x.id, c.bins[0].id])) });
         else if (c.type === 'place') answers.push({ round: c.id, place: Object.fromEntries(c.things.map((x) => [x.id, c.zones[0].id])) });
         else if (c.type === 'day') answers.push({ round: c.id, day: Object.fromEntries(c.moments.map((m) => [m.id, m.options[0].id])) });
+        else if (c.type === 'trip') answers.push({ round: c.id, trip: { month: 5, nights: 3, adults: 2, kids: 0, rooms: 1 } });
         else answers.push(pick(c.id, c.options[0].id));
       }
       expect(play(l, answers).current, l.title).toBeNull();
@@ -205,6 +206,7 @@ describe('characters & languages', () => {
       else if (c.type === 'sort') answers.push({ round: c.id, sort: Object.fromEntries(c.cards.map((x) => [x.id, c.bins[0].id])) });
       else if (c.type === 'place') answers.push({ round: c.id, place: Object.fromEntries(c.things.map((x) => [x.id, c.zones[0].id])) });
       else if (c.type === 'day') answers.push({ round: c.id, day: Object.fromEntries(c.moments.map((m) => [m.id, m.options[0].id])) });
+      else if (c.type === 'trip') answers.push({ round: c.id, trip: { month: 5, nights: 3, adults: 2, kids: 0, rooms: 1 } });
       else answers.push(pick(c.id, c.options[0].id));
     }
     const text = superPrompt(dog, play(dog, answers), []);
@@ -346,9 +348,33 @@ describe('skipping a broken round', () => {
         else if (r.type === 'sort') answers.push({ round: r.id, sort: {} });
         else if (r.type === 'place') answers.push({ round: r.id, place: {} });
         else if (r.type === 'day') answers.push({ round: r.id, day: {} });
+        else if (r.type === 'trip') answers.push({ round: r.id, trip: { nights: 3, adults: 2, kids: 0, rooms: 1 } });
       }
       expect(play(l, answers).current, l.title).toBeNull();
     }
+  });
+});
+
+describe('travel pass', () => {
+  it('scales the plan by nights, rooms and people, sets season / party flags, and records the hard facts', async () => {
+    const { checkout } = await import('./trip');
+    const xian = lessons.find((l) => l.city === 'xian' && l.lang === 'en')!;
+    const arrive: Answer = { round: 'arrive', talk: {} };
+    const base = play(xian, [arrive]);
+    const two = play(xian, [arrive, { round: 'pass', trip: { start: '2026-10-02', nights: 5, adults: 2, kids: 1, rooms: 2 } }]);
+    const hotel = two.cart.find((i) => i.id === 'hotel')!;
+    expect(hotel.price).toBe(80 * 5 * 2);
+    expect(hotel.name).toBe('Hotel 5 nts');
+    expect(two.cart.find((i) => i.id === 'food')!.price).toBe(11 * 3 * 6);
+    expect(two.total).toBeGreaterThan(base.total);
+    expect([...two.flags]).toEqual(expect.arrayContaining(['golden', 'kids', 'long']));
+    expect(two.trip).toEqual({ start: '2026-10-02', nights: 5, adults: 2, kids: 1, rooms: 2 });
+    expect(two.facts.some((f) => f.includes('2026-10-02 to 2026-10-07') && f.includes('1 kid'))).toBe(true);
+    expect(checkout({ start: '2026-12-30', nights: 3, adults: 1, kids: 0, rooms: 1 })).toBe('2027-01-02');
+    // only the month: a winter month is cold, a long stay is flagged
+    const winter = play(xian, [arrive, { round: 'pass', trip: { month: 1, nights: 20, adults: 1, kids: 0, rooms: 1 } }]);
+    expect([...winter.flags]).toEqual(expect.arrayContaining(['cold', 'stay', 'solo']));
+    expect(winter.flags.has('golden')).toBe(false);
   });
 });
 

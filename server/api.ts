@@ -19,7 +19,7 @@ import { chatFromConfig, chimeIn, discussNeed, finaleFor, friendChat, sceneFor, 
  *   POST /api/generate  { need, lang, context?, memory? } → { lesson } | { error }（context：再玩一轮时带上上一关的结果；memory：用户以前闯过的需求）
  *   POST /api/react     { need, who, as, q, options, text, recent, lang } → { say, mood }（角色回应用户自己打的字）
  *   POST /api/discuss   { plan, history, message, lang } → { reply } | { error }（结算后继续聊需求）
- *   GET  /api/partners?city=&lang= → { links }（结算页的预订入口）
+ *   GET  /api/partners?city=&lang=&checkin=&checkout=&adults=&children=&rooms= → { links }（结算页的预订入口，按文牒登记预先填好日期和人数）
  *   POST /api/lead      { city, lang, name, contact, note, plan, consent } → 204（用户同意后，把需求单交给本地导游）
  *   POST /api/share     { role, from, lesson, picks } → { id, owner }（把行程分享给真实的朋友：同行的人 / 参谋的人；owner 是分享的人拍板用的口令）
  *   GET  /api/share?id= → 分享的内容和朋友们的回复
@@ -136,7 +136,13 @@ async function lead(req: IncomingMessage, res: ServerResponse) {
   const contact = str(body?.contact, 120);
   if (body?.consent !== true || !contact) return void json(res, 400, { error: 'consent' }), true;
   if (allow(clientIp(req), 5, Infinity, leadHits, false) !== 'ok') return void json(res, 429, { error: 'rate_ip' }), true;
-  const file = saveLead({ city: str(body.city, 20), lang: str(body.lang, 5), name: str(body.name, 60), contact, note: str(body.note, 500), plan: str(body.plan, 20_000) });
+  // 文牒登记的硬条件：只留认得的字段和合理的数
+  const tr = (body?.trip ?? {}) as Record<string, unknown>;
+  const int = (v: unknown, max: number) => (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= max ? v : undefined);
+  const trip = body?.trip
+    ? { start: typeof tr.start === 'string' && /^\d{4}-\d\d-\d\d$/.test(tr.start) ? tr.start : undefined, month: int(tr.month, 12), nights: int(tr.nights, 365), adults: int(tr.adults, 30), kids: int(tr.kids, 20), rooms: int(tr.rooms, 20) }
+    : undefined;
+  const file = saveLead({ city: str(body.city, 20), lang: str(body.lang, 5), name: str(body.name, 60), contact, note: str(body.note, 500), plan: str(body.plan, 20_000), trip });
   console.error(file ? `lead saved (${str(body.city, 20)})` : 'lead: could not save');
   return void (file ? res.writeHead(204).end() : json(res, 500, { error: 'save' })), true;
 }
@@ -260,7 +266,10 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, path:
   if (path === '/api/clientlog') return clientLog(req, res);
   if (path === '/api/partners' && req.method === 'GET') {
     const q = new URL(req.url ?? '/', 'http://x').searchParams;
-    json(res, 200, { links: partnerLinks(loadConfig().config, q.get('city') ?? '', q.get('lang') === 'zh' ? 'zh' : 'en') });
+    const date = (k: string) => (/^\d{4}-\d\d-\d\d$/.test(q.get(k) ?? '') ? q.get(k)! : undefined);
+    const num = (k: string, max: number) => (q.has(k) && Number.isInteger(Number(q.get(k))) && Number(q.get(k)) >= 0 && Number(q.get(k)) <= max ? Number(q.get(k)) : undefined);
+    const trip = { checkin: date('checkin'), checkout: date('checkout'), adults: num('adults', 30), children: num('children', 20), rooms: num('rooms', 20) };
+    json(res, 200, { links: partnerLinks(loadConfig().config, q.get('city') ?? '', q.get('lang') === 'zh' ? 'zh' : 'en', trip) });
     return true;
   }
   if (path === '/api/lead') return lead(req, res);

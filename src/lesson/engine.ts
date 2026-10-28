@@ -1,5 +1,6 @@
 import { money } from '../i18n';
 import type { Beat, ChainRound, Cond, FixRound, Free, Gamble, Item, Lesson, Option, Round, Line } from './schema';
+import { scaled, tripFact, tripFlags, tripPicks, type Trip } from './trip';
 
 /**
  * 闯关规则：全部由 play(lesson, answers) 从答案列表重新推导，
@@ -24,6 +25,8 @@ export type Answer =
   | { round: string; place: Record<string, string> }
   /** 无文字的一天：时刻 id → 选项 id */
   | { round: string; day: Record<string, string> }
+  /** 文牒登记：日期、晚数、人数、房间 */
+  | { round: string; trip: Trip }
   /** 终章：选的做法、追问的回答、每样资料 有 / 没有 / 不确定 */
   | {
       round: string;
@@ -117,6 +120,8 @@ export interface Played {
   materials: Material[];
   /** 终章里用户确认 / 纠正过的需求画像 */
   portrait: Portrait[];
+  /** 文牒登记的硬条件（订酒店、订票、找导游按它检索） */
+  trip?: Trip;
 }
 
 /** 无文字的一天：时刻没写具体时间时用这个表示 */
@@ -178,6 +183,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
   const materials: Material[] = [];
   const portrait: Portrait[] = [];
   let sacrificed: Meter | undefined;
+  let trip: Trip | undefined;
   let budget: number | null = null;
   let current: Round | null = null;
   let done = 0;
@@ -329,6 +335,15 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
           decisions.push({ thing: `${r.title} ${m.time ?? AT_EMOJI[m.at]}`, choice: o.label });
         }
       }
+    } else if ('trip' in a && r.type === 'trip') {
+      trip = a.trip;
+      tripFlags(r, a.trip).forEach((f) => flags.add(f));
+      for (const it of scaled(r, a.trip, cart)) {
+        cart.set(it.id, it);
+        touched.add(it.id);
+      }
+      facts.push(tripFact(a.trip, lesson.lang));
+      for (const p of tripPicks(r.id, a.trip, lesson.lang)) decisions.push({ thing: p.q, choice: p.label });
     } else if ('sort' in a && r.type === 'sort') {
       for (const c of r.cards) {
         const bin = r.bins.find((b) => b.id === a.sort[c.id]);
@@ -368,6 +383,7 @@ export function play(lesson: Lesson, answers: Answer[]): Played {
     gifts,
     materials,
     portrait,
+    trip,
   };
 }
 
