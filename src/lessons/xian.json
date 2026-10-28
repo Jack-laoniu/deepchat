@@ -623,7 +623,7 @@
         },
         {
           "who": "wang",
-          "say": "Young man. The real bus 306 leaves from Xi'an East Station now.",
+          "say": "Young man. The real bus 306: Fangzhicheng hub or Xi'an East Station.",
           "mood": "thinking"
         },
         {
@@ -655,7 +655,7 @@
               "id": "h_metro",
               "emoji": "🚇",
               "label": "Metro + bus 306",
-              "fact": "Will take the metro to Fangzhicheng hub, then public bus 306 (Tourism Line 5); pay the conductor on board, no transit cards",
+              "fact": "Will take the metro to Fangzhicheng hub (Changle Rd side) or Xi'an East Station, then public bus 306 (Tourism Line 5); pay on board",
               "remove": [
                 "tour"
               ],
@@ -2517,7 +2517,7 @@
       ]
     }
   ],
-  "secret": "Bus 306 to the warriors now leaves from Xi'an East Station. 'Official' buses elsewhere are touts.",
+  "secret": "Real bus 306: board at Fangzhicheng or Xi'an East Station. Other 'official' buses are touts.",
   "curated": true,
   "city": "xian"
 }
