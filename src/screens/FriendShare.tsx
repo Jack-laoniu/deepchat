@@ -121,7 +121,7 @@ export function FriendLanding({ id }: { id: string }) {
   const mineReply = data.replies.find((r) => r.rid && r.rid === myReplies()[id]);
   const start = () => {
     sfx.good();
-    const lesson = data.role === 'advisor' ? (advisorLesson(data.lesson, from, data.picks, data.voices) ?? companionLesson(data.lesson, from, data.picks)) : companionLesson(data.lesson, from, data.picks);
+    const lesson = data.role === 'advisor' ? advisorLesson(data.lesson, from) : companionLesson(data.lesson, from);
     g.open(lesson, { id, role: data.role, from, picks: data.picks, voices: data.voices });
   };
   return (
@@ -135,17 +135,8 @@ export function FriendLanding({ id }: { id: string }) {
           </div>
         </div>
       </div>
-      <div className="mt-2 text-xs font-black text-slate-400">{t('friendPicked')}</div>
-      <div className="mt-1 flex flex-wrap gap-1.5">
-        {data.picks
-          .filter((p) => !p.own)
-          .slice(0, 6)
-          .map((p) => (
-            <span key={p.key} className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-slate-600">
-              {p.emoji} {p.label}
-            </span>
-          ))}
-      </div>
+      {/* 不在这里摆出 TA 的决定：每一步先自己选，选完再揭晓 TA 选了什么 */}
+      <div className="mt-2 text-xs font-bold text-slate-500">{t(data.role === 'advisor' ? 'friendHowAdvisor' : 'friendHowCompanion', { from })}</div>
       {mineReply && data.role === 'companion' && <Decided lesson={data.lesson} from={from} sharer={data.picks} reply={mineReply} />}
       <Btn className="mt-3" tone={mineReply ? 'white' : undefined} onClick={start}>
         {mineReply ? t('playAgain') : t('friendCardStart')}
@@ -184,28 +175,29 @@ export function SendBack({ plan }: { plan: string }) {
   const mine = picksOf(g.lesson!, g.answers);
   const [name, setName] = useState('');
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'fail'>('idle');
-  const sp = s.role === 'companion' ? splitsOf(g.lesson!, s.picks, mine) : null;
-  const review = mine.filter((p) => p.key.startsWith('adv_review.'));
-  const ok = review.filter((p) => p.emoji === '👍').length;
+  // 同行和参谋玩的是同一关：都能逐条对比；参谋另外数一数给 TA 的选择点了几个「好」几个「再想想」
+  const sp = splitsOf(g.lesson!, s.picks, mine);
+  const ok = Object.values(g.judged).filter((v) => v === 'ok').length;
+  const no = Object.values(g.judged).filter((v) => v === 'rethink').length;
 
   const send = async () => {
     sfx.tap();
     setState('sending');
-    setState((await replyShare(s.id, s.role, name.trim(), mine, plan, g.voices)) ? 'sent' : 'fail');
+    setState((await replyShare(s.id, s.role, name.trim(), mine, plan, g.voices, g.judged)) ? 'sent' : 'fail');
   };
 
   return (
     <div className="mt-5 rounded-3xl border-2 border-b-4 border-sky-300 bg-sky-50 p-3">
       <div className="text-base font-black text-sky-800">💌 {t('sendBackTitle', { from: s.from })}</div>
-      {sp && <SplitsView sp={sp} a={s.from} b={t('you')} />}
-      {!sp && <div className="mt-2 text-sm font-black text-slate-600">{t('sendBackAdvice', { ok, no: review.length - ok })}</div>}
+      {s.role === 'advisor' && ok + no > 0 && <div className="mt-2 text-sm font-black text-slate-600">{t('sendBackAdvice', { ok, no })}</div>}
+      <SplitsView sp={sp} a={s.from} b={t('you')} />
       {state === 'sent' ? (
         <div className="mt-3 rounded-2xl bg-white p-3 text-center text-sm font-black text-emerald-700">{t('sendBackDone', { from: s.from })}</div>
       ) : (
         <div className="mt-3 space-y-2">
           <input value={name} onChange={(e) => setName(e.target.value.slice(0, 30))} placeholder={t('sendBackName')} className={input} />
           <Btn disabled={state === 'sending'} onClick={send}>
-            {t(sp && (sp.big.length || sp.route.mine.length || sp.route.theirs.length) ? 'sendBackDecide' : 'sendBackBtn', { from: s.from })}
+            {t(s.role === 'companion' && (sp.big.length || sp.route.mine.length || sp.route.theirs.length) ? 'sendBackDecide' : 'sendBackBtn', { from: s.from })}
           </Btn>
           {state === 'fail' && <div className="text-center text-xs font-black text-rose-500">{t('shareFail')}</div>}
         </div>
@@ -340,7 +332,14 @@ function RepliesView({ id, title, data, onClose }: { id: string; title: string; 
           {t('repliesTitle')} · {title}
         </div>
         {data.replies.map((r, i) => {
-          const rethink = r.picks.filter((p) => p.key.startsWith('adv_review.') && p.emoji === '🤔');
+          // 参谋对我每个选择点的「再想想」（旧版分享：「把把关」卡片里左滑的那几张）；连同朋友在那一处的吐槽原声
+          const voices = ownKeys(data, r.voices ?? {});
+          const rethink = [
+            ...Object.entries(r.judged ?? {}).flatMap(([k, v]) => (v === 'rethink' ? data.picks.filter((p) => p.key === k) : [])),
+            ...r.picks.filter((p) => p.key.startsWith('adv_review.') && p.emoji === '🤔'),
+          ];
+          // 吐槽了、但不在「再想想」里的那几处（同行的人的吐槽在分歧列表里已经有了）
+          const teased = r.role === 'advisor' ? Object.keys(voices).filter((k) => !rethink.some((p) => p.key === k)) : [];
           const verdict = r.picks.find((p) => p.key === 'adv_verdict');
           return (
             <div key={r.rid ?? i} className="mt-3 rounded-2xl border-2 border-slate-100 p-3">
@@ -354,7 +353,7 @@ function RepliesView({ id, title, data, onClose }: { id: string; title: string; 
                   {t('repliesRethink')} {rethink.map((p) => p.q).join(' · ')}
                 </div>
               )}
-              {r.role === 'advisor' && rethink.map((p) => r.voices?.[p.key] && <VoiceLine key={p.key} name={r.name || t('friendSomeone')} voice={r.voices[p.key]} />)}
+              {r.role === 'advisor' && [...rethink.map((p) => p.key), ...teased].map((k) => voices[k] && <VoiceLine key={k} name={r.name || t('friendSomeone')} voice={voices[k]} />)}
               {said(r).length > 0 && (
                 <div className="mt-1 space-y-0.5 text-xs font-bold text-slate-600">
                   {said(r).map((p) => (

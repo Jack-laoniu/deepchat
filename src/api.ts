@@ -284,7 +284,7 @@ export type Choice = 'mine' | 'theirs' | 'both';
 /** decisions：分享的人对每个分歧点拍的板（key 是选择的 key） */
 /** 朋友在某个选择上留的原声（vid 为空 = 录不了音，打的字） */
 export type Voice = { vid: string; text: string };
-export type ShareReply = { at: string; rid?: string; role: 'companion' | 'advisor'; name: string; picks: Pick[]; plan: string; decisions?: Record<string, Choice>; decidedAt?: string; voices?: Record<string, Voice> };
+export type ShareReply = { at: string; rid?: string; role: 'companion' | 'advisor'; name: string; picks: Pick[]; plan: string; decisions?: Record<string, Choice>; decidedAt?: string; voices?: Record<string, Voice>; judged?: Record<string, 'ok' | 'rethink'> };
 /** voices：分享的人自己用语音说的回答（选择的 key → 原声），朋友玩到同一个问题时能听到 */
 export type ShareData = { at: string; role: 'companion' | 'advisor'; from: string; lesson: Lesson; picks: Pick[]; replies: ShareReply[]; voices?: Record<string, Voice> };
 
@@ -340,9 +340,10 @@ export const myReplies = (): Record<string, string> => {
   }
 };
 
-export async function replyShare(id: string, role: 'companion' | 'advisor', name: string, picks: Pick[], plan: string, voices: Record<string, Voice> = {}): Promise<boolean> {
+/** judged：参谋对分享的人每个选择点的「好选择 / 再想想」 */
+export async function replyShare(id: string, role: 'companion' | 'advisor', name: string, picks: Pick[], plan: string, voices: Record<string, Voice> = {}, judged: Record<string, 'ok' | 'rethink'> = {}): Promise<boolean> {
   try {
-    const res = await fetch('/api/share/reply', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, role, name, picks, plan, voices }) });
+    const res = await fetch('/api/share/reply', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, role, name, picks, plan, voices, judged }) });
     const d = (await res.json().catch(() => ({}))) as { rid?: string };
     if (res.ok && d.rid) {
       try {

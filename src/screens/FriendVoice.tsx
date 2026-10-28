@@ -58,49 +58,6 @@ export function VoiceLine({ name, voice }: { name: string; voice: Voice }) {
   );
 }
 
-/**
- * 朋友玩分享过来的关，走到分享的人用语音回答过的那一题：在问题下面放 TA 的原声（自动播一次，可以重播）。
- * 按提问 id 和问题原文对上（同一个 id 可能在不同回合里出现）
- */
-export function SharerVoice({ ask }: { ask: { id: string; q: string } }) {
-  const g = useGame();
-  const s = g.share;
-  const hit = useMemo(() => {
-    if (!s?.voices) return null;
-    const key = Object.keys(s.voices).find((k) => k.split('.').pop() === ask.id && s.picks.find((p) => p.key === k)?.q === ask.q);
-    return key ? s.voices[key] : null;
-  }, [s, ask.id, ask.q]);
-  const [on, setOn] = useState(false);
-  const play = () => {
-    if (!hit?.vid) return;
-    const a = playVoice(hit.vid);
-    setOn(true);
-    a.onended = () => setOn(false);
-  };
-  useEffect(() => {
-    // 等角色把问题念完再播
-    const id = setTimeout(play, 900);
-    return () => clearTimeout(id);
-  }, [hit?.vid]); // eslint-disable-line react-hooks/exhaustive-deps
-  if (!hit || !s) return null;
-  return (
-    <motion.button initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} onClick={play} className="mb-2 flex w-full items-start gap-2 rounded-2xl border-2 border-rose-200 bg-rose-50 px-2 py-1.5 text-left">
-      <motion.span animate={on ? { scale: [1, 1.1, 1] } : {}} transition={{ repeat: Infinity, duration: 0.6 }}>
-        <FriendBadge name={s.from} size={30} />
-      </motion.span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-[11px] font-black text-rose-500">
-          {hit.vid ? '🎙 ' : '💬 '}
-          {t(hit.vid ? 'sharerSaid' : 'sharerSaidTyped', { from: s.from })}
-        </span>
-        <span className="text-sm font-bold text-slate-700">
-          「{hit.text}」{hit.vid && <span className="text-rose-400"> {on ? '🔊' : '▶'}</span>}
-        </span>
-      </span>
-    </motion.button>
-  );
-}
-
 /** 这一局已经听过的原声（同一关里不重复敲门） */
 const heard = new Set<string>();
 

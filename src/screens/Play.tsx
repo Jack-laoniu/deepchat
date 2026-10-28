@@ -26,7 +26,7 @@ import { TopBar } from '../ui/kit';
 import { money, t } from '../i18n';
 import { Emoji } from '../ui/Emoji';
 import { FriendVoiceKnock } from './FriendVoice';
-import { VoiceAsk } from './VoiceAsk';
+import { RoundReveals } from './Reveal';
 
 function RoundView({ round }: { round: Round }) {
   switch (round.type) {
@@ -137,8 +137,6 @@ export function Play() {
         {/* 朋友在这个问题上留过原声：分享的人再玩到这里时，朋友来敲门 */}
         {current && !g.feedback && <FriendVoiceKnock key={current.id} round={current} />}
       </div>
-      {/* 朋友玩分享过来的关：在分歧处请他留一句原声 */}
-      <AnimatePresence>{g.voiceAsk && !g.feedback && <VoiceAsk key={g.voiceAsk.key} ask={g.voiceAsk} />}</AnimatePresence>
       {p.done > 0 && !g.feedback && (
         <button onClick={g.undo} className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs font-extrabold text-slate-300 hover:text-slate-500">
           {t('undo')}
@@ -154,7 +152,7 @@ export function Play() {
           />
         )}
       </AnimatePresence>
-      <FeedbackSheet fb={g.feedback} onNext={g.next} />
+      <FeedbackSheet fb={g.feedback} onNext={g.next} extra={g.feedback && g.share ? <RoundReveals round={g.feedback.round} /> : null} />
     </motion.div>
   );
 }

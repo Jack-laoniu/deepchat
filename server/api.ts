@@ -77,7 +77,13 @@ async function share(req: IncomingMessage, res: ServerResponse, path: string) {
     return void (ok ? res.writeHead(204).end() : json(res, 404, { error: 'gone' })), true;
   }
   // 朋友在分歧处录的原声
-  const rid = addReply(str(body?.id, 20), { role, name: str(body?.name, 30), picks, plan: str(body?.plan, 30_000), voices: voicesOf(body?.voices, 5) });
+  // 参谋对分享的人每个选择点的「好选择 / 再想想」
+  const judged = Object.fromEntries(
+    Object.entries((body?.judged ?? {}) as Record<string, unknown>)
+      .slice(0, 80)
+      .filter(([k, v]) => k.length <= 80 && (v === 'ok' || v === 'rethink')),
+  );
+  const rid = addReply(str(body?.id, 20), { role, name: str(body?.name, 30), picks, plan: str(body?.plan, 30_000), voices: voicesOf(body?.voices, 40), judged });
   return void (rid ? json(res, 200, { rid }) : json(res, 404, { error: 'gone' })), true;
 }
 

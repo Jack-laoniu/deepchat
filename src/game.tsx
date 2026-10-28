@@ -1,4 +1,4 @@
-import { picksOf, splitsOf, type Pick } from './lesson/picks';
+import type { Pick } from './lesson/picks';
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { requestFinale, requestScene, serverConfig, type Voice } from './api';
 import { inHost } from './host';
@@ -35,13 +35,8 @@ export type ShareCtx = { id: string; role: 'companion' | 'advisor'; from: string
 /** 玩家按住说话回答的录音：先留在这台设备上（内存里），分享时才上传 */
 export type Clip = { ask: string; text: string; blob: Blob };
 
-/**
- * 请朋友留一段原声的时机：同行的人和分享的人在一个大分歧上选得不一样（split），
- * 或者参谋的人对 TA 的某个决定点了「再想想」（rethink）。sharer = 分享的人那边的选择，me = 朋友自己的
- */
-export type VoiceAsk = { key: string; q: string; kind: 'split' | 'rethink'; sharer?: Pick; me?: Pick };
-/** 一局最多请朋友录几次 */
-export const MAX_VOICE_ASKS = 3;
+/** 参谋对分享的人每个选择的看法：好选择 / 再想想 */
+export type Judge = 'ok' | 'rethink';
 
 interface Game {
   lesson: Lesson | null;
@@ -68,12 +63,12 @@ interface Game {
   answers: Answer[];
   /** 朋友分享过来的这一局：分享的人是谁、请我当同行还是参谋、TA 的选择（结算时对比 / 交回） */
   share: ShareCtx | null;
-  /** 现在请朋友留一句原声（null = 不用） */
-  voiceAsk: VoiceAsk | null;
-  /** 朋友录好了（或打了字）/ 跳过（null） */
-  answerVoice(v: Voice | null): void;
-  /** 朋友这一局留下的原声：选择的 key → 原声 */
+  /** 朋友在分享的人的某个选择上吐槽了一句（原声或打字）：选择的 key → 原声 */
   voices: Record<string, Voice>;
+  tease(key: string, v: Voice): void;
+  /** 参谋对分享的人每个选择的看法：选择的 key → 好选择 / 再想想 */
+  judged: Record<string, Judge>;
+  judge(key: string, v: Judge): void;
   /** 这一局玩家按住说话回答的录音（提问 id + 转出来的文字） */
   clips: Clip[];
   keepClip(c: Clip): void;
@@ -120,26 +115,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
   // 用户自己的路线：开场用自己的话说了最想干啥 → 先放占位场景，后台按原话现写一个（玩中间几关的工夫就写好了）
   const [own, setOwn] = useState<{ goal: string; status: 'pending' | 'done' } | null>(null);
   const ownJob = useRef(0);
-  // 朋友的原声：在分歧处请他说一句（一局最多 3 次）
-  const [voiceAsk, setVoiceAsk] = useState<VoiceAsk | null>(null);
+  // 朋友玩分享过来的关：每一步看到分享的人选了什么，可以吐槽（原声 / 打字），参谋还能点好 / 再想想
   const [voices, setVoices] = useState<Record<string, Voice>>({});
-  const asked = useRef(new Set<string>());
+  const [judged, setJudged] = useState<Record<string, Judge>>({});
   const clips = useRef<Clip[]>([]);
-  const askVoice = (after: Answer[]) => {
-    if (!share || !lesson || asked.current.size >= MAX_VOICE_ASKS) return;
-    const mine = picksOf(lesson, after);
-    let next: VoiceAsk | null = null;
-    if (share.role === 'companion') {
-      const big = splitsOf(lesson, share.picks, mine).big.find((s) => !asked.current.has(s.key));
-      if (big) next = { key: big.key, q: big.q, kind: 'split', sharer: big.mine, me: big.theirs };
-    } else {
-      const no = mine.find((p) => p.key.startsWith('adv_review.') && p.emoji === '🤔' && !asked.current.has(p.key));
-      if (no) next = { key: no.key, q: no.q, kind: 'rethink' };
-    }
-    if (!next) return;
-    asked.current.add(next.key);
-    setVoiceAsk(next);
-  };
   const [guests, setGuests] = useState<string[]>([]);
   const [share, setShare] = useState<ShareCtx | null>(null);
   const guest = guests.find((id) => !isCameo(id)) ?? null;
@@ -181,7 +160,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const problem = revealsProblem(lesson, answers, after);
     const f = fb(pb, pa, problem);
     setAnswers(after);
-    askVoice(after);
     setFeedback(f);
     if (f.tone === 'warn') {
       sfx.warn();
@@ -259,12 +237,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     },
     answers,
     share,
-    voiceAsk,
-    answerVoice(v) {
-      if (v && voiceAsk) setVoices((x) => ({ ...x, [voiceAsk.key]: v }));
-      setVoiceAsk(null);
-    },
     voices,
+    tease: (key, v) => setVoices((x) => ({ ...x, [key]: v })),
+    judged,
+    judge: (key, v) => setJudged((x) => ({ ...x, [key]: v })),
     clips: clips.current,
     keepClip(c) {
       clips.current = [...clips.current.filter((x) => x.ask !== c.ask), c];
@@ -273,10 +249,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       job.current++;
       ownJob.current++;
       setOwn(null);
-      asked.current.clear();
       clips.current = [];
       setVoices({});
-      setVoiceAsk(null);
+      setJudged({});
       setShare(ctx ?? null);
       setCustom('idle');
       setGuests([]);

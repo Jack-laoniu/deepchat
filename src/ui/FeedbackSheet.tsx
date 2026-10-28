@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
+import type { ReactNode } from 'react';
 import type { Feedback } from '../game';
 import { t } from '../i18n';
 import { Emoji } from './Emoji';
@@ -11,8 +12,8 @@ const STYLE = {
   crash: { bg: 'bg-rose-100', text: 'text-rose-700', btn: 'red' as const, icon: '💥', cta: 'retry' as const },
 };
 
-/** 底部反馈条：每次选择后弹出，一句话 + 一个按钮 */
-export function FeedbackSheet({ fb, onNext }: { fb: Feedback | null; onNext: () => void }) {
+/** 底部反馈条：每次选择后弹出，一句话 + 一个按钮；extra 放在按钮上面（朋友玩分享的关时揭晓 TA 的选择） */
+export function FeedbackSheet({ fb, onNext, extra }: { fb: Feedback | null; onNext: () => void; extra?: ReactNode }) {
   return (
     <AnimatePresence>
       {fb && (
@@ -35,6 +36,7 @@ export function FeedbackSheet({ fb, onNext }: { fb: Feedback | null; onNext: () 
                 {fb.tip && <div className={`text-base font-bold ${STYLE[fb.tone].text} opacity-80`}>{fb.tip}</div>}
               </div>
             </div>
+            {extra}
             <Btn tone={STYLE[fb.tone].btn} onClick={onNext}>
               {t(STYLE[fb.tone].cta)}
             </Btn>

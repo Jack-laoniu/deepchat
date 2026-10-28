@@ -12,8 +12,6 @@ import { Emoji } from '../ui/Emoji';
 import { HandHint } from '../ui/Hint';
 import { Btn } from '../ui/kit';
 import { useCast } from './Talk';
-import { reviewPicks } from '../lesson/friends';
-import { playVoice } from '../screens/FriendVoice';
 
 const ICON: Record<Meter, string> = { money: '💰', easy: '😌', good: '🎯', safe: '🛡️' };
 /** 非金钱关卡里「钱」那瓶换成这关的资源 */
@@ -55,13 +53,6 @@ export function Chain({ round }: { round: ChainRound }) {
   const { meters, broke } = useMemo(() => chainMeters(start, cart, cards, picks), [start, cart, cards, picks]);
   const index = Object.keys(picks).length;
   const card = broke ? null : cards[index];
-  // 参谋在「把把关」：这张卡是分享的人用语音回答的那一题，就放 TA 的原声（第 N 张卡对应第 N 个要把关的决定）
-  const sharerVoice = useMemo(() => {
-    const s = g.share;
-    const n = card && s?.role === 'advisor' && s.voices ? /^card_(\d+)$/.exec(card.id) : null;
-    const key = n ? reviewPicks(s!.picks, s!.voices)[Number(n[1]) - 1]?.key : undefined;
-    return key ? s!.voices![key] : undefined;
-  }, [card, g.share]);
   const finished = !broke && index >= cards.length;
   // 购物车跟着已做的选择变化，预告才准
   const cartNow = useMemo(() => {
@@ -76,7 +67,6 @@ export function Chain({ round }: { round: ChainRound }) {
 
   useEffect(() => {
     if (!card) return;
-    if (sharerVoice?.vid) return void playVoice(sharerVoice.vid);
     const c = who(card.who);
     // 换了一张卡：上一张没念完也不念了，直接念这张
     void speakNow(card.say, { pitch: c.pitch, rate: c.rate, gender: c.gender });
@@ -185,11 +175,6 @@ export function Chain({ round }: { round: ChainRound }) {
                     <Emoji e={card.emoji} size={[...card.say].length > 22 ? 48 : 62} />
                   </motion.div>
                   <div className={`mt-2 break-words font-extrabold leading-snug text-slate-700 ${[...card.say].length > 30 ? 'text-[15px]' : [...card.say].length > 18 ? 'text-[16px]' : 'text-[18px]'}`}>{card.say}</div>
-                  {sharerVoice?.vid && g.share && (
-                    <button onPointerDown={(e) => e.stopPropagation()} onClick={() => playVoice(sharerVoice.vid)} className="mt-2 rounded-full bg-rose-500 px-3 py-1 text-xs font-black text-white">
-                      🎙 {t('sharerSaid', { from: g.share.from })} ▶
-                    </button>
-                  )}
                 </div>
                 {/* 往哪边拖，哪边的印章盖上来 */}
                 <motion.div style={{ opacity: stampLeft }} className="pointer-events-none absolute right-3 top-14 rotate-12 rounded-xl border-4 border-rose-500 bg-white/80 px-2 py-0.5 text-xl font-black text-rose-500">

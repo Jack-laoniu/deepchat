@@ -8,7 +8,7 @@ import { useGame } from '../game';
 import { getLang, t } from '../i18n';
 import { matchFree, matches, walkBeats, type Replies } from '../lesson/engine';
 import { canRecord, useRecorder } from '../fx/recorder';
-import { SharerVoice } from '../screens/FriendVoice';
+import { RevealRow, sharerPickFor } from '../screens/Reveal';
 import { cameoPicks, transcribe, knockedIn, knockRuleSeen, markKnockRule, prefetchChime, requestChime, requestReact, setScene, takeChime, useCanGenerate } from '../api';
 import { MAX_GUESTS } from '../game';
 import { bondOf, friends, heartsOf, INVITE_AT } from '../bond';
@@ -372,6 +372,15 @@ export function Dialogue({
   };
 
   const visible = items.slice(0, shown);
+  // 「我」那句的 key 是 m + 提问 id：找到那个提问、分享的人在这一题的选择、我自己的回答
+  const revealFor = (key: string) => {
+    const beat = key.startsWith('m') ? beats.find((b): b is AskBeat => b.type === 'ask' && b.id === key.slice(1)) : undefined;
+    const sharer = beat && g.share ? sharerPickFor(g.share, beat) : undefined;
+    const r = beat ? replies[beat.id] : undefined;
+    if (!beat || !sharer || !r) return null;
+    const o = 'option' in r ? beat.options.find((x) => x.id === r.option) : undefined;
+    return <RevealRow key={`v${key}`} sharer={sharer} mine={o ? { label: o.label, emoji: o.emoji } : 'text' in r ? { label: r.text } : undefined} />;
+  };
   const p = partner ? who(partner) : null;
 
   return (
@@ -430,8 +439,12 @@ export function Dialogue({
                 {it.say}
               </motion.div>
             ) : (
-              // 聊天模式里只有对面那个人不用头像和名字；旅伴、请来的客人插话都要标出是谁
-              <Bubble key={it.key} who={who(it.who)} text={it.say} mine={it.who === 'me'} current={i === visible.length - 1} chat={style === 'chat' && (it.who === partner || it.who === 'me')} />
+              [
+                // 聊天模式里只有对面那个人不用头像和名字；旅伴、请来的客人插话都要标出是谁
+                <Bubble key={it.key} who={who(it.who)} text={it.say} mine={it.who === 'me'} current={i === visible.length - 1} chat={style === 'chat' && (it.who === partner || it.who === 'me')} />,
+                // 朋友玩分享过来的关：刚答完这一题，揭晓分享的人在这一题选了什么
+                it.who === 'me' && revealFor(it.key),
+              ]
             ),
           )}
         </AnimatePresence>
@@ -451,7 +464,6 @@ export function Dialogue({
         {pending !== null ? null : waitingAsk ? (
           <>
             {/* 朋友玩分享过来的关：分享的人在这一题用语音回答过，先听听 TA 的原声 */}
-            {g.share && <SharerVoice key={waitingAsk.id} ask={waitingAsk} />}
             <AnswerPanel key={waitingAsk.id} ask={waitingAsk} onAnswer={(r) => void answer(waitingAsk, r)} />
           </>
         ) : finished ? (

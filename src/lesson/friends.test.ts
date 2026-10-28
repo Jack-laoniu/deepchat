@@ -30,18 +30,22 @@ describe('sharing a trip with real friends', () => {
       expect(picks.filter((p) => p.key.startsWith('day2.'))).toHaveLength(4);
     });
 
-    it(`${name}: a companion plays the same level with the sharer's choices up front`, () => {
-      const l = companionLesson(base, 'Alex', picks);
+    it(`${name}: a companion plays the same level, told how the reveal works, without the sharer's choices up front`, () => {
+      const l = companionLesson(base, 'Alex');
       expect(parseLesson(l).ok).toBe(true);
       const first = l.rounds.find((r) => r.type === 'talk')!;
-      expect(first.type === 'talk' && first.beats.some((b) => 'say' in b && b.say.includes('Alex'))).toBe(true);
+      const lines = first.type === 'talk' ? first.beats.flatMap((b) => ('say' in b ? [b.say] : [])) : [];
+      expect(lines.some((x) => x.includes('Alex'))).toBe(true);
+      // nothing the sharer picked is listed before the friend chooses
+      expect(picks.filter((p) => !p.own).some((p) => lines.includes(`${p.emoji ?? '📌'} ${p.label}`))).toBe(false);
+      expect(l.rounds.map((r) => r.id)).toEqual(base.rounds.map((r) => r.id));
     });
 
-    it(`${name}: an advisor gets a review level built from the choices`, () => {
-      const l = advisorLesson(base, 'Alex', picks)!;
-      expect(l).not.toBeNull();
-      const chain = l.rounds.find((r) => r.type === 'chain');
-      expect(chain && chain.type === 'chain' && chain.cards.length).toBe(Math.min(8, picks.filter((p) => !p.own).length));
+    it(`${name}: an advisor plays the same level, then a few questions and a verdict`, () => {
+      const l = advisorLesson(base, 'Alex');
+      expect(parseLesson(l).ok).toBe(true);
+      expect(l.rounds.map((r) => r.id)).toEqual([...base.rounds.map((r) => r.id), 'adv_more', 'adv_verdict']);
+      expect(l.rounds.some((r) => r.type === 'chain' && r.id === 'adv_review')).toBe(false);
     });
   }
 
@@ -54,11 +58,7 @@ describe('sharing a trip with real friends', () => {
     expect(c.diff.map((d) => d.mine.key)).toEqual(['pass.nights']);
   });
 
-  it('too few choices: no advisor level', () => {
-    expect(advisorLesson(load(xian), 'Alex', [])).toBeNull();
-  });
-
-  it('an answer the sharer spoke gets its own review card, in the same order the voices are looked up', () => {
+  it('old shares: voices left on review cards still map back to the sharer\'s choices in order', () => {
     const picks = [
       { key: 'days', q: 'How many days?', label: '3 days' },
       { key: 'arrive.why', q: 'What brings you?', label: 'water park', own: true },
@@ -67,9 +67,6 @@ describe('sharing a trip with real friends', () => {
     ];
     const voices = { 'arrive.why': { vid: 'abcdefghij12', text: 'water park' } };
     expect(reviewPicks(picks, voices).map((p) => p.key)).toEqual(['days', 'arrive.why', 'when']);
-    const l = advisorLesson(load(xian), 'Alex', picks, voices)!;
-    const chain = l.rounds.find((r) => r.type === 'chain');
-    expect(chain?.type === 'chain' && chain.cards[1].say).toContain('water park');
   });
 });
 
